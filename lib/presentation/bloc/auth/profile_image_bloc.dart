@@ -8,6 +8,8 @@ class ChooseImagFromCameraeEvent extends ImagePickerEvent {}
 
 class ChooseImagFromGalleryEvent extends ImagePickerEvent {}
 
+class ClearPickedImageEvent extends ImagePickerEvent {}
+
 abstract class ImagePickerState {}
 
 class ImageInitial extends ImagePickerState {}
@@ -29,7 +31,7 @@ class ImageAuth extends Bloc<ImagePickerEvent, ImagePickerState> {
   final PickImageFromGallery pickImageFromGallery;
 
   ImageAuth(this.pickImageFromCamera, this.pickImageFromGallery)
-      : super(ImageInitial()) {
+    : super(ImageInitial()) {
     on<ChooseImagFromCameraeEvent>((event, emit) async {
       emit(PickingImage());
       final result = await pickImageFromCamera();
@@ -47,6 +49,9 @@ class ImageAuth extends Bloc<ImagePickerEvent, ImagePickerState> {
       } else {
         emit(ImagePickedError('Node Image Selcted'));
       }
+    });
+    on<ClearPickedImageEvent>((event, emit) {
+      emit(ImageInitial());
     });
   }
 }

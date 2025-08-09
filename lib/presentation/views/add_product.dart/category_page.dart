@@ -1,47 +1,18 @@
+import 'package:empire/core/utilis/fonts.dart';
+import 'package:empire/presentation/bloc/category_bloc/get_category_bloc.dart';
 import 'package:empire/presentation/views/add_product.dart/add_category.dart';
+import 'package:empire/presentation/views/add_product.dart/widgets.dart';
+import 'package:empire/presentation/views/add_subcategorys.dart/add_subcategory.dart';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 
-class CategoryProductScreen extends StatefulWidget {
-  const CategoryProductScreen({super.key});
-
-  @override
-  State<CategoryProductScreen> createState() => _CategoryProductScreenState();
-}
-
-class _CategoryProductScreenState extends State<CategoryProductScreen> {
-  // Category IDs (for simplicity using string, you can use enum or int)
-  static const String categoryAdd = 'add';
-  static const String categoryBreakfast = 'breakfast';
-  static const String categoryVegetable = 'vegetable';
-  static const String categoryMedicine = 'medicine';
-  static const String categoryDrinks = 'drinks';
+class CategoryScreen extends StatelessWidget {
+  CategoryScreen({super.key});
 
   // Currently chosen category
-  String selectedCategory = categoryBreakfast;
-
-  // Map category to icon and label
-  final Map<String, Map<String, dynamic>> categories = {
-    categoryBreakfast: {
-      'label': 'BreakFast',
-      'icon': Icons.free_breakfast,
-      'image': 'assets/White tea pot with cup.png',
-    },
-    categoryVegetable: {
-      'label': 'vegetable',
-      'icon': Icons.eco,
-      'image': 'assets/burlap bags with vegetables.png',
-    },
-    categoryMedicine: {
-      'label': 'Medicine',
-      'icon': Icons.medical_services,
-      'image': 'assets/blue capsule with granules.png',
-    },
-    categoryDrinks: {
-      'label': 'Drinks',
-      'icon': Icons.local_drink,
-      'image': 'assets/milkshake.png',
-    }
-  };
+  String? selectedCategory;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +23,7 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
+      body: SingleChildScrollView(
         child: Center(
           child: Container(
             width: maxWidth,
@@ -60,7 +31,6 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top Back button and title
                 Row(
                   children: [
                     IconButton(
@@ -80,9 +50,7 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 26),
-
                 Center(
                   child: GestureDetector(
                     onTap: () {
@@ -104,9 +72,9 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
                           width: 1.2,
                         ),
                       ),
-                      child: Column(
+                      child: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(Icons.add, size: 38, color: Colors.black45),
                           SizedBox(height: 6),
                           Text(
@@ -122,63 +90,76 @@ class _CategoryProductScreenState extends State<CategoryProductScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
-                Wrap(
-                  alignment: WrapAlignment.start,
-                  spacing: 14,
-                  runSpacing: 14,
-                  children: categories.entries.map((entry) {
-                    final key = entry.key;
-                    final label = entry.value['label'] as String;
-                    final iconData = entry.value['icon'] as IconData;
-
-                    final bool isSelected = selectedCategory == key;
-
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedCategory = key;
-                        });
-                      },
-                      child: Container(
-                        width: 180,
-                        height: 130,
-                        decoration: BoxDecoration(
-                          color: isSelected ? Colors.yellow[700] : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 8,
-                              offset: const Offset(3, 3),
-                            )
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                BlocBuilder<CategoryBloc, CategoryState>(
+                  buildWhen: (previous, current) =>
+                      previous.runtimeType != current.runtimeType ||
+                      (previous is CategoryLoadedState &&
+                          current is CategoryLoadedState &&
+                          previous.categories != current.categories),
+                  builder: (context, state) {
+                    if (state is CategoryLoadingState) {
+                      return Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: const Column(
                           children: [
-                            Image.asset('${entry.value['image']}'),
-                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: 180,
+                              height: 120,
+                            ),
                             Text(
-                              label,
+                              '...........,',
+                              textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                                fontSize: 14,
-                                color: isSelected
-                                    ? Colors.black87
-                                    : Colors.black45,
-                              ),
+                                  fontFamily: Fonts.raleway, fontSize: 13),
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  }).toList(),
-                ),
+                      );
+                    } else if (state is CategoryErrorState) {
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(state.error),
+                          TextButton(
+                            onPressed: () => context
+                                .read<CategoryBloc>()
+                                .add(LoadCategoryEvent()),
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      );
+                    } else if (state is CategoryLoadedState) {
+                      return Wrap(
+                        alignment: WrapAlignment.start,
+                        spacing: 14,
+                        runSpacing: 14,
+                        children: state.categories.map((doc) {
+                          return CategoryItem(
+                            doc: doc,
+                            isSelectedSelector: (state) =>
+                                state is CategoryLoadedState &&
+                                state.selectedCategoryId == doc.uid,
+                            onTap: () {
+                              context
+                                  .read<CategoryBloc>()
+                                  .add(SelectedCategoryEvent(doc.uid!));
+                              Navigator.push(context, MaterialPageRoute(
+                                builder: (context) {
+                                  return ProductCatalogScreen(
+                                    id: doc.uid!,
+                                  );
+                                },
+                              ));
+                            },
+                          );
+                        }).toList(),
+                      );
+                    }
+                    return const Text('No categories found');
+                  },
+                )
               ],
             ),
           ),

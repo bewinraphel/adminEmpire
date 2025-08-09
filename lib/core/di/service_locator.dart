@@ -1,17 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empire/data/datasource/auth_repo.dart';
+import 'package:empire/data/datasource/category_data_source.dart';
+import 'package:empire/data/datasource/category_data_source_impli.dart';
 import 'package:empire/data/datasource/checking_login_status.dart';
 import 'package:empire/data/datasource/image_profile.dart';
 import 'package:empire/data/datasource/register.dart';
 import 'package:empire/data/repository/auth_repository..dart';
+import 'package:empire/data/repository/category_repository.dart';
 import 'package:empire/data/repository/image_profile.dart';
 import 'package:empire/data/repository/login_status.dart';
 import 'package:empire/data/repository/register.dart';
 import 'package:empire/domain/repositories/auth_repository.dart';
+import 'package:empire/domain/repositories/category_repository.dart';
 import 'package:empire/domain/repositories/image_profile.dart';
 import 'package:empire/domain/repositories/login_status_auth.dart';
 import 'package:empire/domain/repositories/register.dart';
 import 'package:empire/domain/usecase/Login_status_auth.dart';
+import 'package:empire/domain/usecase/addingcategory.dart';
+import 'package:empire/domain/usecase/get_category_usecase.dart';
 import 'package:empire/domain/usecase/login.dart';
 import 'package:empire/domain/usecase/login_auth.dart';
 import 'package:empire/domain/usecase/pick_image_camera.dart';
@@ -27,6 +33,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:logger/web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final sl = GetIt.instance;
@@ -57,7 +64,8 @@ Future<void> init() async {
 
   sl.registerLazySingleton(() => UserFirebaseSource(firestore));
   sl.registerLazySingleton<RegisterRepository>(
-      () => RegisterRepositoryimpli(sl()));
+    () => RegisterRepositoryimpli(sl()),
+  );
   sl.registerLazySingleton(() => CheckingUser(sl()));
   ////////////otp////////
   sl.registerLazySingleton(() => VerifyOtp(sl()));
@@ -67,4 +75,20 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SavePassword(sl()));
   //login
   sl.registerLazySingleton(() => Login(sl()));
+  ///// category
+  sl.registerSingleton<Logger>(Logger());
+  sl.registerLazySingleton<CategoryDataSource>(
+    () => CategoryDataSourceImpl(sl<Logger>()),
+  );
+
+  sl.registerLazySingleton<CategoryRepository>(
+    () => CategoryRepositoryImpli(sl()),
+  );
+  sl.registerLazySingleton(() => CategoryUsecase(sl<CategoryRepository>()));
+
+  ///subcategory
+
+  sl.registerLazySingleton(
+    () => AddingcategoryUseCase(sl<CategoryRepository>()),
+  );
 }

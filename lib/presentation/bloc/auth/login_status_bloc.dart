@@ -21,7 +21,7 @@ class AuthBlocStatus extends Bloc<CheckingLoginStatusevent, LoginStatusState> {
     on<CheckingLoginStatusevent>((event, emit) async {
       emit(LoadinglLoginStatusstate());
       final isloged = await checkLoginStatus();
-       
+
       if (isloged) {
         emit(SucessLoginStatusState());
       } else {

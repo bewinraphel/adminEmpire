@@ -31,10 +31,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LogPresed>((event, emit) async {
       emit(InitialLogin());
       try {
+        
         await authRemoteDataSource(event.email,event.password);
         await saveLoginStatus(true);
         emit(LoginSucess());
-      } catch (e) {
+      } catch (e) { 
         emit(ErrorLogin(e.toString()));
       }
     });

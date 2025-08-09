@@ -1,16 +1,13 @@
- 
 import 'package:empire/presentation/views/add_product.dart/category_page.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({Key? key}) : super(key: key);
 
-
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7), // Light background
+      backgroundColor: const Color(0xFFF7F7F7),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
@@ -85,7 +82,7 @@ class HomePage extends StatelessWidget {
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(
                           builder: (context) {
-                            return const CategoryProductScreen();
+                            return CategoryScreen();
                           },
                         ));
                       },

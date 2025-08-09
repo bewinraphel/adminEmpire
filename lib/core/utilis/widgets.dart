@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
 import 'package:empire/core/utilis/fonts.dart';
 import 'package:flutter/material.dart';
 
@@ -138,5 +141,28 @@ class _GreenElevatedButtonState extends State<GreenElevatedButton> {
                 color: Colors.white, fontSize: 20, fontFamily: Fonts.raleway),
           )),
     );
+  }
+}
+
+Future<String?> uploadImageToCloudinary(File imageFile) async {
+  final cloudName = 'dfpsfhmwu';
+  final uploadPreset = 'category';
+
+  final url =
+      Uri.parse("https://api.cloudinary.com/v1_1/$cloudName/image/upload");
+
+  final request = http.MultipartRequest('POST', url)
+    ..fields['upload_preset'] = uploadPreset
+    ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+
+  final response = await request.send();
+
+  if (response.statusCode == 200) {
+    final res = await http.Response.fromStream(response);
+    final data = jsonDecode(res.body);
+    return data['secure_url'];
+  } else {
+    print('Upload failed: ${response.statusCode}');
+    return null;
   }
 }
