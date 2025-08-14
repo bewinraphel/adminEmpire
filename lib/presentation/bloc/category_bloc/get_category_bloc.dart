@@ -1,20 +1,21 @@
 import 'dart:async';
+import 'package:dartz/dartz.dart';
 import 'package:empire/domain/entities/category_entities.dart';
-import 'package:empire/domain/usecase/get_category_usecase.dart';
+import 'package:empire/domain/usecase/category/get_category_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 abstract class CategoryEvent {}
 
-class LoadCategoryEvent extends CategoryEvent {}
+class GetCategoryEvent extends CategoryEvent {}
 
 class SelectedCategoryEvent extends CategoryEvent {
   final String selectedId;
   SelectedCategoryEvent(this.selectedId);
 }
 
-class _UpdateCategoriesEvent extends CategoryEvent {
-  final List<CategoryEntities> categories;
-  _UpdateCategoriesEvent(this.categories);
+class CategoryErrorEvent extends CategoryEvent {
+  final String error;
+  CategoryErrorEvent(this.error);
 }
 
 abstract class CategoryState {}
@@ -45,39 +46,23 @@ class CategoryErrorState extends CategoryState {
 
 class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
   final CategoryUsecase categoryUsecase;
-  StreamSubscription<List<CategoryEntities>?>? _streamSubscription;
 
   CategoryBloc(this.categoryUsecase) : super(CategoryLoadingState()) {
-    on<LoadCategoryEvent>((event, emit) async {
+    on<GetCategoryEvent>((event, emit) async {
       emit(CategoryLoadingState());
       try {
-        await _streamSubscription?.cancel();
-
-        _streamSubscription = await categoryUsecase().listen(
-          (categories) {
-            if (categories != null) {
-              add(_UpdateCategoriesEvent(categories));
-            } else {
-              emit(CategoryErrorState('No categories found'));
-            }
+        final category = await categoryUsecase();
+        category.fold(
+          (category) {
+            emit(CategoryLoadedState(categories: category));
           },
-          onError: (error) {
-            emit(CategoryErrorState(error.toString()));
+          (error) {
+            CategoryErrorState(error.message);
           },
         );
       } catch (e) {
         emit(CategoryErrorState(e.toString()));
       }
-    });
-
-    on<_UpdateCategoriesEvent>((event, emit) {
-      final currentState = state;
-      emit(CategoryLoadedState(
-        categories: event.categories,
-        selectedCategoryId: currentState is CategoryLoadedState
-            ? currentState.selectedCategoryId
-            : null,
-      ));
     });
 
     on<SelectedCategoryEvent>((event, emit) {
@@ -86,13 +71,5 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         emit(currentState.copyWith(selectedCategoryId: event.selectedId));
       }
     });
-
-    add(LoadCategoryEvent());
-  }
-
-  @override
-  Future<void> close() {
-    _streamSubscription?.cancel();
-    return super.close();
   }
 }

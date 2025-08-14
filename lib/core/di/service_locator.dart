@@ -15,19 +15,20 @@ import 'package:empire/domain/repositories/category_repository.dart';
 import 'package:empire/domain/repositories/image_profile.dart';
 import 'package:empire/domain/repositories/login_status_auth.dart';
 import 'package:empire/domain/repositories/register.dart';
-import 'package:empire/domain/usecase/Login_status_auth.dart';
-import 'package:empire/domain/usecase/addingcategory.dart';
-import 'package:empire/domain/usecase/get_category_usecase.dart';
-import 'package:empire/domain/usecase/login.dart';
-import 'package:empire/domain/usecase/login_auth.dart';
-import 'package:empire/domain/usecase/pick_image_camera.dart';
-import 'package:empire/domain/usecase/pick_image_gallery.dart';
-import 'package:empire/domain/usecase/register.dart';
+import 'package:empire/domain/usecase/authcase/Login_status_usecase.dart';
+import 'package:empire/domain/usecase/category/adding_category_usecase.dart';
+import 'package:empire/domain/usecase/category/adding_subcategory_usecase.dart';
+import 'package:empire/domain/usecase/category/get_category_usecase.dart';
+import 'package:empire/domain/usecase/authcase/login_usecase.dart';
+import 'package:empire/domain/usecase/authcase/login_auth_usecase.dart';
+import 'package:empire/domain/usecase/common/pick_image_camera_usecase.dart';
+import 'package:empire/domain/usecase/common/pick_image_gallery_usecase.dart';
+import 'package:empire/domain/usecase/authcase/register_usecase.dart';
 
-import 'package:empire/domain/usecase/save_login_status.dart';
-import 'package:empire/domain/usecase/save_password.dart';
-import 'package:empire/domain/usecase/send_otp.dart';
-import 'package:empire/domain/usecase/verify_user.dart';
+import 'package:empire/domain/usecase/authcase/save_login_status_usecase.dart';
+import 'package:empire/domain/usecase/authcase/save_password_usecase.dart';
+import 'package:empire/domain/usecase/authcase/send_otp_usecase.dart';
+import 'package:empire/domain/usecase/authcase/verify_user_usecase.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -84,11 +85,14 @@ Future<void> init() async {
   sl.registerLazySingleton<CategoryRepository>(
     () => CategoryRepositoryImpli(sl()),
   );
+  sl.registerLazySingleton(
+    () => AddingcategoryUseCase(sl<CategoryRepository>()),
+  );
   sl.registerLazySingleton(() => CategoryUsecase(sl<CategoryRepository>()));
 
   ///subcategory
 
   sl.registerLazySingleton(
-    () => AddingcategoryUseCase(sl<CategoryRepository>()),
+    () => AddingSubcategoryUsecase(sl<CategoryRepository>()),
   );
 }

@@ -1,16 +1,16 @@
 import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/domain/repositories/category_repository.dart';
-import 'package:empire/domain/usecase/Login_status_auth.dart';
-import 'package:empire/domain/usecase/addingcategory.dart';
-import 'package:empire/domain/usecase/get_category_usecase.dart';
-import 'package:empire/domain/usecase/login.dart';
-import 'package:empire/domain/usecase/login_auth.dart';
-import 'package:empire/domain/usecase/pick_image_camera.dart';
-import 'package:empire/domain/usecase/pick_image_gallery.dart';
-import 'package:empire/domain/usecase/register.dart';
-import 'package:empire/domain/usecase/save_login_status.dart';
-import 'package:empire/domain/usecase/send_otp.dart';
-import 'package:empire/domain/usecase/verify_user.dart';
+import 'package:empire/domain/usecase/authcase/Login_status_usecase.dart';
+import 'package:empire/domain/usecase/category/adding_category_usecase.dart';
+import 'package:empire/domain/usecase/category/get_category_usecase.dart';
+import 'package:empire/domain/usecase/authcase/login_usecase.dart';
+import 'package:empire/domain/usecase/authcase/login_auth_usecase.dart';
+import 'package:empire/domain/usecase/common/pick_image_camera_usecase.dart';
+import 'package:empire/domain/usecase/common/pick_image_gallery_usecase.dart';
+import 'package:empire/domain/usecase/authcase/register_usecase.dart';
+import 'package:empire/domain/usecase/authcase/save_login_status_usecase.dart';
+import 'package:empire/domain/usecase/authcase/send_otp_usecase.dart';
+import 'package:empire/domain/usecase/authcase/verify_user_usecase.dart';
 import 'package:empire/presentation/bloc/auth/login_bloc.dart';
 import 'package:empire/presentation/bloc/auth/login_status_bloc.dart';
 import 'package:empire/presentation/bloc/auth/loginpage_bloc.dart';
@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider<CategoryBloc>(
           create: (_) =>
-              CategoryBloc(sl<CategoryUsecase>())..add(LoadCategoryEvent()),
+              CategoryBloc(sl<CategoryUsecase>())..add(GetCategoryEvent()),
         ),
         BlocProvider<SubcategoryBloc>(
           create: (_) => SubcategoryBloc(

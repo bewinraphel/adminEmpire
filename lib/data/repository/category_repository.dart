@@ -20,8 +20,8 @@ class CategoryRepositoryImpli implements CategoryRepository {
   }
 
   @override
-  Stream<List<CategoryEntities>> getCategory() {
-    throw UnimplementedError();
+  Future<Either<List<CategoryEntities>,CategoryFailure>>  getCategory() {
+    return categoryDataSource.getCategory();
   }
 
   @override

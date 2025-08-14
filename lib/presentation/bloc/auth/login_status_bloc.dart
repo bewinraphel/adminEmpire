@@ -1,4 +1,4 @@
-import 'package:empire/domain/usecase/Login_status_auth.dart';
+import 'package:empire/domain/usecase/authcase/Login_status_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 abstract class LoginStatusevent {}

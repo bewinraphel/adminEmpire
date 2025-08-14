@@ -11,17 +11,32 @@ import 'package:shimmer/shimmer.dart';
 class CategoryScreen extends StatelessWidget {
   CategoryScreen({super.key});
 
-  // Currently chosen category
   String? selectedCategory;
 
   @override
   Widget build(BuildContext context) {
-    // Responsive max width with padding
     final double maxWidth = MediaQuery.of(context).size.width < 450
         ? MediaQuery.of(context).size.width * 0.92
         : 400;
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        leading: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+        title: const Text(
+          'Category',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Center(
@@ -31,34 +46,18 @@ class CategoryScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 24),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'Category/product',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18,
-                      ),
-                    ),
-                  ],
-                ),
                 const SizedBox(height: 26),
                 Center(
                   child: GestureDetector(
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (context) {
-                          return Add_Category();
-                        },
-                      ));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return Add_Category();
+                          },
+                        ),
+                      );
                     },
                     child: Container(
                       width: 2000,
@@ -84,7 +83,7 @@ class CategoryScreen extends StatelessWidget {
                               fontSize: 16,
                               color: Colors.black87,
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -92,11 +91,6 @@ class CategoryScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 BlocBuilder<CategoryBloc, CategoryState>(
-                  buildWhen: (previous, current) =>
-                      previous.runtimeType != current.runtimeType ||
-                      (previous is CategoryLoadedState &&
-                          current is CategoryLoadedState &&
-                          previous.categories != current.categories),
                   builder: (context, state) {
                     if (state is CategoryLoadingState) {
                       return Shimmer.fromColors(
@@ -104,15 +98,14 @@ class CategoryScreen extends StatelessWidget {
                         highlightColor: Colors.grey[100]!,
                         child: const Column(
                           children: [
-                            SizedBox(
-                              width: 180,
-                              height: 120,
-                            ),
+                            SizedBox(width: 180, height: 120),
                             Text(
                               '...........,',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                  fontFamily: Fonts.raleway, fontSize: 13),
+                                fontFamily: Fonts.raleway,
+                                fontSize: 13,
+                              ),
                             ),
                           ],
                         ),
@@ -123,9 +116,9 @@ class CategoryScreen extends StatelessWidget {
                         children: [
                           Text(state.error),
                           TextButton(
-                            onPressed: () => context
-                                .read<CategoryBloc>()
-                                .add(LoadCategoryEvent()),
+                            onPressed: () => context.read<CategoryBloc>().add(
+                              GetCategoryEvent(),
+                            ),
                             child: const Text('Retry'),
                           ),
                         ],
@@ -142,16 +135,18 @@ class CategoryScreen extends StatelessWidget {
                                 state is CategoryLoadedState &&
                                 state.selectedCategoryId == doc.uid,
                             onTap: () {
-                              context
-                                  .read<CategoryBloc>()
-                                  .add(SelectedCategoryEvent(doc.uid!));
-                              Navigator.push(context, MaterialPageRoute(
-                                builder: (context) {
-                                  return ProductCatalogScreen(
-                                    id: doc.uid!,
-                                  );
-                                },
-                              ));
+                              context.read<CategoryBloc>().add(
+                                SelectedCategoryEvent(doc.uid),
+                              );
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) {
+                                    return AddSubcategory(id: doc.uid);
+                                  },
+                                ),
+                              );
                             },
                           );
                         }).toList(),
@@ -159,7 +154,7 @@ class CategoryScreen extends StatelessWidget {
                     }
                     return const Text('No categories found');
                   },
-                )
+                ),
               ],
             ),
           ),

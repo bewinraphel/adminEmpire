@@ -1,6 +1,6 @@
-import 'package:empire/domain/usecase/register.dart';
+import 'package:empire/domain/usecase/authcase/register_usecase.dart';
  
-import 'package:empire/domain/usecase/verify_user.dart';
+import 'package:empire/domain/usecase/authcase/verify_user_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 abstract class RegisterEvent {}

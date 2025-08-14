@@ -1,5 +1,5 @@
 import 'package:empire/domain/repositories/category_repository.dart';
-import 'package:empire/domain/usecase/addingcategory.dart';
+import 'package:empire/domain/usecase/category/adding_category_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 abstract class SubcategoryEvent {}

@@ -1,4 +1,3 @@
-
 import 'package:empire/domain/repositories/image_profile.dart';
 
 class PickImageFromCamera {

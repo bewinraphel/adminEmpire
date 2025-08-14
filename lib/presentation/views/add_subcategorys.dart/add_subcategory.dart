@@ -1,16 +1,18 @@
- 
 import 'package:empire/core/utilis/color.dart';
 import 'package:empire/core/utilis/fonts.dart';
  
+
 import 'package:empire/presentation/views/add_subcategorys.dart/subcatergory_adding.dart';
- 
+
 import 'package:flutter/material.dart';
  
-import 'package:google_fonts/google_fonts.dart';
 
-class ProductCatalogScreen extends StatelessWidget {
+import 'package:google_fonts/google_fonts.dart';
+ 
+
+class AddSubcategory extends StatelessWidget {
   String id;
-  ProductCatalogScreen({super.key, required this.id});
+  AddSubcategory({super.key, required this.id});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,7 @@ class ProductCatalogScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFF7F8FA),
         elevation: 0,
         title: Text(
-          'Products',
+          'SubCategory ',
           style: GoogleFonts.inter(
             color: const Color(0xFF111418),
             fontSize: 18,
@@ -33,27 +35,32 @@ class ProductCatalogScreen extends StatelessWidget {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-                backgroundColor: ColoRs.elevatedButtonColor,
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(10)))),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: ColoRs.elevatedButtonColor,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+            ),
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
                 builder: (context) {
-                  return AddCategoryWidget(
-                    id: id,
-                  );
+                  return AddCategoryWidget(id: id);
                 },
-              ));
-            },
-            child: const Text(
-              ' Add categroy',
-              style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: ColoRs.whiteColor,
-                  fontFamily: Fonts.raleway),
-            )),
+              ),
+            );
+          },
+          child: const Text(
+            ' Add SubCategroy',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: ColoRs.whiteColor,
+              fontFamily: Fonts.raleway,
+            ),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -80,8 +87,10 @@ class ProductCatalogScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 16,
+                  ),
                 ),
               ),
             ),

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:empire/core/utilis/color.dart';
 import 'package:empire/core/utilis/commonvalidator.dart';
 import 'package:empire/core/utilis/fonts.dart';
 import 'package:empire/core/utilis/widgets.dart';
