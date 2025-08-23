@@ -1,4 +1,4 @@
-import 'package:empire/domain/repositories/login_status_auth.dart';
+import 'package:empire/feature/auth/domain/repositories/login_status_auth.dart';
 
 class SaveLoginStatus {
   final LoginStatus respository;

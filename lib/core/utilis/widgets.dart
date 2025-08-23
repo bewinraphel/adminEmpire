@@ -5,56 +5,47 @@ import 'package:empire/core/utilis/fonts.dart';
 import 'package:flutter/material.dart';
 
 class SizedBox10 extends StatelessWidget {
-  const SizedBox10({
-    super.key,
-  });
+  const SizedBox10({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      height: 10,
-    );
+    return const SizedBox(height: 10);
   }
 }
 
 class SizedBox20 extends StatelessWidget {
-  const SizedBox20({
-    super.key,
-  });
+  const SizedBox20({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      height: 20,
-    );
+    return const SizedBox(height: 20);
   }
 }
 
 class SizedBox30 extends StatelessWidget {
-  const SizedBox30({
-    super.key,
-  });
+  const SizedBox30({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      height: 30,
-    );
+    return const SizedBox(height: 30);
   }
 }
 
 class Titles extends StatelessWidget {
   final String? nametitle;
-  const Titles({
-    required this.nametitle,
-    super.key,
-  });
+  const Titles({required this.nametitle, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Text(nametitle!,
-        style: const TextStyle(
-            fontSize: 17, fontFamily: Fonts.raleway, color: Colors.black));
+    return Text(
+      nametitle!,
+      style: const TextStyle(
+        fontSize: 17,
+        fontFamily: Fonts.raleway,
+        fontWeight: FontWeight.w700,
+        color: Colors.black,
+      ),
+    );
   }
 }
 
@@ -111,13 +102,14 @@ class GreenElevatedButton extends StatefulWidget {
   final Function() onTap;
   final double width;
   final double height;
-  const GreenElevatedButton(
-      {super.key,
-      this.width = 0.90,
-      required this.text,
-      this.height = .05,
-      required this.onTap,
-      this.color = const Color(0xFF4BB04F)});
+  const GreenElevatedButton({
+    super.key,
+    this.width = 0.90,
+    required this.text,
+    this.height = .05,
+    required this.onTap,
+    this.color = const Color(0xFF4BB04F),
+  });
 
   @override
   State<GreenElevatedButton> createState() => _GreenElevatedButtonState();
@@ -130,16 +122,48 @@ class _GreenElevatedButtonState extends State<GreenElevatedButton> {
       height: 40,
       width: responsiveWidth(context, widget.width),
       child: ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-              backgroundColor: widget.color,
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10)))),
-          onPressed: widget.onTap,
-          label: Text(
-            widget.text,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 20, fontFamily: Fonts.raleway),
-          )),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: widget.color,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+        onPressed: widget.onTap,
+        label: Text(
+          widget.text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontFamily: Fonts.raleway,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Fields extends StatefulWidget {
+  const Fields({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    required this.validator,
+  });
+
+  final TextEditingController controller;
+  final String hintText;
+  final String? Function(String?) validator;
+  @override
+  State<Fields> createState() => _FieldsState();
+}
+
+class _FieldsState extends State<Fields> {
+  @override
+  Widget build(BuildContext context) {
+    return InputField(
+      controller: widget.controller,
+      hintText: widget.hintText,
+      validator: widget.validator,
     );
   }
 }
@@ -148,8 +172,9 @@ Future<String?> uploadImageToCloudinary(File imageFile) async {
   final cloudName = 'dfpsfhmwu';
   final uploadPreset = 'category';
 
-  final url =
-      Uri.parse("https://api.cloudinary.com/v1_1/$cloudName/image/upload");
+  final url = Uri.parse(
+    "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
+  );
 
   final request = http.MultipartRequest('POST', url)
     ..fields['upload_preset'] = uploadPreset

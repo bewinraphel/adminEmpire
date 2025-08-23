@@ -1,5 +1,5 @@
 
-import 'package:empire/domain/repositories/image_profile.dart';
+import 'package:empire/feature/auth/domain/repositories/image_profile.dart';
 
 class PickImageFromGallery {
   final ProfileImage profileImage;

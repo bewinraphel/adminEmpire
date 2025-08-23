@@ -1,6 +1,6 @@
-import 'package:empire/data/datasource/auth_repo.dart';
-import 'package:empire/domain/entities/user_entities.dart';
-import 'package:empire/domain/repositories/auth_repository.dart';
+import 'package:empire/feature/auth/data/datasource/auth_repo.dart';
+import 'package:empire/feature/auth/domain/enitites/user_entities.dart';
+import 'package:empire/feature/auth/domain/repositories/auth_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthRepositoryImpl implements AuthRepository {

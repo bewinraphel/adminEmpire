@@ -1,5 +1,5 @@
-import 'package:empire/data/datasource/register.dart';
-import 'package:empire/domain/repositories/register.dart';
+import 'package:empire/feature/auth/data/datasource/register.dart';
+import 'package:empire/feature/auth/domain/repositories/register.dart';
 
 class RegisterRepositoryimpli implements RegisterRepository {
   final UserFirebaseSource userFirebaseSource;

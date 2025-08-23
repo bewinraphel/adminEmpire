@@ -1,4 +1,4 @@
-import 'package:empire/domain/repositories/register.dart';
+import 'package:empire/feature/auth/domain/repositories/register.dart';
 
 class CheckingUser {
   final RegisterRepository registerRepository;

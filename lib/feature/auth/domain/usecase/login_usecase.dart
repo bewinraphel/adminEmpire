@@ -1,4 +1,4 @@
-import 'package:empire/domain/repositories/auth_repository.dart';
+import 'package:empire/feature/auth/domain/repositories/auth_repository.dart';
 
 class Login {
   final AuthRepository authRepository;
