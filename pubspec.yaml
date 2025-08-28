@@ -53,6 +53,8 @@ dependencies:
   bloc_concurrency: ^0.3.0
   animate_do: ^3.3.4
   flutter_staggered_animations: ^1.1.1
+  flutter_animate: ^4.5.2
+  carousel_slider: ^5.1.1
 
 
   # The following adds the Cupertino Icons font to your application.

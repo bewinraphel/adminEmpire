@@ -1,31 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empire/feature/auth/data/datasource/auth_repo.dart';
-import 'package:empire/feature/product/data/datasource/category_data_source.dart';
-import 'package:empire/feature/product/data/datasource/category_data_source_impli.dart';
+import 'package:empire/feature/category/data/datasource/category_data_source.dart';
+import 'package:empire/feature/category/data/datasource/category_data_source_impli.dart';
 import 'package:empire/feature/auth/data/datasource/checking_login_status.dart';
 import 'package:empire/feature/auth/data/datasource/image_profile.dart';
-import 'package:empire/feature/product/data/datasource/product_data_source.dart';
-import 'package:empire/feature/product/data/datasource/product_data_source_impli.dart';
+import 'package:empire/feature/category/data/datasource/product_data_source.dart';
+import 'package:empire/feature/category/data/datasource/product_data_source_impli.dart';
 import 'package:empire/feature/auth/data/datasource/register.dart';
 import 'package:empire/feature/auth/data/repository/auth_repository..dart';
-import 'package:empire/feature/product/data/repository/category_repository.dart';
+import 'package:empire/feature/category/data/repository/category_repository.dart';
 import 'package:empire/feature/auth/data/repository/image_profile.dart';
 import 'package:empire/feature/auth/data/repository/login_status.dart';
-import 'package:empire/feature/product/data/repository/product_respository.dart';
+import 'package:empire/feature/category/data/repository/product_respository.dart';
 import 'package:empire/feature/auth/data/repository/register.dart';
 import 'package:empire/feature/auth/domain/repositories/auth_repository.dart';
-import 'package:empire/feature/product/domain/repositories/category_repository.dart';
+import 'package:empire/feature/category/domain/repositories/category_repository.dart';
 import 'package:empire/feature/auth/domain/repositories/image_profile.dart';
 import 'package:empire/feature/auth/domain/repositories/login_status_auth.dart';
-import 'package:empire/feature/product/domain/repositories/product_repository.dart';
+import 'package:empire/feature/category/domain/repositories/product_repository.dart';
 import 'package:empire/feature/auth/domain/repositories/register.dart';
 import 'package:empire/feature/auth/domain/usecase/Login_status_usecase.dart';
-import 'package:empire/feature/product/domain/usecase/categories/adding_category_usecase.dart';
-import 'package:empire/feature/product/domain/usecase/categories/adding_subcategory_usecase.dart';
-import 'package:empire/feature/product/domain/usecase/categories/get_category_usecase.dart';
+import 'package:empire/feature/category/domain/usecase/categories/adding_category_usecase.dart';
+import 'package:empire/feature/category/domain/usecase/categories/adding_subcategory_usecase.dart';
+import 'package:empire/feature/category/domain/usecase/categories/get_category_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/login_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/login_auth_usecase.dart';
-import 'package:empire/feature/product/domain/usecase/categories/getting_subcategory_usecase.dart';
+import 'package:empire/feature/category/domain/usecase/categories/getting_subcategory_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/register_usecase.dart';
@@ -34,6 +34,11 @@ import 'package:empire/feature/auth/domain/usecase/save_login_status_usecase.dar
 import 'package:empire/feature/auth/domain/usecase/save_password_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/send_otp_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/verify_user_usecase.dart';
+import 'package:empire/feature/product/data/datasource/product_datasource.dart';
+import 'package:empire/feature/product/data/repository/product_repositoy.dart';
+import 'package:empire/feature/product/domain/repository/prodcuct_call.dart';
+import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
+import 'package:empire/feature/product/presentation/bloc/product_bloc.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -105,10 +110,18 @@ Future<void> init() async {
   sl.registerLazySingleton(
     () => GettingSubcategoryUsecase(sl<CategoryRepository>()),
   );
-  //////products
+  //////product
   sl.registerLazySingleton<ProductDataSource>(() => ProductDataSourceImpli());
   sl.registerLazySingleton<ProductRepository>(
     () => ProductRepositoryImpl(sl<ProductDataSource>()),
   );
 
+  ///
+  sl.registerLazySingleton<ProductsDataSource>(() => ProducsDataSourceimpli());
+  sl.registerLazySingleton<ProdcuctsRepository>(
+    () => ProductsRepositoyImpi(sl<ProductsDataSource>()),
+  );
+  sl.registerLazySingleton<ProductcaliingUsecase>(
+    () => ProductcaliingUsecase(sl<ProdcuctsRepository>()),
+  );
 }

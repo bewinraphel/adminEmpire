@@ -1,15 +1,14 @@
 import 'package:equatable/equatable.dart';
 
-class CategoryFailure extends Equatable {
+class Failures extends Equatable {
   final String message;
   final String type;
 
-  const CategoryFailure._(this.message, this.type);
+  const Failures._(this.message, this.type);
 
-  const CategoryFailure.network(String message) : this._(message,'networ');
-  const CategoryFailure.validation(String message)
-    : this._(message, 'validation');
-  const CategoryFailure.server(String message) : this._(message, 'server');
+  const Failures.network(String message) : this._(message, 'networ');
+  const Failures.validation(String message) : this._(message, 'validation');
+  const Failures.server(String message) : this._(message, 'server');
 
   @override
   List<Object?> get props => [message, type];
