@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:empire/core/utilis/color.dart';
 import 'package:empire/feature/auth/presentation/bloc/profile_image_bloc.dart';
 import 'package:empire/feature/category/presentation/bloc/category_bloc/adding_subcategory.dart';
-import 'package:flutter/foundation.dart';
+ 
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
+ 
 import 'package:google_fonts/google_fonts.dart';
 
 class AddCategoryWidget extends StatefulWidget {

@@ -849,7 +849,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                             taxRate:
                                                 double.tryParse(taxRate.text) ??
                                                 0.0,
-                                      
+
                                             category: selectedCategory.value,
 
                                             quantities: int.parse(
@@ -872,6 +872,39 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                             filterTags: filterTags,
                                             timestamp: DateTime.now(),
                                             variantDetails: variants.value,
+                                          );
+
+                                          print(
+                                            product.variantDetails[0].image,
+                                          );
+                                          print(product.variantDetails[0].name);
+                                          print(
+                                            product.variantDetails[0].price,
+                                          );
+                                          print(
+                                            product.variantDetails[0].weight,
+                                          );
+                                          print(
+                                            product.variantDetails[1].image,
+                                          );
+                                          print(product.variantDetails[1].name);
+                                          print(
+                                            product.variantDetails[1].price,
+                                          );
+                                          print(
+                                            product.variantDetails[1].weight,
+                                          );
+
+                                          ///
+                                          print(
+                                            product.variantDetails[2].image,
+                                          );
+                                          print(product.variantDetails[2].name);
+                                          print(
+                                            product.variantDetails[2].price,
+                                          );
+                                          print(
+                                            product.variantDetails[2].weight,
                                           );
                                           context.read<ProductBloc>().add(
                                             AddProductEvent(
@@ -1223,7 +1256,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                         value ?? "",
                                                         "Price",
                                                       ),
-                                                  onChanged: () {
+                                                  onChanged: (value) {
                                                     final updatedVariants =
                                                         List<Variant>.from(
                                                           variants.value,
@@ -1236,8 +1269,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                               variant.weight,
                                                           price:
                                                               double.tryParse(
-                                                                regularpriceControllers[index]
-                                                                    .text,
+                                                                value,
                                                               ) ??
                                                               0.0,
                                                           quantity:
@@ -1278,7 +1310,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                       Validators.validateQuantity(
                                                         value ?? "",
                                                       ),
-                                                  onChanged: () {
+                                                  onChanged: (value) {
                                                     final updatedVariants =
                                                         List<Variant>.from(
                                                           variants.value,
@@ -1301,10 +1333,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                         updatedVariants;
                                                     variantQuantities[variant
                                                             .name] =
-                                                        int.tryParse(
-                                                          quantityControllers[index]
-                                                              .text,
-                                                        ) ??
+                                                        int.tryParse(value) ??
                                                         0;
                                                   },
                                                   futuristic: true,
@@ -1341,7 +1370,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                       Validators.validateWeight(
                                                         value ?? "",
                                                       ),
-                                                  onChanged: () {
+                                                  onChanged: (value) {
                                                     final updatedVariants =
                                                         List<Variant>.from(
                                                           variants.value,
@@ -1352,8 +1381,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                           image: variant.image,
                                                           weight:
                                                               double.tryParse(
-                                                                weightControllers[index]
-                                                                    .text,
+                                                                value,
                                                               ) ??
                                                               0.0,
                                                           price: variant.price,
@@ -1757,13 +1785,12 @@ class SecondImage extends StatelessWidget {
   }
 }
 
-// Modified InputFieldNew with futuristic design (no gradients)
 class InputFieldNew extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
-  final void Function()? onChanged;
+  final void Function(String)? onChanged;
   final bool futuristic;
 
   const InputFieldNew({
@@ -1816,7 +1843,7 @@ class InputFieldNew extends StatelessWidget {
           ),
         ),
         validator: validator,
-        onTap: onChanged,
+        onChanged: onChanged,
       ),
     );
   }

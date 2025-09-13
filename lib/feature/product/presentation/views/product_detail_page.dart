@@ -33,7 +33,6 @@ class ProductDetailsPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildImageSection(context, product!.images),
-
                       _buildDetailsSection(
                         context,
                         product!,
@@ -57,8 +56,8 @@ class ProductDetailsPage extends StatelessWidget {
               ? Image.network(
                   images[0],
                   width: double.infinity,
-                  height: 200,
-                  fit: BoxFit.cover,
+                  height: MediaQuery.of(context).size.height * 0.30,
+                  fit: BoxFit.fill,
                   errorBuilder: (context, error, stackTrace) => Center(
                     child: Container(
                       width: double.infinity,
@@ -131,7 +130,6 @@ class ProductDetailsPage extends StatelessWidget {
             child: FadeInAnimation(child: widget),
           ),
           children: [
-            // Product Name
             Text(
               product.name,
               style: GoogleFonts.roboto(
@@ -141,7 +139,7 @@ class ProductDetailsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            // Description
+
             Text(
               product.description,
               style: GoogleFonts.roboto(
@@ -150,10 +148,10 @@ class ProductDetailsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            // Quantity
+
             _buildDetailRow('Quantity', product.quantities.toString()),
             const SizedBox(height: 16),
-            // Price and Tax Rate
+
             Row(
               children: [
                 Expanded(
@@ -171,46 +169,56 @@ class ProductDetailsPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            // Filter Tag
+
             _buildDetailRow('Filter Tag', product.filterTags.join(', ')),
             const SizedBox(height: 16),
-            // Tags
+
             _buildTagsSection(product.tags),
             const SizedBox(height: 16),
-            // Category
+
             _buildDetailRow('Category', product.category),
             const SizedBox(height: 24),
-            // Shipping Details
+
             const Divider(),
-            const SizedBox(height: 16),
-            const Titlesnew(nametitle: 'Shipping Details'),
-            const SizedBox(height: 16),
-            _buildDetailRow('Weight (kg)', product.weight.toStringAsFixed(2)),
-            const SizedBox(height: 16),
-            // Dimensions
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDetailRow(
-                    'Length (cm)',
-                    product.length.toStringAsFixed(0),
-                  ),
-                ),
-                Expanded(
-                  child: _buildDetailRow(
-                    'Width (cm)',
-                    product.width.toStringAsFixed(0),
-                  ),
-                ),
-                Expanded(
-                  child: _buildDetailRow(
-                    'Height (cm)',
-                    product.height.toStringAsFixed(0),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
+            product.category == 'electronics'
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      const Titlesnew(nametitle: 'Shipping Details'),
+                      const SizedBox(height: 16),
+                      _buildDetailRow(
+                        'Weight (kg)',
+                        product.weight.toStringAsFixed(2),
+                      ),
+                      const SizedBox(height: 16),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDetailRow(
+                              'Length (cm)',
+                              product.length.toStringAsFixed(0),
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildDetailRow(
+                              'Width (cm)',
+                              product.width.toStringAsFixed(0),
+                            ),
+                          ),
+                          Expanded(
+                            child: _buildDetailRow(
+                              'Height (cm)',
+                              product.height.toStringAsFixed(0),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  )
+                : const SizedBox(),
 
             if (product.variantDetails.isNotEmpty) ...[
               const Titlesnew(nametitle: 'Variants'),
@@ -407,7 +415,6 @@ class ProductDetailsPage extends StatelessWidget {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Variant Image
                     Container(
                       width: 80,
                       height: 80,
@@ -457,7 +464,7 @@ class ProductDetailsPage extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Weight: ${variant.weight.toStringAsFixed(2)} kg',
+                            'Sale price: ${variant.weight}',
                             style: GoogleFonts.roboto(
                               fontSize: 14,
                               color: const Color(0xFF111827),
