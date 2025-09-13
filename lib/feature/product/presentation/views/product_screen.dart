@@ -3,8 +3,8 @@ import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/color.dart';
 import 'package:empire/core/utilis/constants.dart';
 import 'package:empire/core/utilis/fonts.dart';
-import 'package:empire/feature/category/presentation/views/add_product.dart/add_product.dart';
-import 'package:empire/feature/product/domain/repository/prodcuct_call.dart';
+import 'package:empire/feature/product/presentation/views/add_product.dart/add_product.dart';
+import 'package:empire/feature/product/domain/repository/prodcuct_call_repository.dart';
 import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
 import 'package:empire/feature/product/presentation/bloc/product_bloc.dart';
 import 'package:empire/feature/product/presentation/views/product_detail_page.dart';
@@ -193,7 +193,7 @@ class ProductScreen extends StatelessWidget {
                                     crossAxisCount: 2,
                                     mainAxisSpacing: 2.0,
                                     crossAxisSpacing: 1.0,
-                                    childAspectRatio: 2,
+                                    childAspectRatio: 1 / .60,
                                   ),
                               itemCount: state.products.length,
                               itemBuilder: (context, index) {
@@ -205,6 +205,8 @@ class ProductScreen extends StatelessWidget {
                                         builder: (context) {
                                           return ProductDetailsPage(
                                             product: state.products[index],
+                                            mainCategoryId: mainCategoryId,
+                                            subcategory: subcategory,
                                           );
                                         },
                                       ),
@@ -229,7 +231,7 @@ class ProductScreen extends StatelessWidget {
                   ),
                 );
               }
-              return const CircularProgressIndicator();
+              return const Center(child: CircularProgressIndicator());
             },
           ),
         ),
@@ -324,7 +326,7 @@ class ProductCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: imageUrl == null
-                  ? const Icon(Icons.error)
+                  ? const Icon(Icons.image)
                   : CachedNetworkImage(
                       fit: BoxFit.fill,
                       height: 100,
@@ -355,16 +357,23 @@ class ProductCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  '\u0025${discount.toString()}',
-                  style: Theme.of(context).textTheme.bodySmall,
+                SizedBox(
+                  width: 70,
+                  child: Text(
+                    limitWords('\u0025${discount.toString()}', 6),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  "\u{20B9}${price.toString()}",
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+                SizedBox(
+                  width: 70,
+                  child: Text(
+                    limitWords('\u{20B9}${price.toString()}', 4),
+
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),

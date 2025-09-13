@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
-
 import 'package:empire/core/utilis/widgets.dart';
-import 'package:empire/feature/category/data/datasource/product_data_source.dart';
-import 'package:empire/feature/category/domain/entities/product_entities.dart';
+
+import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
+import 'package:empire/feature/product/domain/enities/product_entities.dart';
 import 'package:logger/logger.dart';
 
 class ProductDataSourceImpli extends ProductDataSource {
@@ -17,6 +17,7 @@ class ProductDataSourceImpli extends ProductDataSource {
     String uid,
     String mainCtiegoryid,
   ) async {
+    List<Map<String, dynamic>> uploadedVariantDetails = [];
     List<String> uploadedImageUrls = [];
     for (var i = 0; i < product.images.length; i++) {
       try {
@@ -32,7 +33,37 @@ class ProductDataSourceImpli extends ProductDataSource {
         return left(Exception('Category image fialed'));
       }
     }
- 
+    for (var variant in product.variantDetails) {
+      String? uploadedVariantImageUrl;
+      if (variant.image != null) {
+        try {
+          final file = File(variant.image!);
+          uploadedVariantImageUrl = await uploadImageToCloudinary(file);
+          if (uploadedVariantImageUrl == null ||
+              uploadedVariantImageUrl.isEmpty) {
+            logger.e('Failed to upload variant image for ${variant.name}');
+            return Left(
+              Exception('Failed to upload variant image for ${variant.name}'),
+            );
+          }
+          logger.i(
+            'Variant image uploaded for ${variant.name}: $uploadedVariantImageUrl',
+          );
+        } catch (e) {
+          logger.e('Variant image upload failed for ${variant.name}: $e');
+          return Left(Exception('Failed to upload variant image: $e'));
+        }
+      }
+
+      uploadedVariantDetails.add({
+        'name': variant.name,
+        'image': uploadedVariantImageUrl,
+        'weight': variant.weight,
+        'price': variant.price,
+        'quantity': variant.quantity,
+      });
+    }
+
     try {
       await _firestore
           .collection('category')
@@ -42,6 +73,7 @@ class ProductDataSourceImpli extends ProductDataSource {
           .collection('product')
           .doc()
           .set({
+            'category': product.category,
             'name': product.name,
             'description': product.description,
             'price': product.price,
@@ -54,19 +86,40 @@ class ProductDataSourceImpli extends ProductDataSource {
             'width': product.width,
             'height': product.height,
             'taxRate': product.taxRate,
-            'rating': product.rating,
-            'category': product.category,
-            'variants': product.variants,
             'quantities': product.quantities,
             'images': uploadedImageUrls,
             'priceRangeMin': product.priceRangeMin,
             'priceRangeMax': product.priceRangeMax,
             'filterTags': product.filterTags,
             'timestamp': FieldValue.serverTimestamp(),
+            'variantDetails': uploadedVariantDetails,
           });
       return const Right(null);
     } catch (e) {
       return Left(Exception('Failed to add product: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> deleteProduct(
+    String mainCategoryId,
+    String subcategoryId,
+    String productId,
+  ) async {
+    try {
+      await _firestore
+          .collection('category')
+          .doc(mainCategoryId)
+          .collection('subcategory')
+          .doc(subcategoryId)
+          .collection('product')
+          .doc(productId)
+          .delete();
+      logger.i('Product deleted successfully: $productId');
+      return const Right(null);
+    } catch (e) {
+      logger.e('Failed to delete product: $e');
+      return Left(Exception('Failed to delete product: $e'));
     }
   }
 }

@@ -8,12 +8,14 @@ class InputFieldNew extends StatelessWidget {
   final String hintText;
   final String? Function(String?) validator;
   final TextInputType? keyboardType;
+  final void Function(String)? onChanged;
 
   const InputFieldNew({
     super.key,
     required this.controller,
     required this.hintText,
     required this.validator,
+    this.onChanged,
     this.keyboardType,
   });
 
@@ -54,6 +56,7 @@ class InputFieldNew extends StatelessWidget {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
                   validator: validator,
+                  onChanged: onChanged,
                 ),
               ),
             ),

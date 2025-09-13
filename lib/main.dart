@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
+import 'package:sizer/sizer.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,8 +23,12 @@ void main() async {
           )
         : null,
   );
-
   await init();
-
-  runApp(const MyApp());
+  runApp(
+    Sizer(
+      builder: (context, orientation, deviceType) {
+        return const MyApp();
+      },
+    ),
+  );
 }

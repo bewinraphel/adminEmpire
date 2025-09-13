@@ -1,4 +1,4 @@
-import 'package:empire/feature/category/domain/entities/product_entities.dart';
+import 'package:empire/feature/product/domain/enities/product_entities.dart';
 
 import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
 import 'package:equatable/equatable.dart';
@@ -51,7 +51,7 @@ class ProductcalingBloc extends Bloc<ProductCallingEvent, Productstate> {
         event.mainCategoryId,
         event.subCategoryId,
       );
-      print(result);
+
       result.fold(
         (failure) => emit(ProductError(failure.toString())),
         (results) => emit(Productfetched(results)),

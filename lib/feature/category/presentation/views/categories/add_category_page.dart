@@ -3,8 +3,9 @@ import 'dart:io';
 import 'package:empire/core/utilis/commonvalidator.dart';
 import 'package:empire/core/utilis/fonts.dart';
 import 'package:empire/core/utilis/widgets.dart';
-import 'package:empire/feature/auth/presentation/bloc/profile_image_bloc.dart';
+
 import 'package:empire/feature/category/presentation/bloc/category_bloc/adding_category.dart';
+import 'package:empire/feature/category/presentation/bloc/category_bloc/category_image.dart';
 
 import 'package:empire/feature/category/presentation/views/categories/category_page.dart';
 
@@ -22,6 +23,75 @@ class AddCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      bottomNavigationBar: BlocConsumer<AddingcategoryEventBloc, CategoryState>(
+        listener: (context, state) {
+          if (state is CategoryAddedSuceess) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) {
+                  return const CategoryScreen();
+                },
+              ),
+              (route) => false,
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Category added Successfuly')),
+            );
+            context.read<CategoryImageBloc>().add(ClearPickedImageEvent());
+            category.clear();
+            description.clear();
+            images = null;
+          }
+        },
+        builder: (context, state) {
+          return state is CategoryAddingloading
+              ? const SizedBox(
+                  height: 60,
+                  width: 30,
+                  child: Center(child: CircularProgressIndicator()),
+                )
+              : SizedBox(
+                  height: 60,
+                  child: Padding(
+                    padding: const EdgeInsets.only(
+                      left: 30,
+                      right: 30,
+                      bottom: 20,
+                    ),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                      ),
+                      onPressed: () async {
+                        if (categorykey.currentState!.validate() &&
+                            images != null) {
+                          context.read<AddingcategoryEventBloc>().add(
+                            AddingCategory(
+                              category: category.text,
+                              image: images ?? "",
+                              description: description.text,
+                            ),
+                          );
+                        }
+                      },
+                      label: const Text(
+                        'Done',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: Fonts.raleway,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+        },
+      ),
       appBar: AppBar(),
       body: SingleChildScrollView(
         child: Padding(
@@ -30,7 +100,7 @@ class AddCategory extends StatelessWidget {
             key: categorykey,
             child: Column(
               children: [
-                BlocBuilder<ImageAuth, ImagePickerState>(
+                BlocBuilder<CategoryImageBloc, ImagePickercategory>(
                   builder: (context, state) {
                     if (state is ImagePickedSuccess) {
                       images = state.image;
@@ -49,8 +119,8 @@ class AddCategory extends StatelessWidget {
                                       leading: const Icon(Icons.camera_alt),
                                       title: const Text('Take a picture'),
                                       onTap: () {
-                                        context.read<ImageAuth>().add(
-                                          ChooseImageFromCameraEvent(),
+                                        context.read<CategoryImageBloc>().add(
+                                          CategoryImageFromCameraEvent(),
                                         );
                                         Navigator.pop(context);
                                       },
@@ -59,8 +129,8 @@ class AddCategory extends StatelessWidget {
                                       leading: const Icon(Icons.photo_library),
                                       title: const Text('Pick from gallery'),
                                       onTap: () {
-                                        context.read<ImageAuth>().add(
-                                          ChooseImageFromGalleryEvent(),
+                                        context.read<CategoryImageBloc>().add(
+                                          CategoryImageFromGalleryEvent(),
                                         );
                                         Navigator.pop(context);
                                       },
@@ -195,77 +265,6 @@ class AddCategory extends StatelessWidget {
                 const SizedBox20(),
 
                 const SizedBox20(),
-                BlocConsumer<AddingcategoryEventBloc, CategoryState>(
-                  listener: (context, state) {
-                    if (state is CategoryAddedSuceess) {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return const CategoryScreen();
-                          },
-                        ),
-                        (route) => false,
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Category added Successfuly'),
-                        ),
-                      );
-                      context.read<ImageAuth>().add(ClearPickedImageEvent());
-                      category.clear();
-                      description.clear();
-                      images = null;
-                    }
-                  },
-                  builder: (context, state) {
-                    return state is CategoryAddingloading
-                        ? const SizedBox(
-                            height: 60,
-                            child: CircularProgressIndicator(),
-                          )
-                        : SizedBox(
-                            height: 60,
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                left: 30,
-                                right: 30,
-                                bottom: 20,
-                              ),
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(10),
-                                    ),
-                                  ),
-                                ),
-                                onPressed: () async {
-                                  if (categorykey.currentState!.validate() &&
-                                      images != null) {
-                                    context.read<AddingcategoryEventBloc>().add(
-                                      AddingCategory(
-                                        category: category.text,
-                                        image: images ?? "",
-                                        description: description.text,
-                                      ),
-                                    );
-                                  }
-                                },
-                                label: const Text(
-                                  'Done',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontFamily: Fonts.raleway,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                  },
-                ),
               ],
             ),
           ),

@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
 import 'package:empire/core/utilis/failure.dart';
-import 'package:empire/feature/category/domain/entities/product_entities.dart';
+import 'package:empire/feature/product/domain/enities/product_entities.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:empire/feature/product/presentation/views/add_product.dart/add_product.dart';
 
 abstract class ProductsDataSource {
   Future<Either<Failures, List<ProductEntity>>> gettingProduct(
@@ -17,7 +18,6 @@ class ProducsDataSourceimpli extends ProductsDataSource {
     String subcategoryId,
   ) async {
     try {
-      print(' started');
       final snapShot = await FirebaseFirestore.instance
           .collection('category')
           .doc(mainCategoryId)
@@ -27,6 +27,7 @@ class ProducsDataSourceimpli extends ProductsDataSource {
           .get();
       List<ProductEntity> category = snapShot.docs.map((data) {
         return ProductEntity(
+          productDocId: data.id,
           name: data['name'] ?? '',
           description: data['description'] ?? '',
           price: (data['price'] as num?)?.toDouble() ?? 0.0,
@@ -39,14 +40,25 @@ class ProducsDataSourceimpli extends ProductsDataSource {
           width: (data['width'] as num?)?.toDouble() ?? 0.0,
           height: (data['height'] as num?)?.toDouble() ?? 0.0,
           taxRate: (data['taxRate'] as num?)?.toDouble() ?? 0.0,
-          rating: (data['rating'] as num?)?.toDouble() ?? 0.0,
+
           category: data['category'] ?? '',
-          variants: List<String>.from(data['variants'] ?? []),
-          quantities: Map<String, int>.from(data['quantities'] ?? {}),
+          quantities: data['quantities'] ?? 0,
           images: List<String>.from(data['images'] ?? []),
           priceRangeMin: (data['priceRangeMin'] as num?)?.toDouble() ?? 0.0,
           priceRangeMax: (data['priceRangeMax'] as num?)?.toDouble() ?? 0.0,
           filterTags: List<String>.from(data['filterTags'] ?? []),
+          variantDetails: data['variantDetails']
+              .map<Variant>(
+                (v) => Variant(
+                  name: v['name'] ?? "",
+                  image: v['image'] ?? "",
+                  weight: (v['weight'] as num?)?.toDouble() ?? 0.0,
+                  price: (v['price'] as num?)?.toDouble() ?? 0.0,
+                  quantity: v['quantity'] ?? 0,
+                ),
+              )
+              .toList(),
+
           timestamp: (data['timestamp'] as Timestamp?)?.toDate(),
         );
       }).toList();

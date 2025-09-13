@@ -1,6 +1,8 @@
- import 'package:equatable/equatable.dart';
+import 'package:empire/feature/product/presentation/views/add_product.dart/add_product.dart';
+import 'package:equatable/equatable.dart';
 
 class ProductEntity extends Equatable {
+  final String? productDocId;
   final String name;
   final String description;
   final double price;
@@ -13,17 +15,18 @@ class ProductEntity extends Equatable {
   final double width;
   final double height;
   final double taxRate;
-  final double rating;
+
   final String category;
-  final List<String?> variants;
-  final Map<String, int> quantities;
+
+  final int quantities;
   final List<String> images;
   final double priceRangeMin;
   final double priceRangeMax;
   final List<String> filterTags;
   final DateTime? timestamp;
-
+  final List<Variant> variantDetails;
   const ProductEntity({
+     this.productDocId,
     required this.name,
     required this.description,
     required this.price,
@@ -36,17 +39,19 @@ class ProductEntity extends Equatable {
     required this.width,
     required this.height,
     required this.taxRate,
-    required this.rating,
+
     required this.category,
-    required this.variants,
+
     required this.quantities,
     required this.images,
     required this.priceRangeMin,
     required this.priceRangeMax,
     required this.filterTags,
     required this.timestamp,
+    required this.variantDetails,
   });
- ProductEntity copyWith({
+  ProductEntity copyWith({
+    String? productDocId,
     String? name,
     String? description,
     double? price,
@@ -59,10 +64,10 @@ class ProductEntity extends Equatable {
     double? width,
     double? height,
     double? taxRate,
-    double? rating,
+
     String? category,
     List<String>? variants,
-    Map<String, int>? quantities,
+    int? quantities,
     List<String>? images,
     double? priceRangeMin,
     double? priceRangeMax,
@@ -70,6 +75,7 @@ class ProductEntity extends Equatable {
     DateTime? timestamp,
   }) {
     return ProductEntity(
+      productDocId: productDocId??this.productDocId,
       name: name ?? this.name,
       description: description ?? this.description,
       price: price ?? this.price,
@@ -82,17 +88,19 @@ class ProductEntity extends Equatable {
       width: width ?? this.width,
       height: height ?? this.height,
       taxRate: taxRate ?? this.taxRate,
-      rating: rating ?? this.rating,
+
       category: category ?? this.category,
-      variants: variants ?? this.variants,
+
       quantities: quantities ?? this.quantities,
       images: images ?? this.images,
       priceRangeMin: priceRangeMin ?? this.priceRangeMin,
       priceRangeMax: priceRangeMax ?? this.priceRangeMax,
       filterTags: filterTags ?? this.filterTags,
       timestamp: timestamp ?? this.timestamp,
+      variantDetails: variantDetails,
     );
   }
+
   @override
   List<Object?> get props => [
     name,
@@ -107,14 +115,15 @@ class ProductEntity extends Equatable {
     width,
     height,
     taxRate,
-    rating,
+
     category,
-    variants,
+
     quantities,
     images,
     priceRangeMin,
     priceRangeMax,
     filterTags,
     timestamp,
+    variantDetails,
   ];
 }

@@ -1,4 +1,3 @@
-
 import 'package:empire/feature/category/domain/entities/category_entities.dart';
 import 'package:empire/feature/category/domain/usecase/categories/get_category_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -48,7 +47,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
 
   CategoryBloc(this.categoryUsecase) : super(CategoryLoadingState()) {
     on<GetCategoryEvent>((event, emit) async {
-      emit(CategoryLoadingState());
+  
       try {
         final category = await categoryUsecase();
         category.fold(

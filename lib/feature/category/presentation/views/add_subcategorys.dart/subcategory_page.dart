@@ -120,7 +120,7 @@ class AddSubcategory extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.015 * 18,
-                  ),
+                  ),  
                 ),
               ),
               BlocBuilder<SubCategoryBloc, SubCategoryState>(

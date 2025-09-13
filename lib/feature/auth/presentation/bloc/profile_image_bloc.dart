@@ -6,7 +6,11 @@ abstract class ImagePickerEvent {}
 
 class ChooseImageFromCameraEvent extends ImagePickerEvent {}
 
+class VariantImageFromCameraEvent extends ImagePickerEvent {}
+
 class ChooseImageFromGalleryEvent extends ImagePickerEvent {}
+
+class VarinatImageFromGalleryEvent extends ImagePickerEvent {}
 
 class ClearPickedImageEvent extends ImagePickerEvent {}
 
@@ -53,7 +57,27 @@ class ImageAuth extends Bloc<ImagePickerEvent, ImagePickerState> {
         emit(ImagePickedError('Node Image Selcted'));
       }
     });
+
     on<ChooseImageFromGalleryEvent>((event, emit) async {
+      emit(PickingImage());
+      final result = await pickImageFromGallery();
+      if (result != null) {
+        emit(ImagePickedSuccess(result));
+      } else {
+        emit(ImagePickedError('Node Image Selcted'));
+      }
+    });
+    // variant
+    on<VariantImageFromCameraEvent>((event, emit) async {
+      emit(PickingImage());
+      final result = await pickImageFromCamera();
+      if (result != null) {
+        emit(ImagePickedSuccess(result));
+      } else {
+        emit(ImagePickedError('Node Image Selcted'));
+      }
+    });
+    on<VarinatImageFromGalleryEvent>((event, emit) async {
       emit(PickingImage());
       final result = await pickImageFromGallery();
       if (result != null) {

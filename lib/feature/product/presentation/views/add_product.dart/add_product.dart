@@ -2,27 +2,44 @@ import 'dart:io';
 
 import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/commonvalidator.dart';
-
 import 'package:empire/core/utilis/widgets.dart';
+import 'package:empire/feature/auth/data/datasource/image_profile.dart';
 
-import 'package:empire/feature/category/data/datasource/product_data_source.dart';
-import 'package:empire/feature/category/data/repository/product_respository.dart';
-import 'package:empire/feature/category/domain/entities/product_entities.dart';
-import 'package:empire/feature/category/domain/usecase/product/product_usecae.dart';
+import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
+import 'package:empire/feature/product/data/repository/add_product_respository.dart';
+import 'package:empire/feature/product/domain/enities/product_entities.dart';
+import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
 import 'package:empire/feature/auth/presentation/bloc/profile_image_bloc.dart';
-import 'package:empire/feature/category/presentation/bloc/product_bloc/product.dart';
-import 'package:empire/feature/category/presentation/views/add_product.dart/widgets.dart';
-import 'package:empire/feature/category/presentation/views/homepage/home_page.dart';
+import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_product.dart';
+import 'package:empire/feature/product/presentation/views/add_product.dart/widgets.dart';
+import 'package:empire/feature/homepage/presentation/view/home_page.dart';
 import 'package:flutter/material.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:animate_do/animate_do.dart';
 
 ValueNotifier<String?> image2 = ValueNotifier(null);
 ValueNotifier<String?> image3 = ValueNotifier(null);
 ValueNotifier<String?> previewImage = ValueNotifier(null);
+
+// Variant class to hold variant-specific attributes
+class Variant {
+  String name;
+  String? image;
+  double weight;
+  double price;
+  int quantity;
+
+  Variant({
+    required this.name,
+    this.image,
+    this.weight = 0.0,
+    this.price = 0.0,
+    this.quantity = 0,
+  });
+}
 
 class AddProdutsPage extends StatefulWidget {
   String? mainCategoryId;
@@ -41,6 +58,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
   final productName = TextEditingController();
   final description = TextEditingController();
   final price = TextEditingController();
+  final quantity = TextEditingController();
   final discountPrice = TextEditingController();
   final sku = TextEditingController();
   final tags = TextEditingController();
@@ -59,52 +77,80 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
   final ValueNotifier<String> selectedCategory = ValueNotifier('');
   final ValueNotifier<double> ratingValue = ValueNotifier(0.0);
   final images = List.generate(3, (dynamic index) => 'null', growable: true);
-
+  ImageSources gallery = ImageSources();
   String? image4;
   List<String> categoryList = ['dress', 'food', 'electronics', 'accessories'];
-  ValueNotifier<List<String>> variants = ValueNotifier([]);
+  ValueNotifier<List<Variant>> variants = ValueNotifier([]);
 
   Map<String, int> variantQuantities = {};
+  final List<TextEditingController> weightControllers = [];
+  final List<TextEditingController> regularpriceControllers = [];
+  final List<TextEditingController> quantityControllers = [];
+  final List<FocusNode> focusNodes = [];
 
   void _updateVariants() {
+    List<Variant> newVariants = [];
     if (selectedCategory.value == 'dress') {
-      variants.value = ['S', 'M', 'L', 'XL'];
+      newVariants = [
+        Variant(name: 'S'),
+        Variant(name: 'M'),
+        Variant(name: 'L'),
+        Variant(name: 'XL'),
+      ];
     } else if (selectedCategory.value == 'food') {
-      variants.value = ['200ml', '1l', '500g', '1kg'];
+      newVariants = [
+        Variant(name: '200ml'),
+        Variant(name: '1l'),
+        Variant(name: '500g'),
+        Variant(name: '1kg'),
+      ];
     } else if (selectedCategory.value == 'electronics') {
-      variants.value = ['black', 'silver', 'white'];
+      newVariants = [
+        Variant(name: 'black'),
+        Variant(name: 'silver'),
+        Variant(name: 'white'),
+      ];
     } else if (selectedCategory.value == 'accessories') {
-      variants.value = ['small', 'large'];
-    } else {
-      variants.value = [];
+      newVariants = [Variant(name: 'small'), Variant(name: 'large')];
     }
-    variantQuantities = {for (var v in variants.value) v: 0};
+    setState(() {
+      weightControllers.clear();
+      regularpriceControllers.clear();
+      quantityControllers.clear();
+      focusNodes.clear();
+
+      for (var variant in newVariants) {
+        weightControllers.add(
+          TextEditingController(text: variant.weight.toString()),
+        );
+        regularpriceControllers.add(
+          TextEditingController(text: variant.price.toString()),
+        );
+        quantityControllers.add(
+          TextEditingController(text: variant.quantity.toString()),
+        );
+        focusNodes.add(FocusNode());
+      }
+
+      variants.value = newVariants;
+      variantQuantities = {for (var v in variants.value) v.name: 0};
+    });
   }
 
   @override
   void dispose() {
-    // productName.dispose();
-    // description.dispose();
-    // price.dispose();
-    // discountPrice.dispose();
-    // sku.dispose();
-    // tags.dispose();
-    // weight.dispose();
-    // length.dispose();
-    // width.dispose();
-    // height.dispose();
-    // taxRate.dispose();
-    // priceRangeMin.dispose();
-    // priceRangeMax.dispose();
-    // categoryController.dispose();
-    // variantName.dispose();
-    // isInStock.dispose();
-    // selectedCategory.dispose();
-    // ratingValue.dispose();
-    // previewImage.dispose();
-    // image2.dispose();
-    // image3.dispose();
-
+    for (var controller in weightControllers) {
+      controller.dispose();
+    }
+    for (var controller in regularpriceControllers) {
+      controller.dispose();
+    }
+    for (var controller in quantityControllers) {
+      controller.dispose();
+    }
+    for (var node in focusNodes) {
+      node.dispose();
+    }
     super.dispose();
   }
 
@@ -146,8 +192,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                               ),
                             ),
                             const SizedBox10(),
-
-                            ///image........
                             AnimationConfiguration.staggeredList(
                               position: 0,
                               duration: const Duration(milliseconds: 300),
@@ -162,7 +206,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                         listener: (context, state) {
                                           if (state is ImagePickedSuccess) {
                                             previewImage.value = state.image;
-
                                             if (image2.value == null) {
                                               image2.value = previewImage.value;
                                             } else if (image3.value == null) {
@@ -210,7 +253,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                       ),
                                                     );
                                                   }
-
                                                   return const Column(
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment
@@ -257,12 +299,9 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                               ),
                                         ),
                                       ),
-
-                                      ///side////
                                       const SizedBox(width: 10),
                                       SizedBox(
                                         width: constraints.maxWidth * 0.19,
-
                                         child: Column(
                                           children: [
                                             ValueListenableBuilder(
@@ -323,7 +362,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                             ),
                                                           ],
                                                         ),
-
                                                         child: kIsWeb
                                                             ? Image.network(
                                                                 image2.value!,
@@ -369,31 +407,22 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                                       ),
                                                               ),
                                                       ),
-
                                                       image2.value == null
                                                           ? const SizedBox()
                                                           : Positioned(
                                                               top: -1,
                                                               right: -2,
-
                                                               child: GestureDetector(
                                                                 behavior:
                                                                     HitTestBehavior
                                                                         .translucent,
                                                                 onTap: () {
                                                                   if (previewImage
-                                                                              .value !=
-                                                                          null &&
-                                                                      previewImage
-                                                                          .value!
-                                                                          .contains(
-                                                                            image2.value!,
-                                                                          )) {
-                                                                    const updatedList =
-                                                                        null;
+                                                                          .value !=
+                                                                      null) {
                                                                     previewImage
                                                                             .value =
-                                                                        updatedList;
+                                                                        null;
                                                                     context
                                                                         .read<
                                                                           ImageAuth
@@ -402,7 +431,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                                           ClearPickedImageEvent(),
                                                                         );
                                                                   }
-
                                                                   image2.value =
                                                                       null;
                                                                 },
@@ -426,7 +454,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                               },
                                             ),
                                             const SizedBox10(),
-
                                             GestureDetector(
                                               onTap: () {
                                                 if (image3.value != null) {
@@ -483,7 +510,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                             ),
                                                           ],
                                                         ),
-
                                                         child: kIsWeb
                                                             ? Image.network(
                                                                 image3.value!,
@@ -515,31 +541,22 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                                       ),
                                                               ),
                                                       ),
-
                                                       image3.value == null
                                                           ? const SizedBox()
                                                           : Positioned(
                                                               top: -1,
                                                               right: -2,
-
                                                               child: GestureDetector(
                                                                 behavior:
                                                                     HitTestBehavior
                                                                         .translucent,
                                                                 onTap: () {
                                                                   if (previewImage
-                                                                              .value !=
-                                                                          null &&
-                                                                      previewImage
-                                                                          .value!
-                                                                          .contains(
-                                                                            image3.value!,
-                                                                          )) {
-                                                                    const updatedList =
-                                                                        null;
+                                                                          .value !=
+                                                                      null) {
                                                                     previewImage
                                                                             .value =
-                                                                        updatedList;
+                                                                        null;
                                                                     context
                                                                         .read<
                                                                           ImageAuth
@@ -548,7 +565,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                                           ClearPickedImageEvent(),
                                                                         );
                                                                   }
-
                                                                   image3.value =
                                                                       null;
                                                                 },
@@ -615,48 +631,37 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                               ),
                             ),
                             const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Price'),
+                            const Titlesnew(nametitle: 'quantity'),
+
                             const SizedBox(height: 10.0),
                             InputFieldNew(
-                              controller: price,
-                              hintText: 'Enter price (e.g., 29.99)',
+                              controller: quantity,
+                              hintText: 'Enter Qunatity (e.g.,10)',
                               keyboardType:
                                   const TextInputType.numberWithOptions(
                                     decimal: true,
                                   ),
                               validator: (value) => Validators.validatePrice(
                                 value ?? "",
-                                "Price",
+                                "quantity",
                               ),
                             ),
                             const SizedBox(height: 20.0),
-                            const Titlesnew(
-                              nametitle: 'Discount Price (Optional)',
-                            ),
+                            const SizedBox(height: 20.0),
+                            const Titlesnew(nametitle: 'price'),
+
                             const SizedBox(height: 10.0),
                             InputFieldNew(
-                              controller: discountPrice,
-                              hintText: 'Enter discount price (e.g., 19.99)',
+                              controller: price,
+                              hintText: 'Enter price (e.g.34.90)',
                               keyboardType:
                                   const TextInputType.numberWithOptions(
                                     decimal: true,
                                   ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) return null;
-                                return Validators.validatePrice(
-                                  value,
-                                  "Discount Price",
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'SKU'),
-                            const SizedBox(height: 10.0),
-                            InputFieldNew(
-                              controller: sku,
-                              hintText: 'Enter SKU (e.g., ABC123)',
-                              validator: (value) =>
-                                  Validators.validateSKU(value ?? ""),
+                              validator: (value) => Validators.validatePrice(
+                                value ?? "",
+                                "price",
+                              ),
                             ),
                             const SizedBox(height: 20.0),
                             const Titlesnew(nametitle: 'Tags'),
@@ -672,112 +677,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             const SizedBox(height: 20.0),
                             const Titlesnew(nametitle: 'Availability'),
                             const SizedBox(height: 10.0),
-                            ValueListenableBuilder<bool>(
-                              valueListenable: isInStock,
-                              builder: (context, value, child) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        offset: Offset(5, 5),
-                                        blurRadius: 10,
-                                      ),
-                                      BoxShadow(
-                                        color: Colors.white70,
-                                        offset: Offset(-5, -5),
-                                        blurRadius: 10,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      const Text(
-                                        'In Stock',
-                                        style: TextStyle(color: Colors.black87),
-                                      ),
-                                      Switch(
-                                        value: value,
-                                        onChanged: (newValue) =>
-                                            isInStock.value = newValue,
-                                        activeColor: Colors.green,
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Weight (kg)'),
-                            const SizedBox(height: 10.0),
-                            InputFieldNew(
-                              controller: weight,
-                              hintText: 'Enter weight (e.g., 1.5)',
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              validator: (value) =>
-                                  Validators.validateWeight(value ?? ""),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Dimensions (cm)'),
-                            const SizedBox(height: 10.0),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: InputFieldNew(
-                                    controller: length,
-                                    hintText: 'Length',
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    validator: (value) =>
-                                        Validators.validateDimension(
-                                          value ?? "",
-                                          "Length",
-                                        ),
-                                  ),
-                                ),
-                                SizedBox(width: constraints.maxWidth * 0.02),
-                                Expanded(
-                                  child: InputFieldNew(
-                                    controller: width,
-                                    hintText: 'Width',
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    validator: (value) =>
-                                        Validators.validateDimension(
-                                          value ?? "",
-                                          "Width",
-                                        ),
-                                  ),
-                                ),
-                                SizedBox(width: constraints.maxWidth * 0.02),
-                                Expanded(
-                                  child: InputFieldNew(
-                                    controller: height,
-                                    hintText: 'Height',
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                          decimal: true,
-                                        ),
-                                    validator: (value) =>
-                                        Validators.validateDimension(
-                                          value ?? "",
-                                          "Height",
-                                        ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                            instock(isInStock: isInStock),
                             const SizedBox(height: 20.0),
                             const Titlesnew(nametitle: 'Tax Rate (%)'),
                             const SizedBox(height: 10.0),
@@ -787,78 +687,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                               keyboardType: TextInputType.number,
                               validator: (value) =>
                                   Validators.validateTaxRate(value ?? ""),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Rating'),
-                            const SizedBox(height: 10.0),
-                            ValueListenableBuilder<double>(
-                              valueListenable: ratingValue,
-                              builder: (context, value, child) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[200],
-                                    borderRadius: BorderRadius.circular(12.0),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        offset: Offset(5, 5),
-                                        blurRadius: 10,
-                                      ),
-                                      BoxShadow(
-                                        color: Colors.white70,
-                                        offset: Offset(-5, -5),
-                                        blurRadius: 10,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Slider(
-                                    value: value,
-                                    min: 0.0,
-                                    max: 5.0,
-                                    divisions: 10,
-                                    label: value.toStringAsFixed(1),
-                                    onChanged: (newValue) {
-                                      ratingValue.value = newValue;
-                                    },
-                                    activeColor: Colors.green,
-                                    inactiveColor: Colors.grey[400],
-                                  ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(
-                              nametitle: 'Price Range for Filter',
-                            ),
-                            const SizedBox(height: 10.0),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: InputFieldNew(
-                                    controller: priceRangeMin,
-                                    hintText: 'Min Price (e.g., 10)',
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) =>
-                                        Validators.validatePrice(
-                                          value ?? "",
-                                          "Min Price",
-                                        ),
-                                  ),
-                                ),
-                                SizedBox(width: constraints.maxWidth * 0.02),
-                                Expanded(
-                                  child: InputFieldNew(
-                                    controller: priceRangeMax,
-                                    hintText: 'Max Price (e.g., 100)',
-                                    keyboardType: TextInputType.number,
-                                    validator: (value) =>
-                                        Validators.validatePrice(
-                                          value ?? "",
-                                          "Max Price",
-                                        ),
-                                  ),
-                                ),
-                              ],
                             ),
                             const SizedBox(height: 20.0),
                             const Titlesnew(nametitle: 'Filter Tags'),
@@ -939,13 +767,24 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             const SizedBox(height: 10.0),
                             categoryLists(),
                             const SizedBox(height: 20.0),
+                            BlocBuilder<ProductBloc, ProductState>(
+                              builder: (context, state) {
+                                if (state is SeletedState &&
+                                    state.productweight == 'electronics') {
+                                  return Wieghts(
+                                    constraint: constraints,
+                                    weight: weight,
+                                    length: length,
+                                    width: width,
+                                    height: height,
+                                  );
+                                }
+                                return const SizedBox();
+                              },
+                            ),
                             const Titlesnew(nametitle: 'Variants'),
                             const SizedBox(height: 10.0),
-                            variantsList(),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Quantities'),
-                            const SizedBox(height: 10.0),
-                            quantitiesList(),
+                            variantsList(constraints),
                             const SizedBox(height: 20.0),
                             Center(
                               child: BlocConsumer<ProductBloc, ProductState>(
@@ -988,13 +827,8 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                             price:
                                                 double.tryParse(price.text) ??
                                                 0.0,
-                                            discountPrice:
-                                                discountPrice.text.isEmpty
-                                                ? null
-                                                : double.tryParse(
-                                                    discountPrice.text,
-                                                  ),
-                                            sku: sku.text,
+                                            discountPrice: 10.0,
+                                            sku: 'ABCD21234',
                                             tags: tags.text
                                                 .split(',')
                                                 .map((t) => t.trim())
@@ -1015,10 +849,12 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                             taxRate:
                                                 double.tryParse(taxRate.text) ??
                                                 0.0,
-                                            rating: ratingValue.value,
+                                      
                                             category: selectedCategory.value,
-                                            variants: variants.value,
-                                            quantities: variantQuantities,
+
+                                            quantities: int.parse(
+                                              quantity.text,
+                                            ),
                                             images: [
                                               image2.value!,
                                               image3.value!,
@@ -1035,8 +871,8 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                 0.0,
                                             filterTags: filterTags,
                                             timestamp: DateTime.now(),
+                                            variantDetails: variants.value,
                                           );
-
                                           context.read<ProductBloc>().add(
                                             AddProductEvent(
                                               product,
@@ -1114,7 +950,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
               leading: const Icon(Icons.camera_alt),
               title: const Text('Take a picture'),
               onTap: () {
-                context.read<ImageAuth>().add(ChooseImageFromCameraEvent());
+                context.read<ImageAuth>().add(VariantImageFromCameraEvent());
                 Navigator.pop(context);
               },
             ),
@@ -1122,7 +958,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
               leading: const Icon(Icons.photo_library),
               title: const Text('Pick from gallery'),
               onTap: () {
-                context.read<ImageAuth>().add(ChooseImageFromGalleryEvent());
+                context.read<ImageAuth>().add(VarinatImageFromGalleryEvent());
                 Navigator.pop(context);
               },
             ),
@@ -1179,7 +1015,9 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                         onChanged: (value) {
                           if (value != null) {
                             selectedCategory.value = value;
-
+                            context.read<ProductBloc>().add(
+                              Productweight(selectedCategory.value),
+                            );
                             _updateVariants();
                           }
                         },
@@ -1220,14 +1058,13 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
+                            backgroundColor: Colors.white,
                             builder: (context) {
                               return SlideInUp(
                                 duration: const Duration(milliseconds: 150),
                                 child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[900],
-                                    borderRadius: const BorderRadius.vertical(
+                                  decoration: const BoxDecoration(
+                                    borderRadius: BorderRadius.vertical(
                                       top: Radius.circular(24.0),
                                     ),
                                   ),
@@ -1247,28 +1084,39 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                           nametitle: 'Add Category',
                                         ),
                                         const SizedBox(height: 10.0),
-                                        InputFieldNew(
-                                          controller: categoryController,
-                                          hintText: 'Enter new category',
-                                          validator: (value) =>
-                                              Validators.validateString(
-                                                value ?? "",
-                                                'Category',
-                                              ),
+                                        Form(
+                                          key: categoryKey,
+                                          child: InputFieldNew(
+                                            controller: categoryController,
+                                            hintText: 'Enter new category',
+                                            validator: (value) =>
+                                                Validators.validateString(
+                                                  value ?? "",
+                                                  'Category',
+                                                ),
+                                          ),
                                         ),
                                         const SizedBox(height: 20.0),
                                         GradientButtonNew(
                                           text: 'Add Category',
-                                          width: double.infinity,
+                                          height:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.height *
+                                              0.05,
+                                          width:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.width -
+                                              100,
                                           onTap: () {
                                             if (categoryKey.currentState!
                                                 .validate()) {
-                                              setState(() {
-                                                categoryList.add(
-                                                  categoryController.text,
-                                                );
-                                                categoryController.clear();
-                                              });
+                                              categoryList.add(
+                                                categoryController.text,
+                                              );
+                                              categoryController.clear();
+
                                               Navigator.pop(context);
                                             }
                                           },
@@ -1294,23 +1142,29 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
     );
   }
 
-  Widget variantsList() {
+  Widget variantsList(BoxConstraints constraints) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ValueListenableBuilder(
           valueListenable: selectedCategory,
           builder: (context, value, child) {
             return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ValueListenableBuilder(
                   valueListenable: variants,
                   builder: (context, value, child) {
-                    return Wrap(
-                      spacing: 8.0,
-                      runSpacing: 8.0,
-                      children: variants.value.asMap().entries.map((entry) {
-                        int index = entry.key;
-                        String variant = entry.value;
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: variants.value.length,
+                      itemBuilder: (context, index) {
+                        final variant = variants.value[index];
+                        final variantImage = ValueNotifier<String?>(
+                          variant.image,
+                        );
+
                         return AnimationConfiguration.staggeredList(
                           position: index,
                           duration: const Duration(milliseconds: 150),
@@ -1318,52 +1172,312 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             verticalOffset: 50.0,
                             child: FadeInAnimation(
                               child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[300],
-                                  borderRadius: BorderRadius.circular(12.0),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      offset: Offset(4, 4),
-                                      blurRadius: 8,
-                                    ),
-                                    BoxShadow(
-                                      color: Colors.white70,
-                                      offset: Offset(-4, -4),
-                                      blurRadius: 8,
-                                    ),
-                                  ],
+                                margin: const EdgeInsets.symmetric(
+                                  vertical: 8.0,
                                 ),
-                                child: Stack(
-                                  clipBehavior: Clip.none,
+
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20.0,
-                                        vertical: 10.0,
-                                      ),
-                                      child: Text(
-                                        variant,
-                                        style: const TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 14.0,
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: constraints.maxWidth * 0.30,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'Regular Price',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14.0,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8.0),
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey[200],
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        12.0,
+                                                      ),
+                                                ),
+                                                child: InputFieldNew(
+                                                  controller:
+                                                      regularpriceControllers[index],
+                                                  hintText:
+                                                      'Enter price (e.g., 29.99)',
+                                                  keyboardType:
+                                                      const TextInputType.numberWithOptions(
+                                                        decimal: true,
+                                                      ),
+                                                  validator: (value) =>
+                                                      Validators.validatePrice(
+                                                        value ?? "",
+                                                        "Price",
+                                                      ),
+                                                  onChanged: () {
+                                                    final updatedVariants =
+                                                        List<Variant>.from(
+                                                          variants.value,
+                                                        );
+                                                    updatedVariants[index] =
+                                                        Variant(
+                                                          name: variant.name,
+                                                          image: variant.image,
+                                                          weight:
+                                                              variant.weight,
+                                                          price:
+                                                              double.tryParse(
+                                                                regularpriceControllers[index]
+                                                                    .text,
+                                                              ) ??
+                                                              0.0,
+                                                          quantity:
+                                                              variant.quantity,
+                                                        );
+                                                    variants.value =
+                                                        updatedVariants;
+                                                  },
+                                                  futuristic: true,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8.0),
+                                              const Text(
+                                                'Quantity',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14.0,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8.0),
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey[200],
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        12.0,
+                                                      ),
+                                                ),
+                                                child: InputFieldNew(
+                                                  controller:
+                                                      quantityControllers[index],
+                                                  hintText:
+                                                      'Enter quantity (e.g., 10)',
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                  validator: (value) =>
+                                                      Validators.validateQuantity(
+                                                        value ?? "",
+                                                      ),
+                                                  onChanged: () {
+                                                    final updatedVariants =
+                                                        List<Variant>.from(
+                                                          variants.value,
+                                                        );
+                                                    updatedVariants[index] =
+                                                        Variant(
+                                                          name: variant.name,
+                                                          image: variant.image,
+                                                          weight:
+                                                              variant.weight,
+                                                          price: variant.price,
+                                                          quantity:
+                                                              int.tryParse(
+                                                                quantityControllers[index]
+                                                                    .text,
+                                                              ) ??
+                                                              0,
+                                                        );
+                                                    variants.value =
+                                                        updatedVariants;
+                                                    variantQuantities[variant
+                                                            .name] =
+                                                        int.tryParse(
+                                                          quantityControllers[index]
+                                                              .text,
+                                                        ) ??
+                                                        0;
+                                                  },
+                                                  futuristic: true,
+                                                ),
+                                              ),
+
+                                              const Text(
+                                                'Sale Price ',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 14.0,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8.0),
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey[200],
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                        12.0,
+                                                      ),
+                                                ),
+                                                child: InputFieldNew(
+                                                  controller:
+                                                      weightControllers[index],
+                                                  hintText:
+                                                      'Enter weight (e.g., 1.5 kg)',
+                                                  keyboardType:
+                                                      const TextInputType.numberWithOptions(
+                                                        decimal: true,
+                                                      ),
+                                                  validator: (value) =>
+                                                      Validators.validateWeight(
+                                                        value ?? "",
+                                                      ),
+                                                  onChanged: () {
+                                                    final updatedVariants =
+                                                        List<Variant>.from(
+                                                          variants.value,
+                                                        );
+                                                    updatedVariants[index] =
+                                                        Variant(
+                                                          name: variant.name,
+                                                          image: variant.image,
+                                                          weight:
+                                                              double.tryParse(
+                                                                weightControllers[index]
+                                                                    .text,
+                                                              ) ??
+                                                              0.0,
+                                                          price: variant.price,
+                                                          quantity:
+                                                              variant.quantity,
+                                                        );
+                                                    variants.value =
+                                                        updatedVariants;
+                                                  },
+                                                  futuristic: true,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: -8.0,
-                                      right: -8.0,
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          variants.value.removeAt(index);
-                                          variantQuantities.remove(variant);
-                                        },
-                                        child: const Icon(
-                                          Icons.close,
-                                          color: Colors.redAccent,
-                                          size: 20.0,
+                                        SizedBox(
+                                          width: constraints.maxWidth * 0.05,
                                         ),
-                                      ),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              "${productName.text}- ${variant.name}",
+                                              style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 16.0,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            ValueListenableBuilder(
+                                              valueListenable: variantImage,
+                                              builder: (context, value, child) {
+                                                return GestureDetector(
+                                                  onTap: () async {
+                                                    final String? variantImage =
+                                                        await gallery
+                                                            .pickFromGallery();
+
+                                                    final updatedVariants =
+                                                        List<Variant>.from(
+                                                          variants.value,
+                                                        );
+                                                    updatedVariants[index] =
+                                                        Variant(
+                                                          name: variant.name,
+                                                          image: variantImage,
+                                                          weight:
+                                                              variant.weight,
+                                                          price: variant.price,
+                                                          quantity:
+                                                              variant.quantity,
+                                                        );
+                                                    variants.value =
+                                                        updatedVariants;
+                                                  },
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                          top: 20,
+                                                        ),
+                                                    child: Container(
+                                                      width:
+                                                          constraints.maxWidth *
+                                                          0.57,
+                                                      height:
+                                                          constraints
+                                                              .maxHeight *
+                                                          0.22,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.grey[200],
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              12.0,
+                                                            ),
+                                                      ),
+                                                      child: value == null
+                                                          ? const Center(
+                                                              child: Column(
+                                                                mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                children: [
+                                                                  Icon(
+                                                                    Icons
+                                                                        .add_a_photo,
+                                                                    color: Colors
+                                                                        .black87,
+                                                                    size: 20,
+                                                                  ),
+                                                                  SizedBox(
+                                                                    height: 4.0,
+                                                                  ),
+                                                                  Text(
+                                                                    'Add Image',
+                                                                    style: TextStyle(
+                                                                      color: Colors
+                                                                          .black87,
+                                                                      fontSize:
+                                                                          12.0,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            )
+                                                          : kIsWeb
+                                                          ? Image.network(value)
+                                                          : ClipRRect(
+                                                              borderRadius:
+                                                                  BorderRadius.circular(
+                                                                    12.0,
+                                                                  ),
+                                                              child: Image.file(
+                                                                File(value),
+                                                                fit:
+                                                                    BoxFit.fill,
+                                                              ),
+                                                            ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -1371,7 +1485,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             ),
                           ),
                         );
-                      }).toList(),
+                      },
                     );
                   },
                 ),
@@ -1395,6 +1509,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                           : 'black, silver'})',
                   validator: (value) =>
                       Validators.validateString(value ?? "", 'Variant'),
+                  futuristic: true,
                 ),
               ),
             ),
@@ -1422,10 +1537,19 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                   icon: const Icon(Icons.add, color: Colors.green),
                   onPressed: () {
                     if (variantKey.currentState!.validate()) {
-                      final updatalist = List<String>.from(variants.value)
-                        ..add(variantName.text);
-                      variants.value = updatalist;
+                      final updatedVariants = List<Variant>.from(variants.value)
+                        ..add(Variant(name: variantName.text));
                       variantQuantities[variantName.text] = 0;
+                      weightControllers.add(
+                        TextEditingController(text: 0.toString()),
+                      );
+                      regularpriceControllers.add(
+                        TextEditingController(text: 0.toString()),
+                      );
+                      quantityControllers.add(
+                        TextEditingController(text: 0.toString()),
+                      );
+                      variants.value = updatedVariants;
 
                       variantName.clear();
                     }
@@ -1438,80 +1562,127 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
       ],
     );
   }
+}
 
-  Widget quantitiesList() {
-    return ValueListenableBuilder(
-      valueListenable: variants,
-      builder: (context, value, child) {
-        return Column(
-          children: variants.value.asMap().entries.map((entry) {
-            String variant = entry.value;
-            return AnimationConfiguration.staggeredList(
-              position: entry.key,
-              duration: const Duration(milliseconds: 150),
-              child: SlideAnimation(
-                verticalOffset: 50.0,
-                child: FadeInAnimation(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Quantity for $variant',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 120.0,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(12.0),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  offset: Offset(5, 5),
-                                  blurRadius: 10,
-                                ),
-                                BoxShadow(
-                                  color: Colors.white70,
-                                  offset: Offset(-5, -5),
-                                  blurRadius: 10,
-                                ),
-                              ],
-                            ),
-                            child: TextFormField(
-                              controller: TextEditingController(
-                                text:
-                                    variantQuantities[variant]?.toString() ??
-                                    '0',
-                              ),
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 16.0,
-                                ),
-                              ),
-                              validator: (value) =>
-                                  Validators.validateQuantity(value ?? ""),
-                              onChanged: (value) {
-                                setState(() {
-                                  variantQuantities[variant] =
-                                      int.tryParse(value) ?? 0;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+class Wieghts extends StatelessWidget {
+  const Wieghts({
+    super.key,
+    required this.weight,
+    required this.length,
+    required this.width,
+    required this.height,
+    required this.constraint,
+  });
+
+  final TextEditingController weight;
+  final TextEditingController length;
+  final TextEditingController width;
+  final TextEditingController height;
+  final BoxConstraints constraint;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Titlesnew(nametitle: 'Weight (kg)'),
+        const SizedBox(height: 10.0),
+        InputFieldNew(
+          controller: weight,
+          hintText: 'Enter weight (e.g., 1.5)',
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          validator: (value) => Validators.validateWeight(value ?? ""),
+          futuristic: true,
+        ),
+        const SizedBox(height: 20.0),
+        const Titlesnew(nametitle: 'Dimensions (cm)'),
+        const SizedBox(height: 10.0),
+        Row(
+          children: [
+            Expanded(
+              child: InputFieldNew(
+                controller: length,
+                hintText: 'Length',
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
                 ),
+                validator: (value) =>
+                    Validators.validateDimension(value ?? "", "Length"),
+                futuristic: true,
               ),
-            );
-          }).toList(),
+            ),
+            SizedBox(width: constraint.maxWidth * 0.02),
+            Expanded(
+              child: InputFieldNew(
+                controller: width,
+                hintText: 'Width',
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                validator: (value) =>
+                    Validators.validateDimension(value ?? "", "Width"),
+                futuristic: true,
+              ),
+            ),
+            SizedBox(width: constraint.maxWidth * 0.02),
+            Expanded(
+              child: InputFieldNew(
+                controller: height,
+                hintText: 'Height',
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                validator: (value) =>
+                    Validators.validateDimension(value ?? "", "Height"),
+                futuristic: true,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20.0),
+      ],
+    );
+  }
+}
+
+class instock extends StatelessWidget {
+  const instock({super.key, required this.isInStock});
+
+  final ValueNotifier<bool> isInStock;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isInStock,
+      builder: (context, value, child) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(12.0),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                offset: Offset(5, 5),
+                blurRadius: 10,
+              ),
+              BoxShadow(
+                color: Colors.white70,
+                offset: Offset(-5, -5),
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('In Stock', style: TextStyle(color: Colors.black87)),
+              Switch(
+                value: value,
+                onChanged: (newValue) => isInStock.value = newValue,
+                activeColor: Colors.green,
+              ),
+            ],
+          ),
         );
       },
     );
@@ -1548,7 +1719,6 @@ class SecondImage extends StatelessWidget {
               ),
             ],
           ),
-
           child: kIsWeb
               ? Image.network(image!)
               : ClipRRect(
@@ -1563,13 +1733,11 @@ class SecondImage extends StatelessWidget {
                         ),
                 ),
         ),
-
         image == null
             ? const SizedBox()
             : Positioned(
                 top: -10,
                 right: -13,
-
                 child: GestureDetector(
                   onTap: () {
                     if (previewImage.value!.contains(image!)) {
@@ -1585,6 +1753,71 @@ class SecondImage extends StatelessWidget {
                 ),
               ),
       ],
+    );
+  }
+}
+
+// Modified InputFieldNew with futuristic design (no gradients)
+class InputFieldNew extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final TextInputType? keyboardType;
+  final String? Function(String?)? validator;
+  final void Function()? onChanged;
+  final bool futuristic;
+
+  const InputFieldNew({
+    super.key,
+    required this.controller,
+    required this.hintText,
+    this.keyboardType,
+    this.validator,
+    this.onChanged,
+    this.futuristic = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      decoration: BoxDecoration(
+        color: futuristic ? Colors.grey[200] : Colors.grey[200],
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            offset: Offset(5, 5),
+            blurRadius: 10,
+          ),
+          BoxShadow(
+            color: Colors.white70,
+            offset: Offset(-5, -5),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: TextStyle(
+          color: futuristic ? Colors.black87 : Colors.black87,
+          fontSize: 14.0,
+        ),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(
+            color: futuristic ? Colors.grey[600] : Colors.grey[600],
+            fontSize: 14.0,
+          ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 12.0,
+          ),
+        ),
+        validator: validator,
+        onTap: onChanged,
+      ),
     );
   }
 }

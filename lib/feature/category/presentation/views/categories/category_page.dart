@@ -35,35 +35,25 @@ class CategoryScreen extends StatelessWidget {
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-          child: Center(
-            child: Container(
-              width: maxWidth,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 26),
-
-                  const SizedBox(height: 24),
-                  BlocBuilder<CategoryBloc, CategoryState>(
-                    builder: (context, state) {
-                      if (state is CategoryLoadingState) {
-                        return buildShimmerLoading();
-                      } else if (state is CategoryErrorState) {
-                        return buildErrorState(context, state.error);
-                      } else if (state is CategoryLoadedState) {
-                        if (state.categories.isEmpty) {
-                          return const Center(
-                            child: Text("No categories available."),
-                          );
-                        }
-                        return buildCategoryList(context, state);
-                      }
-                      return const SizedBox();
-                    },
-                  ),
-                ],
-              ),
+          child: Container(
+            width: maxWidth,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: BlocBuilder<CategoryBloc, CategoryState>(
+              builder: (context, state) {
+                if (state is CategoryLoadingState) {
+                  return buildShimmerLoading();
+                } else if (state is CategoryErrorState) {
+                  return buildErrorState(context, state.error);
+                } else if (state is CategoryLoadedState) {
+                  if (state.categories.isEmpty) {
+                    return const Center(
+                      child: Text("No categories available."),
+                    );
+                  }
+                  return buildCategoryList(context, state);
+                }
+                return const SizedBox();
+              },
             ),
           ),
         ),
