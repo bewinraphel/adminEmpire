@@ -71,7 +71,7 @@ Widget buildCategoryList(BuildContext context, CategoryLoadedState state) {
     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: 2,
       mainAxisSpacing: 14,
-      crossAxisSpacing: 14,
+      crossAxisSpacing: 6,
       childAspectRatio: 0.8,
     ),
     itemCount: state.categories.length,
