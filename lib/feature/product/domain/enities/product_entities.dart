@@ -1,4 +1,4 @@
-import 'package:empire/feature/product/presentation/views/add_product.dart/add_product.dart';
+
 import 'package:equatable/equatable.dart';
 
 class ProductEntity extends Equatable {
@@ -23,7 +23,7 @@ class ProductEntity extends Equatable {
   final double priceRangeMin;
   final double priceRangeMax;
   final List<String> filterTags;
-  final DateTime? timestamp;
+ 
   final List<Variant> variantDetails;
   const ProductEntity({
      this.productDocId,
@@ -47,9 +47,35 @@ class ProductEntity extends Equatable {
     required this.priceRangeMin,
     required this.priceRangeMax,
     required this.filterTags,
-    required this.timestamp,
+ 
     required this.variantDetails,
   });
+
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'description': description,
+        'price': price,
+        'discountPrice': discountPrice,
+        'sku': sku,
+        'tags': tags,
+        'inStock': inStock,
+        'weight': weight,
+        'length': length,
+        'width': width,
+        'height': height,
+        'taxRate': taxRate,
+        'category': category,
+        'quantities': quantities,
+        'images': images,
+        'priceRangeMin': priceRangeMin,
+        'priceRangeMax': priceRangeMax,
+        'filterTags': filterTags,
+
+        'variantDetails': variantDetails.map((v) => v.toJson()).toList(),
+        'productDocId': productDocId,
+      };
+
   ProductEntity copyWith({
     String? productDocId,
     String? name,
@@ -72,7 +98,7 @@ class ProductEntity extends Equatable {
     double? priceRangeMin,
     double? priceRangeMax,
     List<String>? filterTags,
-    DateTime? timestamp,
+    String? timestamp,
   }) {
     return ProductEntity(
       productDocId: productDocId??this.productDocId,
@@ -96,7 +122,7 @@ class ProductEntity extends Equatable {
       priceRangeMin: priceRangeMin ?? this.priceRangeMin,
       priceRangeMax: priceRangeMax ?? this.priceRangeMax,
       filterTags: filterTags ?? this.filterTags,
-      timestamp: timestamp ?? this.timestamp,
+ 
       variantDetails: variantDetails,
     );
   }
@@ -123,7 +149,33 @@ class ProductEntity extends Equatable {
     priceRangeMin,
     priceRangeMax,
     filterTags,
-    timestamp,
+ 
     variantDetails,
   ];
+}
+class Variant extends Equatable {
+  final String name;
+  final String? image;
+  final double salePrice;
+  final double regularPrice;
+  final int quantity;
+
+  const Variant({
+    required this.name,
+    this.image,
+    this.regularPrice = 0.0,
+    this.salePrice = 0.0,
+    this.quantity = 0,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'image': image,
+        'Regular': regularPrice,
+        'salePrice': salePrice,
+        'quantity': quantity,
+      };
+
+  @override
+  List<Object?> get props => [name, image, regularPrice, salePrice, quantity];
 }

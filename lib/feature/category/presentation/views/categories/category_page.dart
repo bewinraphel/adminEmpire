@@ -1,3 +1,7 @@
+import 'package:empire/core/di/service_locator.dart';
+import 'package:empire/feature/category/domain/usecase/categories/adding_subcategory_usecase.dart';
+import 'package:empire/feature/category/domain/usecase/categories/get_category_usecase.dart';
+import 'package:empire/feature/category/presentation/bloc/category_bloc/adding_subcategory.dart';
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_category_bloc.dart';
 import 'package:empire/feature/category/presentation/views/categories/widgets.dart';
 
@@ -30,7 +34,7 @@ class CategoryScreen extends StatelessWidget {
       body: RefreshIndicator(
         onRefresh: () async {
           context.read<CategoryBloc>().add(GetCategoryEvent());
-
+    
           await Future.delayed(const Duration(milliseconds: 600));
         },
         child: SingleChildScrollView(

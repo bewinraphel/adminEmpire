@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:empire/core/utilis/failure.dart';
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
 
 abstract class ProductDataSource {
@@ -8,4 +9,10 @@ abstract class ProductDataSource {
     String subcategoryId,
     String productId,
   );
+    Future<Either<Failures, void>> updateProduct({
+        required String productId,
+    required ProductEntity product,
+    required String subcategoryId,
+    required String mainCategoryId,
+  });
 }

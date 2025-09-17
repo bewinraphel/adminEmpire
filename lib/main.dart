@@ -1,6 +1,6 @@
 import 'package:empire/core/di/service_locator.dart';
 
-import 'package:empire/feature/category/presentation/views/my_app.dart/my_app.dart';
+import 'package:empire/feature/category/presentation/views/my_app.dart/landingpage.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -27,7 +27,7 @@ void main() async {
   runApp(
     Sizer(
       builder: (context, orientation, deviceType) {
-        return const MyApp();
+        return const LandingPage();
       },
     ),
   );

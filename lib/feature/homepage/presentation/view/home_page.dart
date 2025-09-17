@@ -221,8 +221,8 @@ class _AdminDashboardState extends State<HomePage> {
   Widget _buildDashboardContent() {
     return SliverList(
       delegate: SliverChildListDelegate([
-        // SizedBox(height: 1.h),
-        // const RevenueChartCard(),
+        SizedBox(height: 1.h),
+        const RevenueChartCard(),
         SizedBox(height: 2.h),
         const MetricsCards(),
         SizedBox(height: 2.h),
@@ -251,28 +251,20 @@ class _AdminDashboardState extends State<HomePage> {
         ],
       ),
       child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem('Dashboard', 'dashboard', true, '/admin-dashboard'),
-              _buildNavItem(
-                'Products',
-                'inventory',
-                false,
-                '/admin-product-management',
-              ),
-              _buildNavItem('Orders', 'list_alt', false, '/order-history'),
-              _buildNavItem('Customers', 'people', false, '/customer-home'),
-              _buildNavItem(
-                'Analytics',
-                'analytics',
-                false,
-                '/admin-dashboard',
-              ),
-            ],
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _buildNavItem('Dashboard', 'dashboard', true, '/admin-dashboard'),
+            _buildNavItem(
+              'Products',
+              'inventory',
+              false,
+              '/admin-product-management',
+            ),
+            _buildNavItem('Orders', 'list_alt', false, '/order-history'),
+            _buildNavItem('Customers', 'people', false, '/customer-home'),
+            _buildNavItem('Analytics', 'analytics', false, '/admin-dashboard'),
+          ],
         ),
       ),
     );

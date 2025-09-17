@@ -22,7 +22,7 @@ import 'package:empire/feature/auth/domain/repositories/auth_repository.dart';
 import 'package:empire/feature/category/domain/repositories/category_repository.dart';
 import 'package:empire/feature/auth/domain/repositories/image_profile.dart';
 import 'package:empire/feature/auth/domain/repositories/login_status_auth.dart';
-import 'package:empire/feature/product/domain/repository/addproduct_repository.dart';
+import 'package:empire/feature/product/domain/repository/product_repository.dart';
 import 'package:empire/feature/auth/domain/repositories/register.dart';
 import 'package:empire/feature/auth/domain/usecase/Login_status_usecase.dart';
 import 'package:empire/feature/category/domain/usecase/categories/adding_category_usecase.dart';

@@ -1,8 +1,9 @@
 import 'package:dartz/dartz.dart';
+import 'package:empire/core/utilis/failure.dart';
 import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
 
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
-import 'package:empire/feature/product/domain/repository/addproduct_repository.dart';
+import 'package:empire/feature/product/domain/repository/product_repository.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
   final ProductDataSource dataSource;
@@ -28,6 +29,21 @@ class ProductRepositoryImpl implements ProductRepository {
       mainCategoryId,
       subcategoryId,
       productId,
+    );
+  }
+
+  @override
+  Future<Either<Failures, void>> updateProduct({
+    required ProductEntity product,
+    required String subcategoryId,
+    required String mainCategoryId,
+    required String productId,
+  }) async {
+    return await dataSource.updateProduct(
+      productId: productId,
+      product: product,
+      subcategoryId: subcategoryId,
+      mainCategoryId: mainCategoryId,
     );
   }
 }

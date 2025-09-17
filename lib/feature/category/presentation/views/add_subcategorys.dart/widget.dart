@@ -33,13 +33,11 @@ class ProductItem extends StatelessWidget {
               height: 56,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: imageProvider,
-                  fit: BoxFit.cover,
-                ),
+                image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
               ),
             ),
-            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+            placeholder: (context, url) =>
+                const Center(child: CircularProgressIndicator()),
             errorWidget: (context, url, error) => const Icon(Icons.error),
           ),
           const SizedBox(width: 16),
@@ -75,6 +73,7 @@ class ProductItem extends StatelessWidget {
     );
   }
 }
+
 class CategoryItem extends StatelessWidget {
   final CategoryEntities doc;
   final bool Function(CategoryState) isSelectedSelector;
@@ -92,49 +91,73 @@ class CategoryItem extends StatelessWidget {
     return BlocSelector<CategoryBloc, CategoryState, bool>(
       selector: isSelectedSelector,
       builder: (context, isSelected) {
-        return GestureDetector(
-          onTap: onTap,
-          child: Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: isSelected ? Colors.yellow[700] : Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 8,
-                      offset: Offset(3, 3),
-                    ),
-                  ],
-                ),
-                child: CachedNetworkImage(
-                  imageUrl: doc.imageUrl,
-                  height: 90,
-                  width: 90,
-                  fit: BoxFit.fitHeight,
-                  placeholder: (context, url) => Shimmer.fromColors(
-                    baseColor: Colors.grey[300]!,
-                    highlightColor: Colors.grey[100]!,
-                    child:  const SizedBox(
-                      height: 90,
-                      width: 90,
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(16.0),
+            boxShadow: [
+              const BoxShadow(
+                color: Colors.black12,
+                offset: Offset(5, 5),
+                blurRadius: 10,
               ),
-              const SizedBox(height: 10),
-              Text(
-                doc.category,
-                style: TextStyle(
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontFamily: 'Raleway',
-                  fontSize: 15,
-                  color: isSelected ? Colors.black87 : Colors.black45,
-                ),
+              BoxShadow(
+                color: isSelected ? Colors.white : Colors.white70,
+                offset: const Offset(-5, -5),
+                blurRadius: 10,
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: onTap,
+              child: Column(
+                children: [
+                  Container(
+                    height: 170,
+                    width: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(3, 3),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadiusGeometry.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: doc.imageUrl,
+
+                        fit: BoxFit.fill,
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: const SizedBox(height: 90, width: 90),
+                        ),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.error),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    doc.category,
+                    style: TextStyle(
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w600,
+                      fontFamily: 'Raleway',
+                      fontSize: 15,
+                      color: isSelected ? Colors.black87 : Colors.black45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },

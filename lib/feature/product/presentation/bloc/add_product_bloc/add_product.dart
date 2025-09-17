@@ -1,5 +1,6 @@
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
 import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
@@ -36,6 +37,22 @@ class DeleteProductEvent extends ProductEvent {
 
   @override
   List<Object> get props => [mainCategoryId, subcategoryId, productId];
+}
+
+class UpdateProductEvent extends ProductEvent {
+  final ProductEntity product;
+  final String subcategoryId;
+  final String mainCategoryId;
+  final String productId;
+  UpdateProductEvent({
+    required this.product,
+    required this.subcategoryId,
+    required this.mainCategoryId,
+    required this.productId,
+  });
+
+  @override
+  List<Object?> get props => [product, subcategoryId, mainCategoryId];
 }
 
 @immutable
@@ -89,6 +106,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         (_) => emit(ProductDeleted()),
       );
     });
+    on<UpdateProductEvent>(onUpdateProduct);
   }
 
   Future<void> _onAddProduct(
@@ -100,6 +118,23 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
       event.product,
       event.uid,
       event.mainCtiegoryid,
+    );
+    result.fold(
+      (failure) => emit(ProductFailure(failure.toString())),
+      (_) => emit(ProductSuccess()),
+    );
+  }
+
+  Future<void> onUpdateProduct(
+    UpdateProductEvent event,
+    Emitter<ProductState> emit,
+  ) async {
+    emit(ProductLoading());
+    final result = await addProductUseCase.updateProduct(
+      productId: event.productId,
+      product: event.product,
+      subcategoryId: event.subcategoryId,
+      mainCategoryId: event.mainCategoryId,
     );
     result.fold(
       (failure) => emit(ProductFailure(failure.toString())),

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
+import 'package:empire/core/utilis/failure.dart';
 import 'package:empire/core/utilis/widgets.dart';
 
 import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
@@ -58,8 +59,8 @@ class ProductDataSourceImpli extends ProductDataSource {
       uploadedVariantDetails.add({
         'name': variant.name,
         'image': uploadedVariantImageUrl,
-        'weight': variant.weight,
-        'price': variant.price,
+        'weight': variant.regularPrice,
+        'price': variant.salePrice,
         'quantity': variant.quantity,
       });
     }
@@ -120,6 +121,31 @@ class ProductDataSourceImpli extends ProductDataSource {
     } catch (e) {
       logger.e('Failed to delete product: $e');
       return Left(Exception('Failed to delete product: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failures, void>> updateProduct({
+    required ProductEntity product,
+    required String subcategoryId,
+    required String productId,
+    required String mainCategoryId,
+  }) async {
+    try {
+  
+
+      await FirebaseFirestore.instance
+          .collection('category')
+          .doc(mainCategoryId)
+          .collection('subcategory')
+          .doc(subcategoryId)
+          .collection('product')
+          .doc(productId)
+          .update(product.toJson());
+      return const Right(null);
+    } catch (e) {
+      logger.e('Failed to delete product: $e');
+      return Left(Failures.server('Failed to update product: $e'));
     }
   }
 }

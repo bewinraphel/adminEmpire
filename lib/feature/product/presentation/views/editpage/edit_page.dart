@@ -4,8 +4,6 @@ import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/commonvalidator.dart';
 import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/auth/data/datasource/image_profile.dart';
-import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
-import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
 
 import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
 import 'package:empire/feature/product/data/repository/add_product_respository.dart';
@@ -13,6 +11,7 @@ import 'package:empire/feature/product/domain/enities/product_entities.dart';
 import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
 import 'package:empire/feature/auth/presentation/bloc/profile_image_bloc.dart';
 import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_product.dart';
+
 import 'package:empire/feature/product/presentation/views/add_product.dart/widgets.dart';
 import 'package:empire/feature/homepage/presentation/view/home_page.dart';
 import 'package:flutter/material.dart';
@@ -26,16 +25,24 @@ ValueNotifier<String?> image2 = ValueNotifier(null);
 ValueNotifier<String?> image3 = ValueNotifier(null);
 ValueNotifier<String?> previewImage = ValueNotifier(null);
 
-class AddProdutsPage extends StatefulWidget {
+class EditProdutsPage extends StatefulWidget {
   String? mainCategoryId;
-  String? id;
-  AddProdutsPage({super.key, this.id, this.mainCategoryId});
+  String? subcategoryId;
+  final ProductEntity? product;
+  String? productId;
+  EditProdutsPage({
+    super.key,
+    this.subcategoryId,
+    this.mainCategoryId,
+    this.product,
+    this.productId,
+  });
 
   @override
-  State<AddProdutsPage> createState() => _AddProdutsPageState();
+  State<EditProdutsPage> createState() => _AddProdutsPageState();
 }
 
-class _AddProdutsPageState extends State<AddProdutsPage> {
+class _AddProdutsPageState extends State<EditProdutsPage> {
   final globalKey = GlobalKey<FormState>();
   final categoryKey = GlobalKey<FormState>();
   final variantKey = GlobalKey<FormState>();
@@ -66,15 +73,60 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
   String? image4;
   List<String> categoryList = ['dress', 'food', 'electronics', 'accessories'];
   ValueNotifier<List<Variant>> variants = ValueNotifier([]);
-
+  List<Variant> newVariants = [];
   Map<String, int> variantQuantities = {};
   final List<TextEditingController> weightControllers = [];
   final List<TextEditingController> regularpriceControllers = [];
   final List<TextEditingController> quantityControllers = [];
   final List<FocusNode> focusNodes = [];
+  List<String?> pickedImage = [];
+  @override
+  void initState() {
+    super.initState();
+
+    productName.text = widget.product!.name;
+    description.text = widget.product!.description;
+    price.text = widget.product!.price.toString();
+    quantity.text = widget.product!.quantities.toString();
+
+    discountPrice.text = widget.product!.discountPrice.toString();
+    sku.text = widget.product!.sku;
+    tags.text = widget.product!.tags.join(', ');
+    weight.text = widget.product!.weight.toString();
+    length.text = widget.product!.length.toString();
+    width.text = widget.product!.width.toString();
+    height.text = widget.product!.height.toString();
+    taxRate.text = widget.product!.taxRate.toString();
+
+    isInStock.value = widget.product!.inStock;
+    selectedCategory.value = widget.product!.category;
+    widget.product!.variantDetails;
+    filterTags.addAll(widget.product!.filterTags);
+
+    image2.value = widget.product!.images.isNotEmpty
+        ? widget.product!.images[0]
+        : null;
+    image3.value = widget.product!.images.length > 1
+        ? widget.product!.images[1]
+        : null;
+    newVariants.addAll(List.from(widget.product!.variantDetails));
+    for (var variant in newVariants) {
+      weightControllers.add(
+        TextEditingController(text: variant.regularPrice.toString()),
+      );
+      regularpriceControllers.add(
+        TextEditingController(text: variant.salePrice.toString()),
+      );
+      quantityControllers.add(
+        TextEditingController(text: variant.quantity.toString()),
+      );
+      focusNodes.add(FocusNode());
+    }
+    variants.value = List.from(newVariants);
+  }
 
   void _updateVariants() {
-    List<Variant> newVariants = [];
+    variants.value.clear();
     if (selectedCategory.value == 'dress') {
       newVariants = [
         const Variant(name: 'S'),
@@ -82,6 +134,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
         const Variant(name: 'L'),
         const Variant(name: 'XL'),
       ];
+      variants.value = List.from(newVariants);
     } else if (selectedCategory.value == 'food') {
       newVariants = [
         const Variant(name: '200ml'),
@@ -89,17 +142,20 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
         const Variant(name: '500g'),
         const Variant(name: '1kg'),
       ];
+      variants.value = List.from(newVariants);
     } else if (selectedCategory.value == 'electronics') {
       newVariants = [
         const Variant(name: 'black'),
         const Variant(name: 'silver'),
         const Variant(name: 'white'),
       ];
+      variants.value = List.from(newVariants);
     } else if (selectedCategory.value == 'accessories') {
       newVariants = [
         const Variant(name: 'small'),
         const Variant(name: 'large'),
       ];
+      variants.value = List.from(newVariants);
     }
 
     weightControllers.clear();
@@ -120,7 +176,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
       focusNodes.add(FocusNode());
     }
 
-    variants.value = newVariants;
     variantQuantities = {for (var v in variants.value) v.name: 0};
   }
 
@@ -143,18 +198,10 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => ProductBloc(
-            AddProduct(ProductRepositoryImpl(sl<ProductDataSource>())),
-          ),
-        ),
-        BlocProvider<ImageAuth>(
-          create: (_) =>
-              ImageAuth(sl<PickImageFromCamera>(), sl<PickImageFromGallery>()),
-        ),
-      ],
+    return BlocProvider(
+      create: (context) => ProductBloc(
+        AddProduct(ProductRepositoryImpl(sl<ProductDataSource>())),
+      ),
       child: Builder(
         builder: (context) {
           return Scaffold(
@@ -242,8 +289,8 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                           BorderRadius.circular(
                                                             10,
                                                           ),
-                                                      child: Image.file(
-                                                        File(state.image),
+                                                      child: Image.network(
+                                                        state.image,
                                                         fit: BoxFit.fill,
                                                       ),
                                                     );
@@ -386,11 +433,10 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                                     ? Image.asset(
                                                                         'assets/default.jpg',
                                                                       )
-                                                                    : Image.file(
-                                                                        File(
-                                                                          image2
-                                                                              .value!,
-                                                                        ),
+                                                                    : Image.network(
+                                                                        image2
+                                                                            .value!,
+
                                                                         fit: BoxFit
                                                                             .fill,
                                                                         width:
@@ -520,11 +566,10 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                                     ? Image.asset(
                                                                         'assets/default.jpg',
                                                                       )
-                                                                    : Image.file(
-                                                                        File(
-                                                                          image3
-                                                                              .value!,
-                                                                        ),
+                                                                    : Image.network(
+                                                                        image3
+                                                                            .value!,
+
                                                                         fit: BoxFit
                                                                             .fill,
                                                                         width:
@@ -810,13 +855,13 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                     width: constraints.maxWidth * 0.8,
                                     text: state is ProductLoading
                                         ? 'Uploading...'
-                                        : 'Add Product',
+                                        : 'Edit Product',
                                     onTap: () {
                                       if (image2.value != null &&
                                           image3.value != null) {
                                         if (globalKey.currentState!
                                             .validate()) {
-                                          final product = ProductEntity(
+                                          final products = ProductEntity(
                                             name: productName.text,
                                             description: description.text,
                                             price:
@@ -865,24 +910,37 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                 ) ??
                                                 0.0,
                                             filterTags: filterTags,
-                                        
 
                                             variantDetails: variants.value,
                                           );
 
                                           context.read<ProductBloc>().add(
-                                            AddProductEvent(
-                                              product,
-                                              widget.id ?? '',
-                                              widget.mainCategoryId ?? "",
+                                            UpdateProductEvent(
+                                              productId: widget.productId!,
+                                              product: products,
+                                              subcategoryId:
+                                                  widget.subcategoryId!,
+                                              mainCategoryId:
+                                                  widget.mainCategoryId!,
                                             ),
                                           );
-                                          // previewImage.value = null;
-                                          // image2.value = null;
-                                          // image3.value = null;
-                                          // context.read<ImageAuth>().add(
-                                          //   ClearPickedImageEvent(),
-                                          // );
+                                        } else {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Please upload both images and fill all required fields',
+                                              ),
+                                            ),
+                                          );
+
+                                          previewImage.value = null;
+                                          image2.value = null;
+                                          image3.value = null;
+                                          context.read<ImageAuth>().add(
+                                            ClearPickedImageEvent(),
+                                          );
                                         }
                                       } else {}
                                     },
@@ -1157,6 +1215,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                         final variantImage = ValueNotifier<String?>(
                           variant.image,
                         );
+                        pickedImage.add(null);
 
                         return AnimationConfiguration.staggeredList(
                           position: index,
@@ -1380,7 +1439,8 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                     final String? variantImage =
                                                         await gallery
                                                             .pickFromGallery();
-
+                                                    pickedImage[index] =
+                                                        variantImage!;
                                                     final updatedVariants =
                                                         List<Variant>.from(
                                                           variants.value,
@@ -1455,11 +1515,21 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                                   BorderRadius.circular(
                                                                     12.0,
                                                                   ),
-                                                              child: Image.file(
-                                                                File(value),
-                                                                fit:
-                                                                    BoxFit.fill,
-                                                              ),
+                                                              child:
+                                                                  pickedImage[index] ==
+                                                                      null
+                                                                  ? Image.network(
+                                                                      value,
+                                                                      fit: BoxFit
+                                                                          .fill,
+                                                                    )
+                                                                  : Image.file(
+                                                                      File(
+                                                                        value,
+                                                                      ),
+                                                                      fit: BoxFit
+                                                                          .fill,
+                                                                    ),
                                                             ),
                                                     ),
                                                   ),

@@ -3,7 +3,10 @@ import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/color.dart';
 import 'package:empire/core/utilis/constants.dart';
 import 'package:empire/core/utilis/fonts.dart';
- 
+import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
+import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
+import 'package:empire/feature/auth/presentation/bloc/profile_image_bloc.dart';
+
 import 'package:empire/feature/product/presentation/views/add_product.dart/add_product.dart';
 import 'package:empire/feature/product/domain/repository/prodcuct_call_repository.dart';
 import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
@@ -70,16 +73,26 @@ class ProductScreen extends StatelessWidget {
         title: const Text('', style: TextStyle(color: Colors.black)),
         centerTitle: true,
       ),
-      body: BlocProvider(
-        create: (context) =>
-            ProductcalingBloc(ProductcaliingUsecase(sl<ProdcuctsRepository>()))
-              ..add(
-                ProductCallingEvent(
-                  mainCategoryId: mainCategoryId!,
-                  subCategoryId: subcategory!,
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider<ImageAuth>(
+            create: (_) => ImageAuth(
+              sl<PickImageFromCamera>(),
+              sl<PickImageFromGallery>(),
+            ),
+          ),
+          BlocProvider<ProductcalingBloc>(
+            create: (_) =>
+                ProductcalingBloc(
+                  ProductcaliingUsecase(sl<ProdcuctsRepository>()),
+                )..add(
+                  ProductCallingEvent(
+                    mainCategoryId: mainCategoryId!,
+                    subCategoryId: subcategory!,
+                  ),
                 ),
-              ),
-
+          ),
+        ],
         child: SingleChildScrollView(
           reverse: true,
           child: BlocBuilder<ProductcalingBloc, Productstate>(

@@ -2,8 +2,9 @@ import 'package:empire/core/utilis/fonts.dart';
 import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
 import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_product.dart';
-import 'package:empire/feature/product/presentation/views/add_product.dart/add_product.dart';
+
 import 'package:empire/feature/product/presentation/views/add_product.dart/widgets.dart';
+import 'package:empire/feature/product/presentation/views/editpage/edit_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -23,6 +24,7 @@ class ProductDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(),
       body: product == null
           ? const Center(child: Text('No product data available'))
           : SafeArea(
@@ -77,15 +79,6 @@ class ProductDetailsPage extends StatelessWidget {
                     child: Icon(Icons.image_not_supported, size: 50),
                   ),
                 ),
-        ),
-        // Back Button
-        Positioned(
-          top: 16,
-          left: 16,
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
         ),
 
         if (images.isNotEmpty)
@@ -293,7 +286,22 @@ class ProductDetailsPage extends StatelessWidget {
                         borderRadius: BorderRadius.all(Radius.circular(16)),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return EditProdutsPage(
+                              mainCategoryId: mainCategoryId!,
+                              subcategoryId: subcategory,
+
+                              product: product,
+                              productId: product.productDocId,
+                            );
+                          },
+                        ),
+                      );
+                    },
                     label: const Text(
                       'Edit',
                       style: TextStyle(
@@ -457,14 +465,14 @@ class ProductDetailsPage extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Price: \$${variant.price.toStringAsFixed(2)}',
+                            'Price: \$${variant.salePrice.toStringAsFixed(2)}',
                             style: GoogleFonts.roboto(
                               fontSize: 14,
                               color: Colors.green,
                             ),
                           ),
                           Text(
-                            'Sale price: ${variant.weight}',
+                            'Sale price: ${variant.regularPrice}',
                             style: GoogleFonts.roboto(
                               fontSize: 14,
                               color: const Color(0xFF111827),

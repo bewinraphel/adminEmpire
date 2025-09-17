@@ -52,14 +52,14 @@ class ProducsDataSourceimpli extends ProductsDataSource {
                 (v) => Variant(
                   name: v['name'] ?? "",
                   image: v['image'] ?? "",
-                  weight: (v['weight'] as num?)?.toDouble() ?? 0.0,
-                  price: (v['price'] as num?)?.toDouble() ?? 0.0,
+                  regularPrice: (v['regularPrice'] as num?)?.toDouble() ?? 0.0,
+                  salePrice: (v['salePrice'] as num?)?.toDouble() ?? 0.0,
                   quantity: v['quantity'] ?? 0,
                 ),
               )
               .toList(),
 
-          timestamp: (data['timestamp'] as Timestamp?)?.toDate(),
+       
         );
       }).toList();
 

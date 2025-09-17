@@ -1,4 +1,5 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:empire/core/utilis/constants.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -191,7 +192,35 @@ class _GradientButtonState extends State<GradientButtonNew>
     );
   }
 }
+class InStock extends StatelessWidget {
+  final ValueNotifier<bool> isInStock;
 
+  const InStock({super.key, required this.isInStock});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isInStock,
+      builder: (context, value, child) {
+        return Container(
+          decoration: kCardDecoration,
+          padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('In Stock', style: TextStyle(color: Colors.black87)),
+              Switch(
+                value: value,
+                onChanged: (newValue) => isInStock.value = newValue,
+                activeColor: Colors.green,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
 AppBar appbar() {
   return AppBar(
     backgroundColor: Colors.transparent,

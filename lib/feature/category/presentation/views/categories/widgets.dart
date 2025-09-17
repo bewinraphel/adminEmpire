@@ -1,5 +1,6 @@
 import 'package:empire/core/utilis/color.dart';
 import 'package:empire/core/utilis/fonts.dart';
+
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_category_bloc.dart';
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_subcategory.dart';
 
@@ -29,7 +30,6 @@ Widget buildAddCategoryButton(BuildContext context) {
   );
 }
 
-/// Shimmer Loader
 Widget buildShimmerLoading() {
   return Shimmer.fromColors(
     baseColor: Colors.grey[300]!,
@@ -47,7 +47,6 @@ Widget buildShimmerLoading() {
   );
 }
 
-/// Error State Widget
 Widget buildErrorState(BuildContext context, String error) {
   return Column(
     mainAxisAlignment: MainAxisAlignment.center,
@@ -64,13 +63,21 @@ Widget buildErrorState(BuildContext context, String error) {
   );
 }
 
-/// Category List
 Widget buildCategoryList(BuildContext context, CategoryLoadedState state) {
-  return Wrap(
-    alignment: WrapAlignment.start,
-    spacing: 14,
-    runSpacing: 14,
-    children: state.categories.map((doc) {
+  return GridView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    padding: const EdgeInsets.all(8),
+    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: 2,
+      mainAxisSpacing: 14,
+      crossAxisSpacing: 14,
+      childAspectRatio: 0.8,
+    ),
+    itemCount: state.categories.length,
+    itemBuilder: (context, index) {
+      final doc = state.categories[index];
+
       return CategoryItem(
         doc: doc,
         isSelectedSelector: (state) =>
@@ -85,6 +92,6 @@ Widget buildCategoryList(BuildContext context, CategoryLoadedState state) {
           );
         },
       );
-    }).toList(),
+    },
   );
 }

@@ -50,6 +50,7 @@ class AddSubcategory extends StatelessWidget {
           onPressed: () {
             Navigator.push(
               context,
+
               MaterialPageRoute(
                 builder: (context) {
                   return AddCategoryWidget(id: category.uid);
@@ -120,7 +121,7 @@ class AddSubcategory extends StatelessWidget {
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.015 * 18,
-                  ),  
+                  ),
                 ),
               ),
               BlocBuilder<SubCategoryBloc, SubCategoryState>(
@@ -137,11 +138,20 @@ class AddSubcategory extends StatelessWidget {
                     }
                     return Padding(
                       padding: const EdgeInsets.all(10.0),
-                      child: Wrap(
-                        alignment: WrapAlignment.start,
-                        spacing: 14,
-                        runSpacing: 14,
-                        children: state.categories.map((doc) {
+                      child: GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(8),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              mainAxisSpacing: 14,
+                              crossAxisSpacing: 14,
+                              childAspectRatio: 0.9,
+                            ),
+                        itemCount: state.categories.length,
+                        itemBuilder: (context, index) {
+                          final doc = state.categories[index];
                           return CategoryItem(
                             doc: doc,
                             isSelectedSelector: (state) =>
@@ -161,7 +171,7 @@ class AddSubcategory extends StatelessWidget {
                               );
                             },
                           );
-                        }).toList(),
+                        },
                       ),
                     );
                   }
