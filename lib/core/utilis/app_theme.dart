@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // Design System Colors - Adaptive Professional Palette
+ 
   static const Color primaryLight = Color(
     0xFF2563EB,
   ); // Deep blue for trust and action elements

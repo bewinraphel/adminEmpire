@@ -1,5 +1,10 @@
+import 'dart:async';
+
+import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/color.dart';
 import 'package:empire/core/utilis/fonts.dart';
+import 'package:empire/feature/category/domain/entities/category_entities.dart';
+import 'package:empire/feature/category/domain/usecase/categories/getting_subcategory_usecase.dart';
 
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_category_bloc.dart';
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_subcategory.dart';
@@ -15,7 +20,7 @@ import 'package:shimmer/shimmer.dart';
 Widget buildAddCategoryButton(BuildContext context) {
   return FloatingActionButton(
     backgroundColor: ColoRs.buttoncolor,
-    onPressed: () {
+    onPressed: () async {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -94,4 +99,159 @@ Widget buildCategoryList(BuildContext context, CategoryLoadedState state) {
       );
     },
   );
+}
+class CategoryItems extends StatelessWidget {
+  final CategoryEntities category;
+
+  const CategoryItems({required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) =>
+          SubCategoryBloc(sl<GettingSubcategoryUsecase>())
+            ..add(GetSubCategoryEvent(category.uid)),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    category.category,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            BlocBuilder<SubCategoryBloc, SubCategoryState>(
+              builder: (context, state) {
+                if (state is SubCategoryLoadingState) {
+                  return buildShimmerLoading();
+                } else if (state is SubCategoryErrorState) {
+                  return buildErrorState(context, state.error);
+                } else if (state is SubCategoryLoadedState) {
+                  if (state.categories.isEmpty) {
+                    return Center(
+                      child: Column(
+                        children: [
+                          const Text("No subcategories available."),
+                          IconButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AddSubcategory(
+                                  category: category,
+                                  subCategory: null,
+                                ),
+                              ),
+                            ),
+                            icon: const Icon(Icons.add),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return SizedBox(
+                    height: 130,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: state.categories.length,
+                      itemBuilder: (context, index) {
+                        final subCategory = state.categories[index];
+                        return GestureDetector(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AddSubcategory(
+                                category: category,
+                                subCategory: subCategory,
+                              ),
+                            ),
+                          ),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.23,
+                            margin: const EdgeInsets.only(right: 3),
+                            decoration: BoxDecoration(
+                              borderRadius: _getBorderRadius(
+                                index,
+                                state.categories.length,
+                              ),
+                              color: Theme.of(context).colorScheme.surface,
+                            ),
+                            child: ClipRRect(
+                              borderRadius: _getBorderRadius(
+                                index,
+                                state.categories.length,
+                              ),
+                              child: Image.network(
+                                subCategory.imageUrl,
+                                fit: BoxFit.cover,
+                                loadingBuilder:
+                                    (context, child, loadingProgress) {
+                                      if (loadingProgress == null) {
+                                        return child;
+                                      } else {
+                                        return Shimmer(
+                                          child: child,
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.black,
+                                              Colors.white,
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                    },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceVariant,
+                                    child: Icon(
+                                      Icons.image,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
+                                      size: 40,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }
+                return buildShimmerLoading();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  BorderRadius _getBorderRadius(int index, int length) {
+    if (index == 0) {
+      return const BorderRadius.only(
+        topLeft: Radius.circular(12),
+        bottomLeft: Radius.circular(12),
+      );
+    } else if (index == length - 1) {
+      return const BorderRadius.only(
+        topRight: Radius.circular(12),
+        bottomRight: Radius.circular(12),
+      );
+    }
+    return BorderRadius.zero;
+  }
 }

@@ -84,10 +84,9 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
       ];
     } else if (selectedCategory.value == 'food') {
       newVariants = [
-        const Variant(name: '200ml'),
+        const Variant(name: '250l'),
         const Variant(name: '1l'),
-        const Variant(name: '500g'),
-        const Variant(name: '1kg'),
+        const Variant(name: '500l'),
       ];
     } else if (selectedCategory.value == 'electronics') {
       newVariants = [
@@ -865,7 +864,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                 ) ??
                                                 0.0,
                                             filterTags: filterTags,
-                                        
 
                                             variantDetails: variants.value,
                                           );
@@ -877,12 +875,12 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                               widget.mainCategoryId ?? "",
                                             ),
                                           );
-                                          // previewImage.value = null;
-                                          // image2.value = null;
-                                          // image3.value = null;
-                                          // context.read<ImageAuth>().add(
-                                          //   ClearPickedImageEvent(),
-                                          // );
+                                          previewImage.value = null;
+                                          image2.value = null;
+                                          image3.value = null;
+                                          context.read<ImageAuth>().add(
+                                            ClearPickedImageEvent(),
+                                          );
                                         }
                                       } else {}
                                     },

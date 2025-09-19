@@ -19,8 +19,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AddSubcategory extends StatelessWidget {
   CategoryEntities category;
-
-  AddSubcategory({super.key, required this.category});
+  CategoryEntities? subCategory;
+  AddSubcategory({super.key, required this.category, this.subCategory});
 
   @override
   Widget build(BuildContext context) {
@@ -28,169 +28,177 @@ class AddSubcategory extends StatelessWidget {
       create: (context) =>
           SubCategoryBloc(sl<GettingSubcategoryUsecase>())
             ..add(GetSubCategoryEvent(category.uid)),
-      child: Scaffold(
-        backgroundColor: ColoRs.whiteColor,
-        appBar: AppBar(
-          backgroundColor: const Color(0xFFF7F8FA),
-          elevation: 0,
-          title: Text(
-            category.category,
-            style: GoogleFonts.inter(
-              color: const Color(0xFF111418),
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.015 * 18,
-            ),
-          ),
-          centerTitle: true,
-        ),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ColoRs.elevatedButtonColor,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
+      child: Builder(
+        builder: (context) {
+          return Scaffold(
+            backgroundColor: ColoRs.whiteColor,
+            appBar: AppBar(
+              backgroundColor: const Color(0xFFF7F8FA),
+              elevation: 0,
+              title: Text(
+                category.category,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF111418),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.015 * 18,
+                ),
               ),
+              centerTitle: true,
             ),
-            onPressed: () {
-              Navigator.push(
-                context,
+            bottomNavigationBar: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColoRs.elevatedButtonColor,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
 
-                MaterialPageRoute(
-                  builder: (context) {
-                    return AddCategoryWidget(id: category.uid);
-                  },
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return AddCategoryWidget(id: category.uid);
+                      },
+                    ),
+                  );
+                  context.read<SubCategoryBloc>().add(
+                    GetSubCategoryEvent(category.uid),
+                  );
+                },
+                child: const Text(
+                  'Add SubCategory',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: ColoRs.whiteColor,
+                    fontFamily: Fonts.raleway,
+                  ),
                 ),
-              );
-            },
-            child: const Text(
-              'Add SubCategory',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: ColoRs.whiteColor,
-                fontFamily: Fonts.raleway,
               ),
             ),
-          ),
-        ),
-        body: RefreshIndicator(
-          onRefresh: () async {
-            context.read<SubCategoryBloc>().add(
-              GetSubCategoryEvent(category.uid),
-            );
-            await Future.delayed(const Duration(milliseconds: 600));
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search products',
-                      hintStyle: GoogleFonts.inter(
-                        color: const Color(0xFF5D7389),
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
+            body: RefreshIndicator(
+              onRefresh: () async {
+                context.read<SubCategoryBloc>().add(
+                  GetSubCategoryEvent(category.uid),
+                );
+                await Future.delayed(const Duration(milliseconds: 600));
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: Color(0xFF5D7389),
-                        size: 24,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFFEAEDF1),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 16,
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Search products',
+                          hintStyle: GoogleFonts.inter(
+                            color: const Color(0xFF5D7389),
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search,
+                            color: Color(0xFF5D7389),
+                            size: 24,
+                          ),
+                          filled: true,
+                          fillColor: const Color(0xFFEAEDF1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 16,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: Text(
-                    ' Categories',
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF111418),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.015 * 18,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                      child: Text(
+                        ' Categories',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF111418),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.015 * 18,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                BlocBuilder<SubCategoryBloc, SubCategoryState>(
-                  builder: (context, state) {
-                    if (state is SubCategoryLoadingState) {
-                      return buildShimmerLoading();
-                    } else if (state is SubCategoryErrorState) {
-                      return buildErrorState(context, state.error);
-                    } else if (state is SubCategoryLoadedState) {
-                      if (state.categories.isEmpty) {
-                        return const Center(
-                          child: Text("No categories available."),
-                        );
-                      }
-                      return Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          padding: const EdgeInsets.all(8),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 14,
-                                crossAxisSpacing: 14,
-                                childAspectRatio: 0.9,
-                              ),
-                          itemCount: state.categories.length,
-                          itemBuilder: (context, index) {
-                            final doc = state.categories[index];
-                            return CategoryItem(
-                              doc: doc,
-                              isSelectedSelector: (state) =>
-                                  state is CategoryLoadedState &&
-                                  state.selectedCategoryId == doc.uid,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) {
-                                      return ProductScreen(
-                                        mainCategoryId: category.uid,
-                                        subcategory: doc.uid,
-                                      );
-                                    },
+                    BlocBuilder<SubCategoryBloc, SubCategoryState>(
+                      builder: (context, state) {
+                        if (state is SubCategoryLoadingState) {
+                          return buildShimmerLoading();
+                        } else if (state is SubCategoryErrorState) {
+                          return buildErrorState(context, state.error);
+                        } else if (state is SubCategoryLoadedState) {
+                          if (state.categories.isEmpty) {
+                            return const Center(
+                              child: Text("No categories available."),
+                            );
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              padding: const EdgeInsets.all(8),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 14,
+                                    crossAxisSpacing: 14,
+                                    childAspectRatio:
+                                        MediaQuery.of(
+                                          context,
+                                        ).size.aspectRatio *
+                                        1.75,
                                   ),
-                                );
-                                context.read<SubCategoryBloc>().add(
-                                  GetSubCategoryEvent(category.uid),
+                              itemCount: state.categories.length,
+                              itemBuilder: (context, index) {
+                                final doc = state.categories[index];
+                                return CategoryItem(
+                                  doc: doc,
+                                  isSelectedSelector: (state) =>
+                                      state is CategoryLoadedState &&
+                                      state.selectedCategoryId == doc.uid,
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) {
+                                          return ProductScreen(
+                                            mainCategoryId: category.uid,
+                                            subcategory: doc.uid,
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
                                 );
                               },
-                            );
-                          },
-                        ),
-                      );
-                    }
-                    return const SizedBox();
-                  },
+                            ),
+                          );
+                        }
+                        return const SizedBox();
+                      },
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
