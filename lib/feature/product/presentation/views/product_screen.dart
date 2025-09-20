@@ -1,266 +1,701 @@
+import 'dart:io';
+
+import 'package:animate_do/animate_do.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/color.dart';
+import 'package:empire/core/utilis/commonvalidator.dart';
 import 'package:empire/core/utilis/constants.dart';
 import 'package:empire/core/utilis/fonts.dart';
-import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
-import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
+import 'package:empire/feature/auth/presentation/bloc/login_bloc.dart';
+
 import 'package:empire/feature/auth/presentation/bloc/profile_image_bloc.dart';
+import 'package:empire/feature/product/domain/enities/listproducts.dart';
+import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
+import 'package:empire/feature/product/presentation/bloc/add_product_bloc/brand.dart';
 
 import 'package:empire/feature/product/presentation/views/add_product.dart/add_product.dart';
 import 'package:empire/feature/product/domain/repository/prodcuct_call_repository.dart';
 import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
 import 'package:empire/feature/product/presentation/bloc/product_bloc.dart';
+import 'package:empire/feature/product/presentation/views/add_product.dart/widgets.dart';
 import 'package:empire/feature/product/presentation/views/product_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ProductScreen extends StatelessWidget {
   String? mainCategoryId;
   String? subcategory;
   ProductScreen({super.key, this.subcategory, this.mainCategoryId});
-
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  TextEditingController brandImage = TextEditingController();
+  TextEditingController brandname = TextEditingController();
+  final brandKey = GlobalKey<FormState>();
+  File? imageFile;
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: ColoRs.elevatedButtonColor,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) {
-                  return AddProdutsPage(
-                    mainCategoryId: mainCategoryId,
-                    id: subcategory,
-                  );
-                },
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<ProductcalingBloc>(
+          create: (_) =>
+              ProductcalingBloc(
+                ProductcallingUsecase(sl<ProdcuctsRepository>()),
+              )..add(
+                ProductCallingEvent(
+                  mainCategoryId: mainCategoryId!,
+                  subCategoryId: subcategory!,
+                ),
               ),
-            );
-          },
-          child: const Text(
-            'Add prodcut',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: ColoRs.whiteColor,
-              fontFamily: Fonts.raleway,
-            ),
-          ),
         ),
-      ),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          style: IconButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-        title: const Text('', style: TextStyle(color: Colors.black)),
-        centerTitle: true,
-      ),
-      body: MultiBlocProvider(
-        providers: [
-          BlocProvider<ImageAuth>(
-            create: (_) => ImageAuth(
-              sl<PickImageFromCamera>(),
-              sl<PickImageFromGallery>(),
-            ),
-          ),
-          BlocProvider<ProductcalingBloc>(
-            create: (_) =>
-                ProductcalingBloc(
-                  ProductcaliingUsecase(sl<ProdcuctsRepository>()),
-                )..add(
-                  ProductCallingEvent(
+        BlocProvider(
+          create: (context) =>
+              BrandBloc(sl<ProductcallingUsecase>(), sl<AddProductUseCase>())
+                ..add(
+                  BrandFetching(
                     mainCategoryId: mainCategoryId!,
                     subCategoryId: subcategory!,
                   ),
                 ),
-          ),
-        ],
-        child: SingleChildScrollView(
-          reverse: true,
-          child: BlocBuilder<ProductcalingBloc, Productstate>(
-            builder: (context, state) {
-              if (state is ProductError) {
-                return Center(child: Text(state.messange));
-              }
-              if (state is Productfetched) {
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<ProductcalingBloc>().add(
-                      ProductCallingEvent(
-                        mainCategoryId: mainCategoryId!,
-                        subCategoryId: subcategory!,
-                      ),
-                    );
-                    await Future.delayed(const Duration(milliseconds: 600));
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.only(left: 9, right: 9),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 24),
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Search',
-                              hintStyle: const TextStyle(color: Colors.grey),
-                              prefixIcon: const Icon(
-                                Icons.search,
-                                color: Colors.grey,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: const Icon(
-                                  Icons.tune,
-                                  color: Colors.white,
-                                ),
-                                onPressed: () {},
-                                style: IconButton.styleFrom(
-                                  backgroundColor: Colors.black,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50),
-                                  ),
-                                ),
-                              ),
-                              filled: true,
-                              fillColor: const Color(0xFFF3F4F6),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(50),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-                        ),
-                        // Brand Icons
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 24),
-                          height: 80,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            children: [
-                              const BrandIcon(
-                                imageUrl:
-                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuCd8blTYwudo8a3rKCe98fS0gOfP4BHWVHOUls-Wa3EyOJw0w351TbIJXp74WEEYb8EbnJN_c95rs5V8BTUIkDyT8lLzZL9GjToa8Ktn4KK3upnaEhR9ufFzWgkFeIY7re8qzVudLMc4JK_5iKUOh_E0dgXTIISH_lLJZuqWE3m-xMcQLSUNxFuTqFIf3h2My90EvfzyRZMOswnjU3B-ktQP69o764xTSbaGRn2XZSvCeNjn2c7StMGe9OQA7q_O4yO3BYv9Qz1kBw',
-                                label: 'Nike',
-                                isActive: true,
-                              ),
-                              const BrandIcon(
-                                imageUrl:
-                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuC04AclBdjz99tsM5kY_6u6pqJDEx9o9jdf6TM_1AgyVAzkUyHo7bh9N0ktcCVgdIuq_Bz6izfJu92EoEobQwaibP2ewyJE-LIqAM0AuIum0hSpaJlNSzf_uUCISZGSKzMssB11PyNtI9O7lAdqMOs6Ykl1PrdVxEqS5zjgXXtclMboSSgEBKu0OY5rFSa_PQZ-JtpAe04IIev8fjqlhFXbJHsbZs8hVyBSLs987LIZe5k48GiCvkywlZDLQY0N0Fwyt4kNnOGSukQ',
-                                label: 'Puma',
-                              ),
-                              const BrandIcon(
-                                imageUrl:
-                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuAsH2B69AzShXh-ws4KXXx2xW2qb6y1bR1t7prWq6Yh4GXZZneauX8TojYgCRsY0sRj7UcWUqijHk_tzOF-QJ6CIDyrc7hD508mWTC-O3aQ1BUY2viuhPo5yxp7rFzfO284aybeHCrnmtJHRv-LRPCQzyJ2orPLMaSAJbOWTRBKOeJXkPB54dotd0xFFBQujnyaD9l5_kTr1HUOVpkER7Zkp2G30wNXsMLg3E5TyO-q8btKYDqcnIty59DO_XuQLzh3GF-FX-gPT_0',
-                                label: 'Reebok',
-                              ),
-                              const BrandIcon(
-                                imageUrl:
-                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuBwylofnzPRi_Hce_cARd18LV1Pf2apqH8Jtjt9-GucSJ1ToPrTj9N3pdVeIlok3LE_6d4vq-uVFMhXEztnBWm2eduE_yDp9GfxDd5bWQ8X5JjqMeIrcI6TkAKaxU7COTzo0eVG5x9CffcvwkjRZ0GIvMbw5H-6qDY01-Kea552jHmH4TolrVvGQuZHlDUQt-xA3rn0ZIxjOTZRMPrguFYGHm9m5BIm3_W9JNQ0tqHjA7RAWeml7wZ-d4mxWOqffSB7-DBU8Fya090',
-                                label: 'Adidas',
-                              ),
-                              const BrandIcon(
-                                imageUrl:
-                                    'https://lh3.googleusercontent.com/aida-public/AB6AXuA2Ma-j6RJclm274lW5MoOqqT6hF5U5c_PowpYdy_sie80Srtki3ts_HKirkI3rl2JWHFEpjeIBMKbtfaJVs9fEBabFnpLTR_vlIfQrqJIX8DQ1esyxIomLz7ezynDbyHytRZ5h3IXG_n0Xxnia8JZZr2G-wfy5a6ea1vspwNKmhOev5Hop2s_b0SYpEPHv6fNOX0imNU8Hfr3xEyPN5G6J5h8RKsPiyh1C6AWOe9B80bJMj_uazobNSUC3MEhPCVEdCEQ2gtV0yz4',
-                                label: 'Fila',
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'New Product',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {},
-                              child: const Text(
-                                'See all',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        state.products.isEmpty
-                            ? const SizedBox()
-                            : GridView.builder(
-                                physics: const NeverScrollableScrollPhysics(),
-                                shrinkWrap: true,
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 2.0,
-                                      crossAxisSpacing: 1.0,
-                                      childAspectRatio: 1 / .60,
-                                    ),
-                                itemCount: state.products.length,
-                                itemBuilder: (context, index) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) {
-                                            return ProductDetailsPage(
-                                              product: state.products[index],
-                                              mainCategoryId: mainCategoryId,
-                                              subcategory: subcategory,
-                                            );
-                                          },
-                                        ),
-                                      );
-                                    },
-                                    child: ProductCard(
-                                      imageUrl:
-                                          state.products[index].images.first ==
-                                              []
-                                          ? null
-                                          : state.products[index].images.first,
-                                      title: state.products[index].name,
-                                      discount: state
-                                          .products[index]
-                                          .discountPrice
-                                          .toString(),
-                                      price: state.products[index].price,
-                                    ),
-                                  );
-                                },
-                              ),
-                      ],
-                    ),
+        ),
+      ],
+      child: RefreshIndicator(
+        onRefresh: () async {
+          context.read<ProductcalingBloc>().add(
+            ProductCallingEvent(
+              mainCategoryId: mainCategoryId!,
+              subCategoryId: subcategory!,
+            ),
+          );
+          context.read<BrandBloc>().add(
+            BrandFetching(
+              mainCategoryId: mainCategoryId!,
+              subCategoryId: subcategory!,
+            ),
+          );
+          await Future.delayed(const Duration(milliseconds: 600));
+        },
+        child: Scaffold(
+          bottomNavigationBar: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColoRs.elevatedButtonColor,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                ),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) {
+                      return AddProdutsPage(
+                        mainCategoryId: mainCategoryId,
+                        id: subcategory,
+                      );
+                    },
                   ),
                 );
-              }
-              return const Center(child: CircularProgressIndicator());
+              },
+              child: const Text(
+                'Add prodcut',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: ColoRs.whiteColor,
+                  fontFamily: Fonts.raleway,
+                ),
+              ),
+            ),
+          ),
+          appBar: AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              style: IconButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+            title: const Text('', style: TextStyle(color: Colors.black)),
+            centerTitle: true,
+          ),
+          body: Builder(
+            builder: (context) {
+              return SingleChildScrollView(
+                reverse: true,
+                child: BlocBuilder<ProductcalingBloc, Productstate>(
+                  builder: (context, state) {
+                    if (state is ProductError) {
+                      return Center(child: Text(state.messange));
+                    }
+                    if (state is Productfetched) {
+                      return Builder(
+                        builder: (context) {
+                          return LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isWideScreen = constraints.maxWidth > 600;
+                              final maxWidth = isWideScreen
+                                  ? 480.0
+                                  : constraints.maxWidth * 0.9;
+                              return Container(
+                                margin: const EdgeInsets.only(
+                                  left: 9,
+                                  right: 9,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Container(
+                                    //   margin: const EdgeInsets.only(bottom: 24),
+                                    //   child: TextField(
+                                    //     decoration: InputDecoration(
+                                    //       hintText: 'Search',
+                                    //       hintStyle: const TextStyle(
+                                    //         color: Colors.grey,
+                                    //       ),
+                                    //       prefixIcon: const Icon(
+                                    //         Icons.search,
+                                    //         color: Colors.grey,
+                                    //       ),
+                                    //       suffixIcon: IconButton(
+                                    //         icon: const Icon(
+                                    //           Icons.tune,
+                                    //           color: Colors.white,
+                                    //         ),
+                                    //         onPressed: () {},
+                                    //         style: IconButton.styleFrom(
+                                    //           backgroundColor: Colors.black,
+                                    //           shape: RoundedRectangleBorder(
+                                    //             borderRadius:
+                                    //                 BorderRadius.circular(50),
+                                    //           ),
+                                    //         ),
+                                    //       ),
+                                    //       filled: true,
+                                    //       fillColor: const Color(0xFFF3F4F6),
+                                    //       border: OutlineInputBorder(
+                                    //         borderRadius: BorderRadius.circular(
+                                    //           50,
+                                    //         ),
+                                    //         borderSide: BorderSide.none,
+                                    //       ),
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    Container(
+                                      margin: const EdgeInsets.only(bottom: 24),
+
+                                      height: 80,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          BlocBuilder<BrandBloc, BrandState>(
+                                            builder: (context, state) {
+                                              if (state is LoginLoading) {
+                                                return Shimmer(
+                                                  gradient:
+                                                      const LinearGradient(
+                                                        colors: [
+                                                          Colors.black26,
+                                                          Colors.white,
+                                                        ],
+                                                      ),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Container(
+                                                        height: 24,
+                                                        padding:
+                                                            const EdgeInsets.all(
+                                                              12,
+                                                            ),
+                                                        decoration:
+                                                            const BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                            ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        '',
+                                                        style: Theme.of(context)
+                                                            .textTheme
+                                                            .labelMedium!
+                                                            .copyWith(
+                                                              color:
+                                                                  Colors.black,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              } else if (state is LoadedBrand) {
+                                                if (state.brands.isEmpty) {
+                                                  return const Center(
+                                                    child: Text('No Brand '),
+                                                  );
+                                                } else {
+                                                  return SizedBox(
+                                                    width:
+                                                        MediaQuery.of(
+                                                          context,
+                                                        ).size.width *
+                                                        0.83,
+                                                    child: ListView.builder(
+                                                      shrinkWrap: true,
+                                                      physics:
+                                                          const AlwaysScrollableScrollPhysics(),
+                                                      itemCount:
+                                                          state.brands.length,
+                                                      scrollDirection:
+                                                          Axis.horizontal,
+                                                      itemBuilder:
+                                                          (context, index) {
+                                                            return BrandIcon(
+                                                              imageUrl: state
+                                                                  .brands[index]
+                                                                  .imageUrl,
+                                                              label: state
+                                                                  .brands[index]
+                                                                  .label,
+                                                              isActive: true,
+                                                            );
+                                                          },
+                                                    ),
+                                                  );
+                                                }
+                                              }
+
+                                              return const CircleAvatar();
+                                            },
+                                          ),
+                                          IconButton(
+                                            onPressed: () async {
+                                              final brands = context
+                                                  .read<BrandBloc>();
+                                              showModalBottomSheet(
+                                                context: context,
+                                                isScrollControlled: true,
+                                                backgroundColor: Colors.white,
+                                                useSafeArea: true,
+                                                builder: (bottomSheetContext) {
+                                                  return MultiBlocProvider(
+                                                    providers: [
+                                                      BlocProvider.value(
+                                                        value: brands,
+                                                      ),
+                                                    ],
+                                                    child: SlideInUp(
+                                                      duration: const Duration(
+                                                        milliseconds: 150,
+                                                      ),
+                                                      child: SingleChildScrollView(
+                                                        child: Container(
+                                                          decoration: const BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius.vertical(
+                                                                  top:
+                                                                      Radius.circular(
+                                                                        24.0,
+                                                                      ),
+                                                                ),
+                                                          ),
+                                                          child: Padding(
+                                                            padding: EdgeInsets.only(
+                                                              bottom:
+                                                                  MediaQuery.of(
+                                                                        context,
+                                                                      )
+                                                                      .viewInsets
+                                                                      .bottom,
+                                                              left: 16.0,
+                                                              right: 16.0,
+                                                              top: 16.0,
+                                                            ),
+                                                            child: Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children: [
+                                                                Builder(
+                                                                  builder: (context) {
+                                                                    return BlocBuilder<
+                                                                      ImageAuth,
+                                                                      ImagePickerState
+                                                                    >(
+                                                                      builder:
+                                                                          (
+                                                                            context,
+                                                                            state,
+                                                                          ) {
+                                                                            if (state
+                                                                                is ImagePickedSuccess) {
+                                                                              imageFile = File(
+                                                                                state.image,
+                                                                              );
+                                                                            }
+
+                                                                            return Column(
+                                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                                              children: [
+                                                                                const SizedBox(
+                                                                                  height: 16,
+                                                                                ),
+
+                                                                                Text(
+                                                                                  'Upload Brand Image',
+                                                                                  style: GoogleFonts.inter(
+                                                                                    color: const Color(
+                                                                                      0xFF111418,
+                                                                                    ),
+                                                                                    fontSize: 18,
+                                                                                    fontWeight: FontWeight.w800,
+                                                                                    letterSpacing:
+                                                                                        -0.015 *
+                                                                                        18,
+                                                                                  ),
+                                                                                ),
+                                                                                const SizedBox(
+                                                                                  height: 8,
+                                                                                ),
+                                                                                Container(
+                                                                                  constraints: BoxConstraints(
+                                                                                    maxWidth: maxWidth,
+                                                                                  ),
+                                                                                  decoration: BoxDecoration(
+                                                                                    border: Border.all(
+                                                                                      color: const Color(
+                                                                                        0xFFD5DBE2,
+                                                                                      ),
+                                                                                      width: 2,
+                                                                                      style: BorderStyle.solid,
+                                                                                    ),
+                                                                                    borderRadius: BorderRadius.circular(
+                                                                                      12,
+                                                                                    ),
+                                                                                  ),
+                                                                                  padding: const EdgeInsets.symmetric(
+                                                                                    vertical: 56,
+                                                                                    horizontal: 24,
+                                                                                  ),
+                                                                                  child: Column(
+                                                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                                                    children: [
+                                                                                      if (imageFile !=
+                                                                                          null)
+                                                                                        ClipRRect(
+                                                                                          borderRadius: BorderRadius.circular(
+                                                                                            8,
+                                                                                          ),
+                                                                                          child: Image.file(
+                                                                                            imageFile!,
+                                                                                            width: 380,
+                                                                                            height: 200,
+                                                                                            fit: BoxFit.cover,
+                                                                                          ),
+                                                                                        )
+                                                                                      else
+                                                                                        Column(
+                                                                                          children: [
+                                                                                            Text(
+                                                                                              'Upload Image',
+                                                                                              style: GoogleFonts.inter(
+                                                                                                color: const Color(
+                                                                                                  0xFF111418,
+                                                                                                ),
+                                                                                                fontSize: 18,
+                                                                                                fontWeight: FontWeight.bold,
+                                                                                                letterSpacing:
+                                                                                                    -0.015 *
+                                                                                                    18,
+                                                                                              ),
+                                                                                              textAlign: TextAlign.center,
+                                                                                            ),
+                                                                                            const SizedBox(
+                                                                                              height: 8,
+                                                                                            ),
+                                                                                            Text(
+                                                                                              'Click here to upload an image for the new category.',
+                                                                                              style: GoogleFonts.inter(
+                                                                                                color: const Color(
+                                                                                                  0xFF111418,
+                                                                                                ),
+                                                                                                fontSize: 14,
+                                                                                                fontWeight: FontWeight.normal,
+                                                                                              ),
+                                                                                              textAlign: TextAlign.center,
+                                                                                            ),
+                                                                                          ],
+                                                                                        ),
+                                                                                      const SizedBox(
+                                                                                        height: 24,
+                                                                                      ),
+                                                                                      const SizedBox(
+                                                                                        height: 24,
+                                                                                      ),
+                                                                                      ElevatedButton(
+                                                                                        style: ElevatedButton.styleFrom(
+                                                                                          backgroundColor: ColoRs.elevatedButtonColor,
+                                                                                          foregroundColor: ColoRs.whiteColor,
+                                                                                          textStyle: GoogleFonts.inter(
+                                                                                            fontSize: 14,
+                                                                                            fontWeight: FontWeight.bold,
+                                                                                            letterSpacing:
+                                                                                                0.015 *
+                                                                                                14,
+                                                                                          ),
+                                                                                          padding: const EdgeInsets.symmetric(
+                                                                                            horizontal: 16,
+                                                                                            vertical: 10,
+                                                                                          ),
+                                                                                          shape: RoundedRectangleBorder(
+                                                                                            borderRadius: BorderRadius.circular(
+                                                                                              10,
+                                                                                            ),
+                                                                                          ),
+                                                                                          minimumSize: const Size(
+                                                                                            84,
+                                                                                            40,
+                                                                                          ),
+                                                                                        ),
+                                                                                        onPressed: () {
+                                                                                          context
+                                                                                              .read<
+                                                                                                ImageAuth
+                                                                                              >()
+                                                                                              .add(
+                                                                                                ChooseImageFromGalleryEvent(),
+                                                                                              );
+                                                                                        },
+                                                                                        child: const Text(
+                                                                                          'Upload Image',
+                                                                                        ),
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                ),
+                                                                              ],
+                                                                            );
+                                                                          },
+                                                                    );
+                                                                  },
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 24,
+                                                                ),
+                                                                const Align(
+                                                                  alignment:
+                                                                      Alignment
+                                                                          .topLeft,
+                                                                  child: Titlesnew(
+                                                                    nametitle:
+                                                                        'Add Brand',
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 24,
+                                                                ),
+                                                                Form(
+                                                                  key: brandKey,
+                                                                  child: InputFieldNew(
+                                                                    controller:
+                                                                        brandname,
+                                                                    hintText:
+                                                                        'Enter new Brand',
+                                                                    validator:
+                                                                        (
+                                                                          value,
+                                                                        ) => Validators.validateString(
+                                                                          value ??
+                                                                              "",
+                                                                          'Brand',
+                                                                        ),
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 20.0,
+                                                                ),
+                                                                GradientButtonNew(
+                                                                  text:
+                                                                      'Add Brand',
+                                                                  height:
+                                                                      MediaQuery.of(
+                                                                        context,
+                                                                      ).size.height *
+                                                                      0.05,
+                                                                  width:
+                                                                      MediaQuery.of(
+                                                                        context,
+                                                                      ).size.width -
+                                                                      100,
+                                                                  onTap: () async {
+                                                                    if (brandKey
+                                                                        .currentState!
+                                                                        .validate()) {
+                                                                      context
+                                                                          .read<
+                                                                            BrandBloc
+                                                                          >()
+                                                                          .add(
+                                                                            BrandAdding(
+                                                                              mainCategoryId: mainCategoryId!,
+                                                                              subCategoryId: subcategory!,
+                                                                              brand: Brand(
+                                                                                imageUrl: imageFile!.path,
+                                                                                label: brandname.text,
+                                                                              ),
+                                                                            ),
+                                                                          );
+                                                                      context
+                                                                          .read<
+                                                                            BrandBloc
+                                                                          >()
+                                                                          .add(
+                                                                            BrandFetching(
+                                                                              mainCategoryId: mainCategoryId!,
+                                                                              subCategoryId: subcategory!,
+                                                                            ),
+                                                                          );
+                                                                      Navigator.pop(
+                                                                        context,
+                                                                      );
+                                                                    }
+                                                                  },
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 20.0,
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            },
+
+                                            icon: const Icon(
+                                              Icons.add_circle_outline,
+                                              size: 38,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        const Text(
+                                          'New Product',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {},
+                                          child: const Text(
+                                            'See all',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 16),
+
+                                    state.products.isEmpty
+                                        ? const SizedBox()
+                                        : GridView.builder(
+                                            physics:
+                                                const NeverScrollableScrollPhysics(),
+                                            shrinkWrap: true,
+                                            gridDelegate:
+                                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                                  crossAxisCount: 2,
+                                                  mainAxisSpacing: 2.0,
+                                                  crossAxisSpacing: 1.0,
+                                                  childAspectRatio: 1 / .60,
+                                                ),
+                                            itemCount: state.products.length,
+                                            itemBuilder: (context, index) {
+                                              return GestureDetector(
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder: (context) {
+                                                        return ProductDetailsPage(
+                                                          product: state
+                                                              .products[index],
+                                                          mainCategoryId:
+                                                              mainCategoryId,
+                                                          subcategory:
+                                                              subcategory,
+                                                        );
+                                                      },
+                                                    ),
+                                                  );
+                                                },
+                                                child: ProductCard(
+                                                  imageUrl:
+                                                      state
+                                                              .products[index]
+                                                              .images
+                                                              .first ==
+                                                          []
+                                                      ? null
+                                                      : state
+                                                            .products[index]
+                                                            .images
+                                                            .first,
+                                                  title: state
+                                                      .products[index]
+                                                      .name,
+                                                  discount: state
+                                                      .products[index]
+                                                      .discountPrice
+                                                      .toString(),
+                                                  price: state
+                                                      .products[index]
+                                                      .price,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    }
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                ),
+              );
             },
           ),
         ),
@@ -286,19 +721,26 @@ class BrandIcon extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isActive ? Colors.black : const Color(0xFFF3F4F6),
-              shape: BoxShape.circle,
+            height: 50,
+            width: 50,
+            decoration: const BoxDecoration(
+              // color: isActive ? Colors.black : const Color(0xFFF3F4F6),
             ),
-            child: Image.network(
-              imageUrl,
-              height: 24,
-              color: isActive ? Colors.white : null,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.error),
+            child: ClipRRect(
+              borderRadius: BorderRadiusGeometry.circular(30),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.fill,
+                placeholder: (context, url) {
+                  return const CircularProgressIndicator();
+                },
+                // color: isActive ? Colors.white : null,
+                errorWidget: (context, error, stackTrace) =>
+                    const Icon(Icons.error),
+              ),
             ),
           ),
           const SizedBox(height: 4),

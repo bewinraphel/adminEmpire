@@ -64,7 +64,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
   final images = List.generate(3, (dynamic index) => 'null', growable: true);
   ImageSources gallery = ImageSources();
   String? image4;
-  List<String> categoryList = ['dress', 'food', 'electronics', 'accessories'];
+  List<String> categoryList = ['dress', 'Drinks', 'electronics', 'accessories'];
   ValueNotifier<List<Variant>> variants = ValueNotifier([]);
 
   Map<String, int> variantQuantities = {};
@@ -82,11 +82,11 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
         const Variant(name: 'L'),
         const Variant(name: 'XL'),
       ];
-    } else if (selectedCategory.value == 'food') {
+    } else if (selectedCategory.value == 'Drinks') {
       newVariants = [
         const Variant(name: '250l'),
-        const Variant(name: '1l'),
         const Variant(name: '500l'),
+        const Variant(name: '1l'),
       ];
     } else if (selectedCategory.value == 'electronics') {
       newVariants = [
@@ -146,7 +146,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
       providers: [
         BlocProvider(
           create: (context) => ProductBloc(
-            AddProduct(ProductRepositoryImpl(sl<ProductDataSource>())),
+            AddProductUseCase(ProductRepositoryImpl(sl<ProductDataSource>())),
           ),
         ),
         BlocProvider<ImageAuth>(
@@ -605,7 +605,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             const SizedBox(height: 20.0),
                             const Titlesnew(nametitle: 'Product Name'),
                             const SizedBox(height: 10.0),
-                            InputFieldNew(
+                            InputFieldNews(
                               controller: productName,
                               hintText: 'Enter product name',
                               validator: (value) => Validators.validateString(
@@ -616,7 +616,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             const SizedBox(height: 20.0),
                             const Titlesnew(nametitle: 'Description'),
                             const SizedBox(height: 20.0),
-                            InputFieldNew(
+                            InputFieldNews(
                               controller: description,
                               hintText: 'Enter description',
                               validator: (value) => Validators.validateString(
@@ -628,7 +628,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             const Titlesnew(nametitle: 'quantity'),
 
                             const SizedBox(height: 10.0),
-                            InputFieldNew(
+                            InputFieldNews(
                               controller: quantity,
                               hintText: 'Enter Qunatity (e.g.,10)',
                               keyboardType:
@@ -645,7 +645,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             const Titlesnew(nametitle: 'price'),
 
                             const SizedBox(height: 10.0),
-                            InputFieldNew(
+                            InputFieldNews(
                               controller: price,
                               hintText: 'Enter price (e.g.34.90)',
                               keyboardType:
@@ -660,7 +660,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             const SizedBox(height: 20.0),
                             const Titlesnew(nametitle: 'Tags'),
                             const SizedBox(height: 10.0),
-                            InputFieldNew(
+                            InputFieldNews(
                               controller: tags,
                               hintText: 'Enter tags (e.g., casual, summer)',
                               validator: (value) => Validators.validateString(
@@ -675,7 +675,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                             const SizedBox(height: 20.0),
                             const Titlesnew(nametitle: 'Tax Rate (%)'),
                             const SizedBox(height: 10.0),
-                            InputFieldNew(
+                            InputFieldNews(
                               controller: taxRate,
                               hintText: 'Enter tax rate (e.g., 10)',
                               keyboardType: TextInputType.number,
@@ -853,16 +853,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                               image2.value!,
                                               image3.value!,
                                             ],
-                                            priceRangeMin:
-                                                double.tryParse(
-                                                  priceRangeMin.text,
-                                                ) ??
-                                                0.0,
-                                            priceRangeMax:
-                                                double.tryParse(
-                                                  priceRangeMax.text,
-                                                ) ??
-                                                0.0,
+                                           
                                             filterTags: filterTags,
 
                                             variantDetails: variants.value,
@@ -1077,7 +1068,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                         const SizedBox(height: 10.0),
                                         Form(
                                           key: categoryKey,
-                                          child: InputFieldNew(
+                                          child: InputFieldNews(
                                             controller: categoryController,
                                             hintText: 'Enter new category',
                                             validator: (value) =>
@@ -1200,7 +1191,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                         12.0,
                                                       ),
                                                 ),
-                                                child: InputFieldNew(
+                                                child: InputFieldNews(
                                                   controller:
                                                       regularpriceControllers[index],
                                                   hintText:
@@ -1257,7 +1248,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                         12.0,
                                                       ),
                                                 ),
-                                                child: InputFieldNew(
+                                                child: InputFieldNews(
                                                   controller:
                                                       quantityControllers[index],
                                                   hintText:
@@ -1316,7 +1307,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                         12.0,
                                                       ),
                                                 ),
-                                                child: InputFieldNew(
+                                                child: InputFieldNews(
                                                   controller:
                                                       weightControllers[index],
                                                   hintText:
@@ -1488,12 +1479,12 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
             Expanded(
               child: Form(
                 key: variantKey,
-                child: InputFieldNew(
+                child: InputFieldNews(
                   controller: variantName,
                   hintText:
                       'Add variant (e.g., ${selectedCategory.value == 'dress'
                           ? 'S, M, L'
-                          : selectedCategory.value == 'food'
+                          : selectedCategory.value == 'Drinks'
                           ? '200ml, 1l'
                           : 'black, silver'})',
                   validator: (value) =>
@@ -1576,7 +1567,7 @@ class Wieghts extends StatelessWidget {
       children: [
         const Titlesnew(nametitle: 'Weight (kg)'),
         const SizedBox(height: 10.0),
-        InputFieldNew(
+        InputFieldNews(
           controller: weight,
           hintText: 'Enter weight (e.g., 1.5)',
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -1589,7 +1580,7 @@ class Wieghts extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: InputFieldNew(
+              child: InputFieldNews(
                 controller: length,
                 hintText: 'Length',
                 keyboardType: const TextInputType.numberWithOptions(
@@ -1602,7 +1593,7 @@ class Wieghts extends StatelessWidget {
             ),
             SizedBox(width: constraint.maxWidth * 0.02),
             Expanded(
-              child: InputFieldNew(
+              child: InputFieldNews(
                 controller: width,
                 hintText: 'Width',
                 keyboardType: const TextInputType.numberWithOptions(
@@ -1615,7 +1606,7 @@ class Wieghts extends StatelessWidget {
             ),
             SizedBox(width: constraint.maxWidth * 0.02),
             Expanded(
-              child: InputFieldNew(
+              child: InputFieldNews(
                 controller: height,
                 hintText: 'Height',
                 keyboardType: const TextInputType.numberWithOptions(
@@ -1746,7 +1737,7 @@ class SecondImage extends StatelessWidget {
   }
 }
 
-class InputFieldNew extends StatelessWidget {
+class InputFieldNews extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final TextInputType? keyboardType;
@@ -1754,7 +1745,7 @@ class InputFieldNew extends StatelessWidget {
   final void Function(String)? onChanged;
   final bool futuristic;
 
-  const InputFieldNew({
+  const InputFieldNews({
     super.key,
     required this.controller,
     required this.hintText,

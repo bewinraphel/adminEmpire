@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 
 class ProductEntity extends Equatable {
@@ -15,18 +14,14 @@ class ProductEntity extends Equatable {
   final double width;
   final double height;
   final double taxRate;
-
   final String category;
-
   final int quantities;
   final List<String> images;
-  final double priceRangeMin;
-  final double priceRangeMax;
-  final List<String> filterTags;
  
+  final List<String> filterTags;
   final List<Variant> variantDetails;
   const ProductEntity({
-     this.productDocId,
+    this.productDocId,
     required this.name,
     required this.description,
     required this.price,
@@ -39,42 +34,36 @@ class ProductEntity extends Equatable {
     required this.width,
     required this.height,
     required this.taxRate,
-
     required this.category,
-
     required this.quantities,
     required this.images,
-    required this.priceRangeMin,
-    required this.priceRangeMax,
-    required this.filterTags,
  
+    required this.filterTags,
+
     required this.variantDetails,
   });
 
-
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'description': description,
-        'price': price,
-        'discountPrice': discountPrice,
-        'sku': sku,
-        'tags': tags,
-        'inStock': inStock,
-        'weight': weight,
-        'length': length,
-        'width': width,
-        'height': height,
-        'taxRate': taxRate,
-        'category': category,
-        'quantities': quantities,
-        'images': images,
-        'priceRangeMin': priceRangeMin,
-        'priceRangeMax': priceRangeMax,
-        'filterTags': filterTags,
-
-        'variantDetails': variantDetails.map((v) => v.toJson()).toList(),
-        'productDocId': productDocId,
-      };
+    'name': name,
+    'description': description,
+    'price': price,
+    'discountPrice': discountPrice,
+    'sku': sku,
+    'tags': tags,
+    'inStock': inStock,
+    'weight': weight,
+    'length': length,
+    'width': width,
+    'height': height,
+    'taxRate': taxRate,
+    'category': category,
+    'quantities': quantities,
+    'images': images,
+ 
+    'filterTags': filterTags,
+    'variantDetails': variantDetails.map((v) => v.toJson()).toList(),
+    'productDocId': productDocId,
+  };
 
   ProductEntity copyWith({
     String? productDocId,
@@ -90,7 +79,6 @@ class ProductEntity extends Equatable {
     double? width,
     double? height,
     double? taxRate,
-
     String? category,
     List<String>? variants,
     int? quantities,
@@ -101,7 +89,7 @@ class ProductEntity extends Equatable {
     String? timestamp,
   }) {
     return ProductEntity(
-      productDocId: productDocId??this.productDocId,
+      productDocId: productDocId ?? this.productDocId,
       name: name ?? this.name,
       description: description ?? this.description,
       price: price ?? this.price,
@@ -114,15 +102,11 @@ class ProductEntity extends Equatable {
       width: width ?? this.width,
       height: height ?? this.height,
       taxRate: taxRate ?? this.taxRate,
-
       category: category ?? this.category,
-
       quantities: quantities ?? this.quantities,
       images: images ?? this.images,
-      priceRangeMin: priceRangeMin ?? this.priceRangeMin,
-      priceRangeMax: priceRangeMax ?? this.priceRangeMax,
+  
       filterTags: filterTags ?? this.filterTags,
- 
       variantDetails: variantDetails,
     );
   }
@@ -141,18 +125,15 @@ class ProductEntity extends Equatable {
     width,
     height,
     taxRate,
-
     category,
-
     quantities,
     images,
-    priceRangeMin,
-    priceRangeMax,
-    filterTags,
  
+    filterTags,
     variantDetails,
   ];
 }
+
 class Variant extends Equatable {
   final String name;
   final String? image;
@@ -169,12 +150,12 @@ class Variant extends Equatable {
   });
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'image': image,
-        'Regular': regularPrice,
-        'salePrice': salePrice,
-        'quantity': quantity,
-      };
+    'name': name,
+    'image': image,
+    'Regular': regularPrice,
+    'salePrice': salePrice,
+    'quantity': quantity,
+  };
 
   @override
   List<Object?> get props => [name, image, regularPrice, salePrice, quantity];

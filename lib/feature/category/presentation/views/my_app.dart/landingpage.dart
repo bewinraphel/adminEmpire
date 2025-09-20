@@ -5,6 +5,9 @@ import 'package:empire/core/utilis/app_theme.dart';
 import 'package:empire/core/utilis/constants.dart';
 
 import 'package:empire/feature/auth/domain/usecase/Login_status_usecase.dart';
+import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
+import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
+import 'package:empire/feature/auth/presentation/bloc/profile_image_bloc.dart';
 
 import 'package:empire/feature/auth/presentation/view/login_page.dart';
 import 'package:empire/feature/category/domain/usecase/categories/adding_category_usecase.dart';
@@ -55,10 +58,10 @@ class _MyAppState extends State<LandingPage> {
         //       AuthBlocStatus(sl<CheckLoginStatus>())
         //         ..add(CheckingLoginStatusevent()),
         // ),
-        // BlocProvider<ImageAuth>(
-        //   create: (_) =>
-        //       ImageAuth(sl<PickImageFromCamera>(), sl<PickImageFromGallery>()),
-        // ),
+        BlocProvider<ImageAuth>(
+          create: (_) =>
+              ImageAuth(sl<PickImageFromCamera>(), sl<PickImageFromGallery>()),
+        ),
         // BlocProvider<CategoryImageBloc>(
         //   create: (_) => CategoryImageBloc(
         //     sl<CategoryImageCamera>(),
@@ -67,7 +70,7 @@ class _MyAppState extends State<LandingPage> {
         // ),
         BlocProvider(
           create: (context) => ProductBloc(
-            AddProduct(ProductRepositoryImpl(sl<ProductDataSource>())),
+            AddProductUseCase(ProductRepositoryImpl(sl<ProductDataSource>())),
           ),
         ),
 

@@ -43,7 +43,7 @@ class ProductError extends Productstate {
 }
 
 class ProductcalingBloc extends Bloc<ProductCallingEvent, Productstate> {
-  final ProductcaliingUsecase productcaliingUsecase;
+  final ProductcallingUsecase productcaliingUsecase;
 
   ProductcalingBloc(this.productcaliingUsecase) : super(InitialProduct()) {
     on<ProductCallingEvent>((event, emit) async {

@@ -6,6 +6,7 @@ import 'package:empire/core/utilis/failure.dart';
 import 'package:empire/core/utilis/widgets.dart';
 
 import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
+import 'package:empire/feature/product/domain/enities/listproducts.dart';
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
 import 'package:logger/logger.dart';
 
@@ -59,8 +60,8 @@ class ProductDataSourceImpli extends ProductDataSource {
       uploadedVariantDetails.add({
         'name': variant.name,
         'image': uploadedVariantImageUrl,
-        'weight': variant.regularPrice,
-        'price': variant.salePrice,
+        'regularPrice': variant.regularPrice,
+        'salePrice': variant.salePrice,
         'quantity': variant.quantity,
       });
     }
@@ -89,8 +90,7 @@ class ProductDataSourceImpli extends ProductDataSource {
             'taxRate': product.taxRate,
             'quantities': product.quantities,
             'images': uploadedImageUrls,
-            'priceRangeMin': product.priceRangeMin,
-            'priceRangeMax': product.priceRangeMax,
+
             'filterTags': product.filterTags,
             'timestamp': FieldValue.serverTimestamp(),
             'variantDetails': uploadedVariantDetails,
@@ -132,8 +132,6 @@ class ProductDataSourceImpli extends ProductDataSource {
     required String mainCategoryId,
   }) async {
     try {
-  
-
       await FirebaseFirestore.instance
           .collection('category')
           .doc(mainCategoryId)
@@ -145,6 +143,39 @@ class ProductDataSourceImpli extends ProductDataSource {
       return const Right(null);
     } catch (e) {
       logger.e('Failed to delete product: $e');
+      return Left(Failures.server('Failed to update product: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failures, void>> addingBrand(
+    String mainCategory,
+    String subCargeoy,
+    Brand brand,
+  ) async {
+    final String? image;
+    try {
+      try {
+        final file = File(brand.imageUrl);
+        image = await uploadImageToCloudinary(file);
+        if (image == null || image.isEmpty) {
+          return const Left(Failures.server('No image'));
+        }
+        logger.i('Category image uploaded: $image');
+      } catch (e) {
+        logger.e('Category image upload failed: $e');
+        return left(const Failures.server('Category image fialed'));
+      }
+      await _firestore
+          .collection('category')
+          .doc(mainCategory)
+          .collection('subcategory')
+          .doc(subCargeoy)
+          .collection('Brand')
+          .doc()
+          .set(({'image': image, 'Brand': brand.label}));
+      return right(null);
+    } catch (e) {
       return Left(Failures.server('Failed to update product: $e'));
     }
   }

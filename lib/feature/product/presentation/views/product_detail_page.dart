@@ -437,16 +437,21 @@ class ProductDetailsPage extends StatelessWidget {
                                 color: Colors.black54,
                               ),
                             )
-                          : Image.network(
-                              variant.image!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Center(
-                                    child: Icon(
-                                      Icons.image_not_supported,
-                                      color: Colors.black54,
+                          : ClipRRect(
+                              borderRadius: const BorderRadiusGeometry.all(
+                                Radius.circular(10),
+                              ),
+                              child: Image.network(
+                                variant.image!,
+                                fit: BoxFit.fill,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Center(
+                                      child: Icon(
+                                        Icons.image_not_supported,
+                                        color: Colors.black54,
+                                      ),
                                     ),
-                                  ),
+                              ),
                             ),
                     ),
                     const SizedBox(width: 16),

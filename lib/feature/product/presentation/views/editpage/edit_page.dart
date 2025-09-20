@@ -200,7 +200,7 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ProductBloc(
-        AddProduct(ProductRepositoryImpl(sl<ProductDataSource>())),
+        AddProductUseCase(ProductRepositoryImpl(sl<ProductDataSource>())),
       ),
       child: Builder(
         builder: (context) {
@@ -899,16 +899,7 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                               image2.value!,
                                               image3.value!,
                                             ],
-                                            priceRangeMin:
-                                                double.tryParse(
-                                                  priceRangeMin.text,
-                                                ) ??
-                                                0.0,
-                                            priceRangeMax:
-                                                double.tryParse(
-                                                  priceRangeMax.text,
-                                                ) ??
-                                                0.0,
+
                                             filterTags: filterTags,
 
                                             variantDetails: variants.value,

@@ -86,7 +86,7 @@ class ProductFailure extends ProductState {
 }
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
-  final AddProduct addProductUseCase;
+  final AddProductUseCase addProductUseCase;
 
   ProductBloc(this.addProductUseCase) : super(ProductInitial()) {
     on<AddProductEvent>(_onAddProduct);

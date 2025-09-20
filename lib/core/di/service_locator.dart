@@ -42,6 +42,7 @@ import 'package:empire/feature/auth/domain/usecase/verify_user_usecase.dart';
 import 'package:empire/feature/product/data/datasource/product_datasource.dart';
 import 'package:empire/feature/product/data/repository/product_repositoy.dart';
 import 'package:empire/feature/product/domain/repository/prodcuct_call_repository.dart';
+import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
 import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -121,6 +122,7 @@ Future<void> init() async {
     () => GettingSubcategoryUsecase(sl<CategoryRepository>()),
   );
   //////product
+  sl.registerLazySingleton(() => AddProductUseCase(sl<ProductRepository>()));
   sl.registerLazySingleton<ProductDataSource>(() => ProductDataSourceImpli());
   sl.registerLazySingleton<ProductRepository>(
     () => ProductRepositoryImpl(sl<ProductDataSource>()),
@@ -131,7 +133,7 @@ Future<void> init() async {
   sl.registerLazySingleton<ProdcuctsRepository>(
     () => ProductsRepositoyImpi(sl<ProductsDataSource>()),
   );
-  sl.registerLazySingleton<ProductcaliingUsecase>(
-    () => ProductcaliingUsecase(sl<ProdcuctsRepository>()),
+  sl.registerLazySingleton<ProductcallingUsecase>(
+    () => ProductcallingUsecase(sl<ProdcuctsRepository>()),
   );
 }

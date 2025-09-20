@@ -21,7 +21,7 @@ class AddSubcategory extends StatelessWidget {
   CategoryEntities category;
   CategoryEntities? subCategory;
   AddSubcategory({super.key, required this.category, this.subCategory});
-
+  
   @override
   Widget build(BuildContext context) {
     return BlocProvider<SubCategoryBloc>(
