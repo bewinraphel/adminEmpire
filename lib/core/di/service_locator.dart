@@ -93,6 +93,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => Login(sl()));
   ///// category
   sl.registerSingleton<Logger>(Logger());
+  
   sl.registerLazySingleton<CategoryDataSource>(
     () => CategoryDataSourceImpl(sl<Logger>()),
   );

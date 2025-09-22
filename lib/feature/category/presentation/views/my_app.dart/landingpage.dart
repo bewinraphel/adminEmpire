@@ -53,21 +53,12 @@ class _MyAppState extends State<LandingPage> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // BlocProvider<AuthBlocStatus>(
-        //   create: (_) =>
-        //       AuthBlocStatus(sl<CheckLoginStatus>())
-        //         ..add(CheckingLoginStatusevent()),
-        // ),
+ 
         BlocProvider<ImageAuth>(
           create: (_) =>
               ImageAuth(sl<PickImageFromCamera>(), sl<PickImageFromGallery>()),
         ),
-        // BlocProvider<CategoryImageBloc>(
-        //   create: (_) => CategoryImageBloc(
-        //     sl<CategoryImageCamera>(),
-        //     sl<CategoryImagegallery>(),
-        //   ),
-        // ),
+       
         BlocProvider(
           create: (context) => ProductBloc(
             AddProductUseCase(ProductRepositoryImpl(sl<ProductDataSource>())),
@@ -78,9 +69,7 @@ class _MyAppState extends State<LandingPage> {
           create: (_) =>
               CategoryBloc(sl<CategoryUsecase>())..add(GetCategoryEvent()),
         ),
-        // BlocProvider<SubcategoryBloc>(
-        //   create: (_) => SubcategoryBloc(sl<AddingSubcategoryUsecase>()),
-        // ),
+       
         BlocProvider<AddingcategoryEventBloc>(
           create: (_) => AddingcategoryEventBloc(sl<AddingcategoryUseCase>()),
         ),

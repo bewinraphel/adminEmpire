@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:empire/core/di/service_locator.dart';
+import 'package:empire/feature/category/domain/usecase/categories/get_category_usecase.dart';
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_category_bloc.dart';
 
 import 'package:empire/feature/category/presentation/views/categories/widgets.dart';
@@ -12,46 +14,54 @@ class CategoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Category')),
-      floatingActionButton: buildAddCategoryButton(context),
+    return BlocProvider<CategoryBloc>(
+      create: (_) =>
+          CategoryBloc(sl<CategoryUsecase>())..add(GetCategoryEvent()),
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Category')),
+        floatingActionButton: buildAddCategoryButton(context),
 
-      body: RefreshIndicator(
-        onRefresh: () async {
-          final completer = Completer<void>();
-          context.read<CategoryBloc>().add(GetCategoryEvent());
-          context
-              .read<CategoryBloc>()
-              .stream
-              .firstWhere(
-                (state) =>
-                    state is CategoryLoadedState || state is CategoryErrorState,
-              )
-              .then((_) => completer.complete());
-          return completer.future;
-        },
-        child: SafeArea(
-          child: BlocBuilder<CategoryBloc, CategoryState>(
-            builder: (context, state) {
-              if (state is CategoryLoadingState) {
-                return buildShimmerLoading();
-              } else if (state is CategoryErrorState) {
-                return buildErrorState(context, state.error);
-              } else if (state is CategoryLoadedState) {
-                if (state.categories.isEmpty) {
-                  return const Center(child: Text("No categories available."));
+        body: RefreshIndicator(
+          onRefresh: () async {
+            final completer = Completer<void>();
+            context.read<CategoryBloc>().add(GetCategoryEvent());
+            context
+                .read<CategoryBloc>()
+                .stream
+                .firstWhere(
+                  (state) =>
+                      state is CategoryLoadedState ||
+                      state is CategoryErrorState,
+                )
+                .then((_) => completer.complete());
+            return completer.future;
+          },
+          child: SafeArea(
+            child: BlocBuilder<CategoryBloc, CategoryState>(
+              builder: (context, state) {
+                if (state is CategoryLoadingState) {
+                  return const BuildShimmerLoading();
+                } else if (state is CategoryErrorState) {
+                  return buildErrorState(context, state.error);
+                } else if (state is CategoryLoadedState) {
+                  if (state.categories.isEmpty) {
+                    return const Center(
+                      child: Text("No categories available."),
+                    );
+                  } else {
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: state.categories.length,
+                      itemBuilder: (context, index) {
+                        final category = state.categories[index];
+                        return CategoryItems(category: category);
+                      },
+                    );
+                  }
                 }
-                return ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: state.categories.length,
-                  itemBuilder: (context, index) {
-                    final category = state.categories[index];
-                    return CategoryItems(category: category);
-                  },
-                );
-              }
-              return buildShimmerLoading();
-            },
+                return const CircularProgressIndicator();
+              },
+            ),
           ),
         ),
       ),

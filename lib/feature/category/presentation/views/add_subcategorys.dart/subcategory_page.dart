@@ -21,7 +21,7 @@ class AddSubcategory extends StatelessWidget {
   CategoryEntities category;
   CategoryEntities? subCategory;
   AddSubcategory({super.key, required this.category, this.subCategory});
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<SubCategoryBloc>(
@@ -138,7 +138,7 @@ class AddSubcategory extends StatelessWidget {
                     BlocBuilder<SubCategoryBloc, SubCategoryState>(
                       builder: (context, state) {
                         if (state is SubCategoryLoadingState) {
-                          return buildShimmerLoading();
+                          return const SubCategoryShimmer();
                         } else if (state is SubCategoryErrorState) {
                           return buildErrorState(context, state.error);
                         } else if (state is SubCategoryLoadedState) {
@@ -147,48 +147,7 @@ class AddSubcategory extends StatelessWidget {
                               child: Text("No categories available."),
                             );
                           }
-                          return Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              padding: const EdgeInsets.all(8),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing: 14,
-                                    crossAxisSpacing: 14,
-                                    childAspectRatio:
-                                        MediaQuery.of(
-                                          context,
-                                        ).size.aspectRatio *
-                                        1.75,
-                                  ),
-                              itemCount: state.categories.length,
-                              itemBuilder: (context, index) {
-                                final doc = state.categories[index];
-                                return CategoryItem(
-                                  doc: doc,
-                                  isSelectedSelector: (state) =>
-                                      state is CategoryLoadedState &&
-                                      state.selectedCategoryId == doc.uid,
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) {
-                                          return ProductScreen(
-                                            mainCategoryId: category.uid,
-                                            subcategory: doc.uid,
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          );
+                          return SubCategoryShimmer();
                         }
                         return const SizedBox();
                       },
