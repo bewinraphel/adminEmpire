@@ -1,4 +1,5 @@
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
+import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -31,9 +32,9 @@ class BrandImageInitial extends BrandImagePickerState {}
 
 class PickingImageBrand extends BrandImagePickerState {}
 
-class ImagePickedSuccess extends BrandImagePickerState {
+class BrandImagePickedSuccess extends BrandImagePickerState {
   final String image;
-  ImagePickedSuccess(this.image);
+  BrandImagePickedSuccess(this.image);
 }
 
 class Categorystate extends BrandImagePickerState {
@@ -49,7 +50,7 @@ class ImagePickedError extends BrandImagePickerState {
 class BrandImageAuth
     extends Bloc<BrandImagePickerEvent, BrandImagePickerState> {
   final PickImageFromCamera pickImageFromCamera;
-  final PickImageFromCamera pickImageFromGallery;
+  final PickImageFromGallery pickImageFromGallery;
 
   BrandImageAuth(this.pickImageFromCamera, this.pickImageFromGallery)
     : super(BrandImageInitial()) {
@@ -57,7 +58,7 @@ class BrandImageAuth
       emit(PickingImageBrand());
       final result = await pickImageFromCamera();
       if (result != null) {
-        emit(ImagePickedSuccess(result));
+        emit(BrandImagePickedSuccess(result));
       } else {
         emit(ImagePickedError('Node Image Selcted'));
       }
@@ -66,18 +67,19 @@ class BrandImageAuth
     on<ChooseBrandImageFromGalleryEvent>((event, emit) async {
       emit(PickingImageBrand());
       final result = await pickImageFromGallery();
+      print(result);
       if (result != null) {
-        emit(ImagePickedSuccess(result));
+        emit(BrandImagePickedSuccess(result));
       } else {
         emit(ImagePickedError('Node Image Selcted'));
       }
     });
-    // variant
+
     on<VariantBrandImageFromCameraEvent>((event, emit) async {
       emit(PickingImageBrand());
       final result = await pickImageFromCamera();
       if (result != null) {
-        emit(ImagePickedSuccess(result));
+        emit(BrandImagePickedSuccess(result));
       } else {
         emit(ImagePickedError('Node Image Selcted'));
       }
@@ -86,7 +88,7 @@ class BrandImageAuth
       emit(PickingImageBrand());
       final result = await pickImageFromGallery();
       if (result != null) {
-        emit(ImagePickedSuccess(result));
+        emit(BrandImagePickedSuccess(result));
       } else {
         emit(ImagePickedError('Node Image Selcted'));
       }
@@ -95,8 +97,8 @@ class BrandImageAuth
       emit(BrandImageInitial());
     });
     on<SelectedProductBrandImage>((event, emit) {
-      if (state is ImagePickedSuccess) {
-        emit(ImagePickedSuccess(event.selectedId));
+      if (state is BrandImagePickedSuccess) {
+        emit(BrandImagePickedSuccess(event.selectedId));
       }
     });
   }

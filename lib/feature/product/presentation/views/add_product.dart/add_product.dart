@@ -797,6 +797,12 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                         builder: (context) => const HomePage(),
                                       ),
                                     );
+                                    previewImage.value = null;
+                                    image2.value = null;
+                                    image3.value = null;
+                                    context.read<ImageAuth>().add(
+                                      ClearPickedImageEvent(),
+                                    );
                                   } else if (state is ProductFailure) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(content: Text(state.message)),
@@ -853,7 +859,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                               image2.value!,
                                               image3.value!,
                                             ],
-                                           
+
                                             filterTags: filterTags,
 
                                             variantDetails: variants.value,
@@ -865,12 +871,6 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                               widget.id ?? '',
                                               widget.mainCategoryId ?? "",
                                             ),
-                                          );
-                                          previewImage.value = null;
-                                          image2.value = null;
-                                          image3.value = null;
-                                          context.read<ImageAuth>().add(
-                                            ClearPickedImageEvent(),
                                           );
                                         }
                                       } else {}

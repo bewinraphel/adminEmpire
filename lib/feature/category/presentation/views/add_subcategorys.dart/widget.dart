@@ -1,7 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:empire/core/utilis/color.dart';
+import 'package:empire/core/utilis/fonts.dart';
 import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/category/domain/entities/category_entities.dart';
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_category_bloc.dart';
+import 'package:empire/feature/category/presentation/bloc/category_bloc/get_subcategory.dart';
+import 'package:empire/feature/category/presentation/views/add_subcategorys.dart/subcatergory_adding.dart';
+import 'package:empire/feature/category/presentation/views/categories/widgets.dart';
+import 'package:empire/feature/product/presentation/views/product_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -114,13 +120,19 @@ class SubCategoryShimmer extends StatelessWidget {
                     Shimmer.fromColors(
                       baseColor: Colors.grey[300]!,
                       highlightColor: Colors.grey[100]!,
-                      child: Container(height: 4, color: Color(0xFFF5F5F5)),
+                      child: Container(
+                        height: 4,
+                        color: const Color(0xFFF5F5F5),
+                      ),
                     ),
-                    SizedBox10(),
+                    const SizedBox10(),
                     Shimmer.fromColors(
                       baseColor: Colors.grey[300]!,
                       highlightColor: Colors.grey[100]!,
-                      child: Container(height: 4, color: Color(0xFFF5F5F5)),
+                      child: Container(
+                        height: 4,
+                        color: const Color(0xFFF5F5F5),
+                      ),
                     ),
                   ],
                 ),
@@ -192,11 +204,9 @@ class CategoryItem extends StatelessWidget {
                         imageUrl: doc.imageUrl,
 
                         fit: BoxFit.fill,
-                        placeholder: (context, url) => Shimmer.fromColors(
-                          baseColor: Colors.grey[300]!,
-                          highlightColor: Colors.grey[100]!,
-                          child: const SizedBox(height: 90, width: 90),
-                        ),
+                        placeholder: (context, url) {
+                          return const CircularProgressIndicator();
+                        },
                         errorWidget: (context, url, error) =>
                             const Icon(Icons.error),
                       ),
@@ -222,4 +232,164 @@ class CategoryItem extends StatelessWidget {
       },
     );
   }
+}
+
+Padding addSubcategory(BuildContext context, CategoryEntities category) {
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: ColoRs.elevatedButtonColor,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+      ),
+      onPressed: () {
+        Navigator.push(
+          context,
+
+          MaterialPageRoute(
+            builder: (context) {
+              return AddCategoryWidget(id: category.uid);
+            },
+          ),
+        );
+        context.read<SubCategoryBloc>().add(GetSubCategoryEvent(category.uid));
+      },
+      child: const Text(
+        'Add SubCategory',
+        style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: ColoRs.whiteColor,
+          fontFamily: Fonts.raleway,
+        ),
+      ),
+    ),
+  );
+}
+
+AppBar appbar(String title) {
+  return AppBar(
+    backgroundColor: const Color(0xFFF7F8FA),
+    elevation: 0,
+    title: Text(
+      title,
+      style: GoogleFonts.inter(
+        color: const Color(0xFF111418),
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        letterSpacing: -0.015 * 18,
+      ),
+    ),
+    centerTitle: true,
+  );
+}
+
+Padding searchProduct() {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    child: TextField(
+      decoration: InputDecoration(
+        hintText: 'Search products',
+        hintStyle: GoogleFonts.inter(
+          color: const Color(0xFF5D7389),
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+        ),
+        prefixIcon: const Icon(
+          Icons.search,
+          color: Color(0xFF5D7389),
+          size: 24,
+        ),
+        filled: true,
+        fillColor: const Color(0xFFEAEDF1),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 16,
+        ),
+      ),
+    ),
+  );
+}
+
+Column categorySection(CategoryEntities category) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Text(
+          ' Categories',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF111418),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.015 * 18,
+          ),
+        ),
+      ),
+      BlocBuilder<SubCategoryBloc, SubCategoryState>(
+        builder: (context, state) {
+          if (state is SubCategoryLoadingState) {
+            return const SubCategoryShimmer();
+          } else if (state is SubCategoryErrorState) {
+            return buildErrorState(context, state.error);
+          } else if (state is SubCategoryLoadedState) {
+            if (state.categories.isEmpty) {
+              return const Center(child: Text("No categories available."));
+            }
+            return Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(8),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 14,
+                  crossAxisSpacing: 14,
+                  childAspectRatio:
+                      MediaQuery.of(context).size.aspectRatio * 1.75,
+                ),
+                itemCount: state.categories.length,
+                itemBuilder: (context, index) {
+                  final doc = state.categories[index];
+                  return CategoryItem(
+                    doc: doc,
+                    isSelectedSelector: (state) =>
+                        state is CategoryLoadedState &&
+                        state.selectedCategoryId == doc.uid,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) {
+                            return ProductScreen(
+                              mainCategoryId: category.uid,
+                              subcategory: doc.uid,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            );
+          }
+          return const SizedBox();
+        },
+      ),
+    ],
+  );
+}
+
+Future<void> refresh(BuildContext context, CategoryEntities category) async {
+  context.read<SubCategoryBloc>().add(GetSubCategoryEvent(category.uid));
+  await Future.delayed(const Duration(milliseconds: 600));
 }
