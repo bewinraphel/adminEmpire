@@ -90,7 +90,7 @@ class ProductDataSourceImpli extends ProductDataSource {
             'taxRate': product.taxRate,
             'quantities': product.quantities,
             'images': uploadedImageUrls,
-
+            'brand': product.brand,
             'filterTags': product.filterTags,
             'timestamp': FieldValue.serverTimestamp(),
             'variantDetails': uploadedVariantDetails,
@@ -126,7 +126,7 @@ class ProductDataSourceImpli extends ProductDataSource {
 
   @override
   Future<Either<Failures, void>> updateProduct({
-    required ProductEntity product,
+    required ProductEntity  product,
     required String subcategoryId,
     required String productId,
     required String mainCategoryId,

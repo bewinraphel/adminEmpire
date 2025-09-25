@@ -17,7 +17,7 @@ class ProductEntity extends Equatable {
   final String category;
   final int quantities;
   final List<String> images;
- 
+  final String? brand;
   final List<String> filterTags;
   final List<Variant> variantDetails;
   const ProductEntity({
@@ -37,10 +37,11 @@ class ProductEntity extends Equatable {
     required this.category,
     required this.quantities,
     required this.images,
- 
+
     required this.filterTags,
 
     required this.variantDetails,
+    this.brand,
   });
 
   Map<String, dynamic> toJson() => {
@@ -59,7 +60,7 @@ class ProductEntity extends Equatable {
     'category': category,
     'quantities': quantities,
     'images': images,
- 
+    'brand': brand,
     'filterTags': filterTags,
     'variantDetails': variantDetails.map((v) => v.toJson()).toList(),
     'productDocId': productDocId,
@@ -87,6 +88,7 @@ class ProductEntity extends Equatable {
     double? priceRangeMax,
     List<String>? filterTags,
     String? timestamp,
+    String? brand,
   }) {
     return ProductEntity(
       productDocId: productDocId ?? this.productDocId,
@@ -105,7 +107,7 @@ class ProductEntity extends Equatable {
       category: category ?? this.category,
       quantities: quantities ?? this.quantities,
       images: images ?? this.images,
-  
+      brand: brand ?? this.brand,
       filterTags: filterTags ?? this.filterTags,
       variantDetails: variantDetails,
     );
@@ -128,7 +130,7 @@ class ProductEntity extends Equatable {
     category,
     quantities,
     images,
- 
+    brand,
     filterTags,
     variantDetails,
   ];
@@ -152,7 +154,7 @@ class Variant extends Equatable {
   Map<String, dynamic> toJson() => {
     'name': name,
     'image': image,
-    'Regular': regularPrice,
+    'regularPrice': regularPrice,
     'salePrice': salePrice,
     'quantity': quantity,
   };

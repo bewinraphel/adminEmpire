@@ -8,6 +8,7 @@ abstract class ProductsDataSource {
   Future<Either<Failures, List<ProductEntity>>> gettingProduct(
     String mainCategoryId,
     String subcategoryId,
+    String? brand,
   );
   Future<Either<Failures, List<Brand>>> getProductBrand(
     String mainCategory,
@@ -20,6 +21,7 @@ class ProducsDataSourceimpli extends ProductsDataSource {
   Future<Either<Failures, List<ProductEntity>>> gettingProduct(
     String mainCategoryId,
     String subcategoryId,
+    String? brand,
   ) async {
     try {
       final snapShot = await FirebaseFirestore.instance
@@ -29,7 +31,7 @@ class ProducsDataSourceimpli extends ProductsDataSource {
           .doc(subcategoryId)
           .collection('product')
           .get();
-      List<ProductEntity> category = snapShot.docs.map((data) {
+      List<ProductEntity> products = snapShot.docs.map((data) {
         return ProductEntity(
           productDocId: data.id,
           name: data['name'] ?? '',
@@ -44,11 +46,11 @@ class ProducsDataSourceimpli extends ProductsDataSource {
           width: (data['width'] as num?)?.toDouble() ?? 0.0,
           height: (data['height'] as num?)?.toDouble() ?? 0.0,
           taxRate: (data['taxRate'] as num?)?.toDouble() ?? 0.0,
-
+          brand: data['brand'] ?? "No Brand",
           category: data['category'] ?? '',
           quantities: data['quantities'] ?? 0,
           images: List<String>.from(data['images'] ?? []),
-      
+
           filterTags: List<String>.from(data['filterTags'] ?? []),
           variantDetails: data['variantDetails']
               .map<Variant>(
@@ -64,7 +66,15 @@ class ProducsDataSourceimpli extends ProductsDataSource {
         );
       }).toList();
 
-      return right(category);
+      if (brand == null) {
+        return right(products);
+      } else {
+        List<ProductEntity> filteredByProduct = products;
+        filteredByProduct = filteredByProduct
+            .where((product) => product.brand == brand)
+            .toList();
+        return right(filteredByProduct);
+      }
     } catch (e) {
       return left(Failures.server(e.toString()));
     }

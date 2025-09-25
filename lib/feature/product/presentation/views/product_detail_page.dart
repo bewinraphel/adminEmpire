@@ -171,6 +171,8 @@ class ProductDetailsPage extends StatelessWidget {
 
             _buildDetailRow('Category', product.category),
             const SizedBox(height: 24),
+            _buildDetailRow('Brand', product.brand!),
+            const SizedBox(height: 24),
 
             const Divider(),
             product.category == 'electronics'

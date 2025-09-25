@@ -142,6 +142,17 @@ class _GreenElevatedButtonState extends State<GreenElevatedButton> {
   }
 }
 
+BoxDecoration boxshadow() {
+  return BoxDecoration(
+    color: Colors.grey[200],
+    borderRadius: BorderRadius.circular(16.0),
+    boxShadow: const [
+      BoxShadow(color: Colors.black12, offset: Offset(5, 5), blurRadius: 10),
+      BoxShadow(color: Colors.white70, offset: Offset(-5, -5), blurRadius: 10),
+    ],
+  );
+}
+
 class Fields extends StatefulWidget {
   const Fields({
     super.key,

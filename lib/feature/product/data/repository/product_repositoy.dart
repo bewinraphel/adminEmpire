@@ -13,8 +13,9 @@ class ProductsRepositoyImpi extends ProdcuctsRepository {
   Future<Either<Failures, List<ProductEntity>>> getProducts(
     String mainCategoryId,
     String subcategoryId,
+     String? brand,
   ) {
-    return producDataSource.gettingProduct(mainCategoryId, subcategoryId);
+    return producDataSource.gettingProduct(mainCategoryId, subcategoryId,brand);
   }
 
   @override

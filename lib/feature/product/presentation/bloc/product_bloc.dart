@@ -12,9 +12,11 @@ abstract class Productevent extends Equatable {
 class ProductCallingEvent extends Productevent {
   final String mainCategoryId;
   final String subCategoryId;
+  final String ?brand;
   ProductCallingEvent({
     required this.mainCategoryId,
     required this.subCategoryId,
+    required this.brand,
   });
   @override
   List<Object?> get props => [mainCategoryId, subCategoryId];
@@ -27,6 +29,8 @@ abstract class Productstate extends Equatable {
 }
 
 class InitialProduct extends Productstate {}
+
+class LoadingProduct extends Productstate {}
 
 class Productfetched extends Productstate {
   final List<ProductEntity> products;
@@ -45,11 +49,13 @@ class ProductError extends Productstate {
 class ProductcalingBloc extends Bloc<ProductCallingEvent, Productstate> {
   final ProductcallingUsecase productcaliingUsecase;
 
-  ProductcalingBloc(this.productcaliingUsecase) : super(InitialProduct()) {
+  ProductcalingBloc(this.productcaliingUsecase) : super(LoadingProduct()) {
     on<ProductCallingEvent>((event, emit) async {
+      emit(LoadingProduct());
       final result = await productcaliingUsecase(
         event.mainCategoryId,
         event.subCategoryId,
+        event.brand,
       );
 
       result.fold(
