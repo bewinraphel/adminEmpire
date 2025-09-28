@@ -29,7 +29,15 @@ import 'package:google_fonts/google_fonts.dart';
 class ProductScreen extends StatelessWidget {
   String? mainCategoryId;
   String? subcategory;
-  ProductScreen({super.key, this.subcategory, this.mainCategoryId});
+  String? mainCategoryName;
+  String? subcategoryName;
+  ProductScreen({
+    super.key,
+    this.subcategory,
+    this.mainCategoryId,
+    required this.mainCategoryName,
+    required this.subcategoryName,
+  });
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   TextEditingController brandImage = TextEditingController();
   TextEditingController brandname = TextEditingController();
@@ -103,7 +111,9 @@ class ProductScreen extends StatelessWidget {
                     builder: (context) {
                       return AddProdutsPage(
                         mainCategoryId: mainCategoryId,
-                        id: subcategory,
+                        subcategoryId: subcategory,
+                        mainCategoryName: mainCategoryName,
+                        subcategoryName: subcategoryName,
                       );
                     },
                   ),
@@ -234,6 +244,8 @@ class ProductScreen extends StatelessWidget {
                                   product: state.products[index],
                                   mainCategoryId: mainCategoryId,
                                   subcategory: subcategory,
+                                  mainCategoryName: mainCategoryName,
+                                  subcategoryName: subcategoryName,
                                 );
                               },
                             ),

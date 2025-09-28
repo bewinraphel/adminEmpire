@@ -94,10 +94,10 @@ class BuildShimmerLoading extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 17),
           child: Container(
             height: MediaQuery.of(context).size.height * 0.24,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.all(Radius.circular(30)),
-              ),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.all(Radius.circular(30)),
+            ),
             child: Shimmer.fromColors(
               baseColor: Colors.grey[300]!,
               highlightColor: Colors.grey[100]!,
@@ -196,7 +196,10 @@ Widget buildCategoryList(BuildContext context, CategoryLoadedState state) {
 
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => AddSubcategory(category: doc)),
+            MaterialPageRoute(
+              builder: (_) =>
+                  AddSubcategory(category: doc, maincategoryName: doc.category),
+            ),
           );
         },
       );
@@ -252,6 +255,7 @@ class CategoryItems extends StatelessWidget {
                                 builder: (_) => AddSubcategory(
                                   category: category,
                                   subCategory: null,
+                                  maincategoryName: category.category,
                                 ),
                               ),
                             ),
@@ -276,6 +280,7 @@ class CategoryItems extends StatelessWidget {
                               builder: (_) => AddSubcategory(
                                 category: category,
                                 subCategory: subCategory,
+                                maincategoryName: category.category,
                               ),
                             ),
                           ),

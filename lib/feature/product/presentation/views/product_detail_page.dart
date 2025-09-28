@@ -14,11 +14,15 @@ class ProductDetailsPage extends StatelessWidget {
   final ProductEntity? product;
   String? mainCategoryId;
   String? subcategory;
+    String ? mainCategoryName;
+  String? subcategoryName;
   ProductDetailsPage({
     super.key,
     this.product,
     this.subcategory,
     this.mainCategoryId,
+    required this.mainCategoryName,
+    required this.subcategoryName,
   });
 
   @override
@@ -296,7 +300,8 @@ class ProductDetailsPage extends StatelessWidget {
                             return EditProdutsPage(
                               mainCategoryId: mainCategoryId!,
                               subcategoryId: subcategory,
-
+                               mainCategoryName:mainCategoryName ,
+                               subcategoryName: subcategoryName,
                               product: product,
                               productId: product.productDocId,
                             );

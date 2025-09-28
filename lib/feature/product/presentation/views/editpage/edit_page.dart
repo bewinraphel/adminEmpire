@@ -37,6 +37,8 @@ ValueNotifier<String?> previewImage = ValueNotifier(null);
 class EditProdutsPage extends StatefulWidget {
   String? mainCategoryId;
   String? subcategoryId;
+   String ? mainCategoryName;
+  String? subcategoryName;
   final ProductEntity? product;
   String? productId;
   File? imageFile;
@@ -46,6 +48,7 @@ class EditProdutsPage extends StatefulWidget {
     this.mainCategoryId,
     this.product,
     this.productId,
+    required this.mainCategoryName,required this.subcategoryName
   });
 
   @override
@@ -164,7 +167,7 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
         const Variant(name: 'black'),
         const Variant(name: 'silver'),
         const Variant(name: 'white'),
-      ];
+      ]; 
       variants.value = List.from(newVariants);
     } else if (selectedCategory.value == 'accessories') {
       newVariants = [
@@ -1408,6 +1411,10 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                         if (globalKey.currentState!
                                             .validate()) {
                                           final products = ProductEntity(
+                                            mainCategoryId: widget.mainCategoryId!,
+                                            subcategoryId: widget.subcategoryId!,
+                                            mainCategoryName: widget.mainCategoryName!,
+                                            subcategoryName: widget.subcategoryName!,
                                             name: productName.text,
                                             description: description.text,
                                             price:

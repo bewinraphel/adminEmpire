@@ -317,7 +317,7 @@ Padding searchProduct() {
   );
 }
 
-Column categorySection(CategoryEntities category) {
+Column categorySection(CategoryEntities category,String mainCatgoryName) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -372,6 +372,9 @@ Column categorySection(CategoryEntities category) {
                             return ProductScreen(
                               mainCategoryId: category.uid,
                               subcategory: doc.uid,
+                              mainCategoryName: mainCatgoryName,
+                              subcategoryName:doc.category ,
+
                             );
                           },
                         ),

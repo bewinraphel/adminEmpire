@@ -36,8 +36,16 @@ ValueNotifier<String?> previewImage = ValueNotifier(null);
 
 class AddProdutsPage extends StatefulWidget {
   String? mainCategoryId;
-  String? id;
-  AddProdutsPage({super.key, this.id, this.mainCategoryId});
+  String? subcategoryId;
+  String? mainCategoryName;
+  String? subcategoryName;
+  AddProdutsPage({
+    super.key,
+    required this.subcategoryId,
+    required this.mainCategoryId,
+    required this.mainCategoryName,
+    required this.subcategoryName,
+  });
 
   @override
   State<AddProdutsPage> createState() => _AddProdutsPageState();
@@ -137,9 +145,9 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
 
   @override
   void dispose() {
-    image2.dispose();
-    image3.dispose();
-    previewImage.dispose();
+    // image2.dispose();
+    // image3.dispose();
+    // previewImage.dispose();
     isInStock.dispose();
     selectedCategory.dispose();
     ratingValue.dispose();
@@ -183,7 +191,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                 ..add(
                   BrandFetching(
                     mainCategoryId: widget.mainCategoryId!,
-                    subCategoryId: widget.id!,
+                    subCategoryId: widget.subcategoryId!,
                   ),
                 ),
         ),
@@ -835,7 +843,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                         BrandFetching(
                                           mainCategoryId:
                                               widget.mainCategoryId!,
-                                          subCategoryId: widget.id!,
+                                          subCategoryId: widget.subcategoryId!,
                                         ),
                                       );
                                       final brands = context.read<BrandBloc>();
@@ -1261,7 +1269,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                                           .mainCategoryId!,
                                                                   subCategoryId:
                                                                       widget
-                                                                          .id!,
+                                                                          .subcategoryId!,
                                                                   brand: Brand(
                                                                     imageUrl:
                                                                         imageFile!
@@ -1279,7 +1287,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                                                           .mainCategoryId!,
                                                                   subCategoryId:
                                                                       widget
-                                                                          .id!,
+                                                                          .subcategoryId!,
                                                                 ),
                                                               );
                                                               context
@@ -1337,7 +1345,8 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                               context,
                                             ).pushAndRemoveUntil(
                                               MaterialPageRoute(
-                                                builder: (_) => const HomePage(),
+                                                builder: (_) =>
+                                                    const HomePage(),
                                               ),
                                               (route) => false,
                                             );
@@ -1368,6 +1377,14 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                         if (globalKey.currentState!
                                             .validate()) {
                                           final product = ProductEntity(
+                                            mainCategoryId:
+                                                widget.mainCategoryId!,
+                                            subcategoryId:
+                                                widget.subcategoryId!,
+                                            mainCategoryName:
+                                                widget.mainCategoryName!,
+                                            subcategoryName:
+                                                widget.subcategoryName!,
                                             name: productName.text,
                                             description: description.text,
                                             price:
@@ -1414,7 +1431,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
                                           context.read<ProductBloc>().add(
                                             AddProductEvent(
                                               product,
-                                              widget.id ?? '',
+                                              widget.subcategoryId ?? '',
                                               widget.mainCategoryId ?? "",
                                             ),
                                           );

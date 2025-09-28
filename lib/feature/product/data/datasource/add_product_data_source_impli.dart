@@ -67,34 +67,31 @@ class ProductDataSourceImpli extends ProductDataSource {
     }
 
     try {
-      await _firestore
-          .collection('category')
-          .doc(mainCtiegoryid)
-          .collection('subcategory')
-          .doc(uid)
-          .collection('product')
-          .doc()
-          .set({
-            'category': product.category,
-            'name': product.name,
-            'description': product.description,
-            'price': product.price,
-            'discountPrice': product.discountPrice,
-            'sku': product.sku,
-            'tags': product.tags,
-            'inStock': product.inStock,
-            'weight': product.weight,
-            'length': product.length,
-            'width': product.width,
-            'height': product.height,
-            'taxRate': product.taxRate,
-            'quantities': product.quantities,
-            'images': uploadedImageUrls,
-            'brand': product.brand,
-            'filterTags': product.filterTags,
-            'timestamp': FieldValue.serverTimestamp(),
-            'variantDetails': uploadedVariantDetails,
-          });
+      await _firestore.collection('products').doc().set({
+        'mainCategoryId': product.mainCategoryId,
+        'subcategoryId': product.subcategoryId,
+        'mainCategoryName': product.mainCategoryName,
+        'subcategoryName': product.subcategoryName,
+        'category': product.category,
+        'name': product.name,
+        'description': product.description,
+        'price': product.price,
+        'discountPrice': product.discountPrice,
+        'sku': product.sku,
+        'tags': product.tags,
+        'inStock': product.inStock,
+        'weight': product.weight,
+        'length': product.length,
+        'width': product.width,
+        'height': product.height,
+        'taxRate': product.taxRate,
+        'quantities': product.quantities,
+        'images': uploadedImageUrls,
+        'brand': product.brand,
+        'filterTags': product.filterTags,
+        'timestamp': FieldValue.serverTimestamp(),
+        'variantDetails': uploadedVariantDetails,
+      });
       return const Right(null);
     } catch (e) {
       return Left(Exception('Failed to add product: $e'));
@@ -108,14 +105,7 @@ class ProductDataSourceImpli extends ProductDataSource {
     String productId,
   ) async {
     try {
-      await _firestore
-          .collection('category')
-          .doc(mainCategoryId)
-          .collection('subcategory')
-          .doc(subcategoryId)
-          .collection('product')
-          .doc(productId)
-          .delete();
+      await _firestore.collection('products').doc(productId).delete();
       logger.i('Product deleted successfully: $productId');
       return const Right(null);
     } catch (e) {
@@ -126,18 +116,14 @@ class ProductDataSourceImpli extends ProductDataSource {
 
   @override
   Future<Either<Failures, void>> updateProduct({
-    required ProductEntity  product,
+    required ProductEntity product,
     required String subcategoryId,
     required String productId,
     required String mainCategoryId,
   }) async {
     try {
       await FirebaseFirestore.instance
-          .collection('category')
-          .doc(mainCategoryId)
-          .collection('subcategory')
-          .doc(subcategoryId)
-          .collection('product')
+          .collection('products')
           .doc(productId)
           .update(product.toJson());
       return const Right(null);

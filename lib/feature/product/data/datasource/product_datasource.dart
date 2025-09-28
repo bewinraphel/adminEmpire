@@ -25,14 +25,14 @@ class ProducsDataSourceimpli extends ProductsDataSource {
   ) async {
     try {
       final snapShot = await FirebaseFirestore.instance
-          .collection('category')
-          .doc(mainCategoryId)
-          .collection('subcategory')
-          .doc(subcategoryId)
-          .collection('product')
+          .collection('products')
           .get();
       List<ProductEntity> products = snapShot.docs.map((data) {
         return ProductEntity(
+          mainCategoryId: data['mainCategoryId'] ?? "",
+          subcategoryId: data['subcategoryId'] ?? "",
+          mainCategoryName: data['mainCategoryName'] ?? "",
+          subcategoryName: data['subcategoryName'] ?? "",
           productDocId: data.id,
           name: data['name'] ?? '',
           description: data['description'] ?? '',

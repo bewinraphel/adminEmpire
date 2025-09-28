@@ -14,7 +14,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class AddSubcategory extends StatelessWidget {
   CategoryEntities category;
   CategoryEntities? subCategory;
-  AddSubcategory({super.key, required this.category, this.subCategory});
+  String? maincategoryName;
+  AddSubcategory({super.key, required this.category, this.subCategory,required this.maincategoryName});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class AddSubcategory extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
 
-                  children: [searchProduct(), categorySection(category)],
+                  children: [searchProduct(), categorySection(category,maincategoryName!)],
                 ),
               ),
             ),

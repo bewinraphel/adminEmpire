@@ -20,7 +20,15 @@ class ProductEntity extends Equatable {
   final String? brand;
   final List<String> filterTags;
   final List<Variant> variantDetails;
+  final String mainCategoryId;
+  final String subcategoryId;
+  final String mainCategoryName;
+  final String subcategoryName;
   const ProductEntity({
+    required this.mainCategoryId,
+    required this.subcategoryId,
+    required this.mainCategoryName,
+    required this.subcategoryName,
     this.productDocId,
     required this.name,
     required this.description,
@@ -45,6 +53,10 @@ class ProductEntity extends Equatable {
   });
 
   Map<String, dynamic> toJson() => {
+    'mainCategoryId': mainCategoryId,
+    'subcategoryId': subcategoryId,
+    'mainCategoryName': mainCategoryName,
+    'subcategoryName': subcategoryName,
     'name': name,
     'description': description,
     'price': price,
@@ -67,6 +79,10 @@ class ProductEntity extends Equatable {
   };
 
   ProductEntity copyWith({
+    String? mainCategoryId,
+    String? subcategoryId,
+    String? mainCategoryName,
+    String? subcategoryName,
     String? productDocId,
     String? name,
     String? description,
@@ -91,6 +107,10 @@ class ProductEntity extends Equatable {
     String? brand,
   }) {
     return ProductEntity(
+      mainCategoryId: mainCategoryId ?? this.mainCategoryId,
+      subcategoryId: subcategoryId ?? this.subcategoryId,
+      mainCategoryName: mainCategoryName ?? this.subcategoryName,
+      subcategoryName: subcategoryName ?? this.subcategoryName,
       productDocId: productDocId ?? this.productDocId,
       name: name ?? this.name,
       description: description ?? this.description,
@@ -115,6 +135,10 @@ class ProductEntity extends Equatable {
 
   @override
   List<Object?> get props => [
+    mainCategoryId,
+    subcategoryId,
+    mainCategoryName,
+    subcategoryName,
     name,
     description,
     price,
