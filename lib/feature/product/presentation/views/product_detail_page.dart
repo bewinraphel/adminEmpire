@@ -9,12 +9,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ProductDetailsPage extends StatelessWidget {
   final ProductEntity? product;
   String? mainCategoryId;
   String? subcategory;
-    String ? mainCategoryName;
+  String? mainCategoryName;
   String? subcategoryName;
   ProductDetailsPage({
     super.key,
@@ -56,34 +57,29 @@ class ProductDetailsPage extends StatelessWidget {
   Widget _buildImageSection(BuildContext context, List<String> images) {
     return Stack(
       children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(8.0)),
-          child: images.isNotEmpty
-              ? Image.network(
-                  images[0],
-                  width: double.infinity,
-                  height: MediaQuery.of(context).size.height * 0.30,
-                  fit: BoxFit.fill,
-                  errorBuilder: (context, error, stackTrace) => Center(
-                    child: Container(
-                      width: double.infinity,
-                      height: 200,
-                      color: Colors.grey[200],
-                      child: const Center(
-                        child: Icon(Icons.image_not_supported, size: 50),
-                      ),
-                    ),
-                  ),
-                )
-              : Container(
-                  width: double.infinity,
-                  height: 200,
-                  color: Colors.grey[200],
-                  child: const Center(
-                    child: Icon(Icons.image_not_supported, size: 50),
-                  ),
+        images.isNotEmpty
+            ? OptimizedNetworkImage(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height * 0.30,
+                imageUrl: images[0],
+                errorWidget: const Icon(Icons.error),
+                borderRadius: 7,
+                fit: BoxFit.fill,
+                placeholder: Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: const SizedBox(height: 80, width: 85),
                 ),
-        ),
+                widthQueryParam: 'resize_width',
+              )
+            : Container(
+                width: double.infinity,
+                height: 200,
+                color: Colors.grey[200],
+                child: const Center(
+                  child: Icon(Icons.image_not_supported, size: 50),
+                ),
+              ),
 
         if (images.isNotEmpty)
           Positioned(
@@ -300,8 +296,8 @@ class ProductDetailsPage extends StatelessWidget {
                             return EditProdutsPage(
                               mainCategoryId: mainCategoryId!,
                               subcategoryId: subcategory,
-                               mainCategoryName:mainCategoryName ,
-                               subcategoryName: subcategoryName,
+                              mainCategoryName: mainCategoryName,
+                              subcategoryName: subcategoryName,
                               product: product,
                               productId: product.productDocId,
                             );
@@ -444,21 +440,17 @@ class ProductDetailsPage extends StatelessWidget {
                                 color: Colors.black54,
                               ),
                             )
-                          : ClipRRect(
-                              borderRadius: const BorderRadiusGeometry.all(
-                                Radius.circular(10),
+                          : OptimizedNetworkImage(
+                              imageUrl: variant.image,
+                              errorWidget: const Icon(Icons.error),
+                              borderRadius: 10,
+                              fit: BoxFit.fill,
+                              placeholder: Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: const SizedBox(height: 80, width: 85),
                               ),
-                              child: Image.network(
-                                variant.image!,
-                                fit: BoxFit.fill,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Center(
-                                      child: Icon(
-                                        Icons.image_not_supported,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                              ),
+                              widthQueryParam: 'resize_width',
                             ),
                     ),
                     const SizedBox(width: 16),

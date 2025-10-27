@@ -148,14 +148,14 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
     // image2.dispose();
     // image3.dispose();
     // previewImage.dispose();
-    isInStock.dispose();
-    selectedCategory.dispose();
-    ratingValue.dispose();
-    variants.dispose();
-    brandImage?.dispose();
+    // isInStock.dispose();
+    // selectedCategory.dispose();
+    // ratingValue.dispose();
+    // variants.dispose();
+    // brandImage?.dispose();
 
-    productName.dispose();
-    description.dispose();
+    // productName.dispose();
+    // description.dispose();
 
     for (var controller in weightControllers) {
       controller.dispose();
@@ -1427,12 +1427,12 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
 
                                             variantDetails: variants.value,
                                           );
-
+                                          print(product);
                                           context.read<ProductBloc>().add(
                                             AddProductEvent(
                                               product,
-                                              widget.subcategoryId ?? '',
-                                              widget.mainCategoryId ?? "",
+                                              widget.subcategoryId!,
+                                              widget.mainCategoryId!,
                                             ),
                                           );
                                         }

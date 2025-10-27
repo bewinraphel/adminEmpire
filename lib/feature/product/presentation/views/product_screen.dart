@@ -11,7 +11,7 @@ import 'package:empire/core/utilis/fonts.dart';
 import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
-import 'package:empire/feature/auth/presentation/bloc/login_bloc.dart';
+ 
 import 'package:empire/feature/product/domain/enities/listproducts.dart';
 import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
 import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_brand.dart';
@@ -25,6 +25,7 @@ import 'package:empire/feature/product/presentation/views/product_detail_page.da
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ProductScreen extends StatelessWidget {
   String? mainCategoryId;
@@ -57,6 +58,7 @@ class ProductScreen extends StatelessWidget {
                   mainCategoryId: mainCategoryId!,
                   subCategoryId: subcategory!,
                   brand: null,
+                  subCategoryName: subcategoryName,
                 ),
               ),
         ),
@@ -84,6 +86,7 @@ class ProductScreen extends StatelessWidget {
               mainCategoryId: mainCategoryId!,
               subCategoryId: subcategory!,
               brand: selectedBrand.text,
+              subCategoryName: subcategoryName,
             ),
           );
           context.read<BrandBloc>().add(
@@ -275,8 +278,8 @@ class ProductScreen extends StatelessWidget {
       width: MediaQuery.of(context).size.width * 0.19,
       child: BlocBuilder<BrandBloc, BrandState>(
         builder: (context, state) {
-          if (state is LoginLoading) {
-            return const CircularProgressIndicator();
+          if (state is BrandLoading) {
+            return const Center(child: CircularProgressIndicator());
           } else if (state is LoadedBrand) {
             if (state.brands.isEmpty) {
               return Column(
@@ -594,6 +597,7 @@ class ProductScreen extends StatelessWidget {
                               mainCategoryId: mainCategoryId!,
                               subCategoryId: subcategory!,
                               brand: selectedBrand.text,
+                              subCategoryName: subcategoryName,
                             ),
                           );
                         },
@@ -963,19 +967,27 @@ class BrandIcon extends StatelessWidget {
             decoration: const BoxDecoration(
               // color: isActive ? Colors.black : const Color(0xFFF3F4F6),
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadiusGeometry.circular(30),
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.fill,
-                placeholder: (context, url) {
-                  return const CircularProgressIndicator();
-                },
-                // color: isActive ? Colors.white : null,
-                errorWidget: (context, error, stackTrace) =>
-                    const Icon(Icons.error),
-              ),
+            child: OptimizedNetworkImage(
+              imageUrl: imageUrl,
+              errorWidget: const Icon(Icons.error),
+              borderRadius: 7,
+              fit: BoxFit.fill,
+              placeholder: const Center(child: CircularProgressIndicator()),
+              widthQueryParam: 'resize_width',
             ),
+            // ClipRRect(
+            //   borderRadius: BorderRadiusGeometry.circular(30),
+            //   child: CachedNetworkImage(
+            //     imageUrl: imageUrl,
+            //     fit: BoxFit.fill,
+            //     placeholder: (context, url) {
+            //       return const CircularProgressIndicator();
+            //     },
+            //     // color: isActive ? Colors.white : null,
+            //     errorWidget: (context, error, stackTrace) =>
+            //         const Icon(Icons.error),
+            //   ),
+            // ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -1033,16 +1045,30 @@ class ProductCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               child: imageUrl == null
                   ? const Icon(Icons.image)
-                  : CachedNetworkImage(
-                      fit: BoxFit.fill,
+                  : OptimizedNetworkImage(
                       height: 100,
                       width: 100,
-                      placeholder: (BuildContext context, String url) =>
-                          const Center(child: CircularProgressIndicator()),
-                      errorWidget: (context, error, stackTrace) =>
-                          const Icon(Icons.error),
-                      imageUrl: imageUrl!,
+                      imageUrl: imageUrl,
+                      errorWidget: const Icon(Icons.error),
+                      borderRadius: 7,
+                      fit: BoxFit.fill,
+                      placeholder: Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: const SizedBox(height: 80, width: 85),
+                      ),
+                      widthQueryParam: 'resize_width',
                     ),
+              // CachedNetworkImage(
+              //     fit: BoxFit.fill,
+              //     height: 100,
+              //     width: 100,
+              //     placeholder: (BuildContext context, String url) =>
+              //         const Center(child: CircularProgressIndicator()),
+              //     errorWidget: (context, error, stackTrace) =>
+              //         const Icon(Icons.error),
+              //     imageUrl: imageUrl!,
+              //   ),
             ),
             const SizedBox(width: 12),
 
