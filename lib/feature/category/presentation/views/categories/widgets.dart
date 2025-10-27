@@ -210,7 +210,7 @@ Widget buildCategoryList(BuildContext context, CategoryLoadedState state) {
 class CategoryItems extends StatelessWidget {
   final CategoryEntities category;
 
-  const CategoryItems({required this.category});
+  const CategoryItems({super.key, required this.category});
 
   @override
   Widget build(BuildContext context) {
@@ -288,30 +288,25 @@ class CategoryItems extends StatelessWidget {
                             width: MediaQuery.of(context).size.width * 0.23,
                             margin: const EdgeInsets.only(right: 3),
                             decoration: BoxDecoration(
+                              color: ColoRs.fieldcolor,
                               borderRadius: _getBorderRadius(
                                 index,
                                 state.categories.length,
                               ),
-                              color: Theme.of(context).colorScheme.surface,
                             ),
-                            child: ClipRRect(
-                              borderRadius: _getBorderRadius(
-                                index,
-                                state.categories.length,
+                            child: OptimizedNetworkImage(
+                              imageUrl: state.categories[index].imageUrl,
+                              errorWidget: const Icon(Icons.error),
+                              borderRadius: 7,
+                              fit: BoxFit.fill,
+                              placeholder: Shimmer.fromColors(
+                                baseColor: Colors.grey[300]!,
+                                highlightColor: Colors.grey[100]!,
+                                child: const SizedBox(height: 80, width: 85),
                               ),
-                              child: CachedNetworkImage(
-                                imageUrl: state.categories[index].imageUrl,
-                                fit: BoxFit.fill,
-                                placeholder: (context, url) {
-                                  return const Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                },
-                                // color: isActive ? Colors.white : null,
-                                errorWidget: (context, error, stackTrace) =>
-                                    const Icon(Icons.error),
-                              ),
+                              widthQueryParam: 'resize_width',
                             ),
+                       
                           ),
                         );
                       },

@@ -11,8 +11,9 @@ class ProductcallingUsecase {
     String mainCategoryId,
     String subcategoryId,
      String? brand,
+          String? subCategoryName,
   ) {
-    return prodcuctRepository.getProducts(mainCategoryId, subcategoryId,brand);
+    return prodcuctRepository.fetchingProduct(mainCategoryId, subcategoryId,brand,subCategoryName);
   }
 
   Future<Either<Failures, List<Brand>>> getProductBrand(

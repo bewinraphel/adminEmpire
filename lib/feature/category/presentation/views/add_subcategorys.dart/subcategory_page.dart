@@ -15,7 +15,7 @@ class AddSubcategory extends StatelessWidget {
   CategoryEntities category;
   CategoryEntities? subCategory;
   String? maincategoryName;
-  AddSubcategory({super.key, required this.category, this.subCategory,required this.maincategoryName});
+      AddSubcategory({super.key, required this.category, this.subCategory,required this.maincategoryName});
 
   @override
   Widget build(BuildContext context) {

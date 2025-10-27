@@ -190,27 +190,32 @@ class CategoryItem extends StatelessWidget {
                     width: 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 8,
-                          offset: Offset(3, 3),
-                        ),
-                      ],
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadiusGeometry.circular(8),
-                      child: CachedNetworkImage(
-                        imageUrl: doc.imageUrl,
-
-                        fit: BoxFit.fill,
-                        placeholder: (context, url) {
-                          return const CircularProgressIndicator();
-                        },
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.error),
+                    child: OptimizedNetworkImage(
+                      imageUrl: doc.imageUrl,
+                      errorWidget: const Icon(Icons.error),
+                      borderRadius: 7,
+                      fit: BoxFit.fill,
+                      placeholder: Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: const SizedBox(height: 80, width: 85),
                       ),
+                      widthQueryParam: 'resize_width',
                     ),
+                    // ClipRRect(
+                    //   borderRadius: BorderRadiusGeometry.circular(8),
+                    //   child: CachedNetworkImage(
+                    //     imageUrl: doc.imageUrl,
+
+                    //     fit: BoxFit.fill,
+                    //     placeholder: (context, url) {
+                    //       return const CircularProgressIndicator();
+                    //     },
+                    //     errorWidget: (context, url, error) =>
+                    //         const Icon(Icons.error),
+                    //   ),
+                    // ),
                   ),
                   const SizedBox(height: 10),
                   Text(
@@ -317,7 +322,7 @@ Padding searchProduct() {
   );
 }
 
-Column categorySection(CategoryEntities category,String mainCatgoryName) {
+Column categorySection(CategoryEntities category, String mainCatgoryName) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -373,8 +378,7 @@ Column categorySection(CategoryEntities category,String mainCatgoryName) {
                               mainCategoryId: category.uid,
                               subcategory: doc.uid,
                               mainCategoryName: mainCatgoryName,
-                              subcategoryName:doc.category ,
-
+                              subcategoryName: doc.category,
                             );
                           },
                         ),

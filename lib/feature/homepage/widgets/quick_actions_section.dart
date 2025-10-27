@@ -1,5 +1,5 @@
 import 'package:empire/core/utilis/app_theme.dart';
-import 'package:empire/feature/category/presentation/views/categories/category_page.dart';
+
 import 'package:empire/feature/homepage/widgets/custom_icon_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
@@ -24,13 +24,7 @@ class QuickActionsSection extends StatelessWidget {
       "title": "View Analytics",
       "icon": "analytics",
       "color": 0xFFD97706,
-      "route": "/admin-dashboard",
-    },
-    {
-      "title": "Create Coupon",
-      "icon": "local_offer",
-      "color": 0xFF7C3AED,
-      "route": "/admin-dashboard",
+      "route": "/admin-product-management",
     },
   ];
 
@@ -85,14 +79,7 @@ class QuickActionsSection extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) {
-                return const CategoryScreen();
-              },
-            ),
-          );
+          Navigator.pushNamed(context, route);
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(

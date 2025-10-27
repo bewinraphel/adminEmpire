@@ -7,7 +7,7 @@ class SharedpreferenceKey {
 String limitWords(String text, int maxWords) {
   final words = text.split(' ');
   if (words.length <= maxWords) return text;
-  return words.sublist(0, maxWords).join(' ') + '...';
+  return '${words.sublist(0, maxWords).join(' ')}...';
 }
 
 const double kDefaultPadding = 16.0;
@@ -42,5 +42,5 @@ const BoxDecoration kButtonDecoration = BoxDecoration(
 );
 
 class Constants {
-   static String landingImage = 'assets/landing.png';
+  static String landingImage = 'assets/landing.png';
 }

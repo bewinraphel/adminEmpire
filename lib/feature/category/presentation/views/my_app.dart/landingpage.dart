@@ -22,8 +22,10 @@ import 'package:empire/feature/category/presentation/bloc/category_bloc/adding_c
 
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_category_bloc.dart';
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_subcategory.dart';
+import 'package:empire/feature/category/presentation/views/categories/category_page.dart';
 
 import 'package:empire/feature/homepage/presentation/view/home_page.dart';
+import 'package:empire/feature/order/presentation/view/order_page.dart';
 import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
 import 'package:empire/feature/product/data/repository/add_product_respository.dart';
 import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
@@ -41,24 +43,14 @@ class LandingPage extends StatefulWidget {
 
 class _MyAppState extends State<LandingPage> {
   @override
-  void initState() {
-    preloading();
-  }
-
-  preloading() async {
-    await Future.delayed(const Duration(seconds: 5));
-  }
-
-  @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
- 
         BlocProvider<ImageAuth>(
           create: (_) =>
               ImageAuth(sl<PickImageFromCamera>(), sl<PickImageFromGallery>()),
         ),
-       
+
         BlocProvider(
           create: (context) => ProductBloc(
             AddProductUseCase(ProductRepositoryImpl(sl<ProductDataSource>())),
@@ -69,7 +61,7 @@ class _MyAppState extends State<LandingPage> {
           create: (_) =>
               CategoryBloc(sl<CategoryUsecase>())..add(GetCategoryEvent()),
         ),
-       
+
         BlocProvider<AddingcategoryEventBloc>(
           create: (_) => AddingcategoryEventBloc(sl<AddingcategoryUseCase>()),
         ),
@@ -81,6 +73,10 @@ class _MyAppState extends State<LandingPage> {
       child: MaterialApp(
         theme: AppTheme.lightTheme,
 
+        routes: {
+          '/admin-product-management': (context) => const CategoryScreen(),
+          '/order-history': (context) => const MyOrdersScreen(),
+        },
         home: BlocProvider(
           create: (_) =>
               AuthBlocStatus(sl<CheckLoginStatus>())

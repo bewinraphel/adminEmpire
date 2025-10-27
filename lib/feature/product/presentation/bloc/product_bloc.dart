@@ -13,13 +13,15 @@ class ProductCallingEvent extends Productevent {
   final String mainCategoryId;
   final String subCategoryId;
   final String ?brand;
+    final String? subCategoryName;
   ProductCallingEvent({
     required this.mainCategoryId,
     required this.subCategoryId,
     required this.brand,
+    required this.subCategoryName
   });
   @override
-  List<Object?> get props => [mainCategoryId, subCategoryId];
+  List<Object?> get props => [mainCategoryId, subCategoryId,brand,subCategoryName];
 }
 
 @override
@@ -56,6 +58,7 @@ class ProductcalingBloc extends Bloc<ProductCallingEvent, Productstate> {
         event.mainCategoryId,
         event.subCategoryId,
         event.brand,
+        event.subCategoryName
       );
 
       result.fold(

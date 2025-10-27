@@ -65,7 +65,7 @@ class ProductDataSourceImpli extends ProductDataSource {
         'quantity': variant.quantity,
       });
     }
-
+  
     try {
       await _firestore.collection('products').doc().set({
         'mainCategoryId': product.mainCategoryId,

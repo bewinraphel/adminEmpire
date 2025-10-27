@@ -5,10 +5,11 @@ import 'package:empire/feature/product/domain/enities/product_entities.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 abstract class ProductsDataSource {
-  Future<Either<Failures, List<ProductEntity>>> gettingProduct(
+  Future<Either<Failures, List<ProductEntity>>> FetchingProduct(
     String mainCategoryId,
     String subcategoryId,
     String? brand,
+    String? subCategoryName,
   );
   Future<Either<Failures, List<Brand>>> getProductBrand(
     String mainCategory,
@@ -18,16 +19,17 @@ abstract class ProductsDataSource {
 
 class ProducsDataSourceimpli extends ProductsDataSource {
   @override
-  Future<Either<Failures, List<ProductEntity>>> gettingProduct(
+  Future<Either<Failures, List<ProductEntity>>> FetchingProduct(
     String mainCategoryId,
     String subcategoryId,
     String? brand,
+    String? subCategoryName,
   ) async {
     try {
       final snapShot = await FirebaseFirestore.instance
           .collection('products')
           .get();
-      List<ProductEntity> products = snapShot.docs.map((data) {
+      List<ProductEntity> allproducts = snapShot.docs.map((data) {
         return ProductEntity(
           mainCategoryId: data['mainCategoryId'] ?? "",
           subcategoryId: data['subcategoryId'] ?? "",
@@ -66,10 +68,16 @@ class ProducsDataSourceimpli extends ProductsDataSource {
         );
       }).toList();
 
-      if (brand == null) {
-        return right(products);
+      if (brand == null && subCategoryName != null) {
+        /////////////filteredBysubcategory
+        List<ProductEntity> filteredBysubcategory = allproducts;
+        filteredBysubcategory = filteredBysubcategory
+            .where((product) => product.subcategoryName == subCategoryName)
+            .toList();
+        return right(filteredBysubcategory);
       } else {
-        List<ProductEntity> filteredByProduct = products;
+      
+        List<ProductEntity> filteredByProduct = allproducts;
         filteredByProduct = filteredByProduct
             .where((product) => product.brand == brand)
             .toList();
