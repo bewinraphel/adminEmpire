@@ -9,6 +9,13 @@ import 'package:empire/feature/category/data/repository/categoryimage.dart';
 import 'package:empire/feature/category/domain/repositories/categoryimage_repository.dart';
 import 'package:empire/feature/category/domain/usecase/categories/category_image_camera.dart';
 import 'package:empire/feature/category/domain/usecase/categories/catgeroyimgae_gallery.dart';
+import 'package:empire/feature/order/data/datasource/orderdatasource.dart';
+import 'package:empire/feature/order/data/repository/order_repository_impli.dart';
+import 'package:empire/feature/order/domain/repository/order_repository.dart';
+import 'package:empire/feature/order/domain/usecase/order_usecase.dart';
+import 'package:empire/feature/order/domain/usecase/update_order_status_usecase.dart';
+import 'package:empire/feature/order/domain/usecase/wacthorder_usecase.dart';
+import 'package:empire/feature/order/presentation/Bloc/order_bloc.dart';
 import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
 import 'package:empire/feature/product/data/datasource/add_product_data_source_impli.dart';
 import 'package:empire/feature/auth/data/datasource/register.dart';
@@ -54,6 +61,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 final sl = GetIt.instance;
 Future<void> init() async {
+  sl.registerLazySingleton(() => FirebaseFirestore.instance);
+
   sl.registerLazySingleton(() => FirebaseAuth.instance);
   sl.registerLazySingleton(() => GoogleSignIn());
   sl.registerLazySingleton(() => SigningWithGoogle(sl()));
@@ -93,7 +102,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => Login(sl()));
   ///// category
   sl.registerSingleton<Logger>(Logger());
-  
+
   sl.registerLazySingleton<CategoryDataSource>(
     () => CategoryDataSourceImpl(sl<Logger>()),
   );
@@ -136,5 +145,28 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<ProductcallingUsecase>(
     () => ProductcallingUsecase(sl<ProdcuctsRepository>()),
+  );
+
+  ///order
+  sl.registerLazySingleton<GetOrdersUseCase>(() => GetOrdersUseCase(sl()));
+  sl.registerLazySingleton<WatchOrdersUseCase>(() => WatchOrdersUseCase(sl()));
+  sl.registerLazySingleton<UpdateOrderStatusUseCase>(
+    () => UpdateOrderStatusUseCase(sl()),
+  );
+  sl.registerLazySingleton<OrderRepository>(
+    () => OrderRepositoryImpl(remoteDataSource: sl(), logger: sl()),
+  );
+  sl.registerLazySingleton<OrderRemoteDataSource>(
+    () => OrderRemoteDataSourceImpl(
+      firestore: sl<FirebaseFirestore>(),
+      logger: sl<Logger>(),
+    ),
+  );
+  sl.registerFactory<OrdersBloc>(
+    () => OrdersBloc(
+      getOrdersUseCase: sl(),
+      watchOrdersUseCase: sl(),
+      updateOrderStatusUseCase: sl<UpdateOrderStatusUseCase>(),
+    ),
   );
 }
