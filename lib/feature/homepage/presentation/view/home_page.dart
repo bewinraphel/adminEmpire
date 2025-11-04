@@ -1,14 +1,14 @@
 import 'package:empire/core/utilis/app_theme.dart';
 import 'package:empire/feature/homepage/widgets/custom_icon_widget.dart';
+import 'package:empire/feature/homepage/widgets/low_stock_alerts.dart';
+import 'package:empire/feature/homepage/widgets/metrics_cards.dart';
+import 'package:empire/feature/homepage/widgets/revenue_chart_card.dart';
+import 'package:empire/feature/homepage/widgets/top_products_section.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
 
-import '../../widgets/low_stock_alerts.dart';
-import '../../widgets/metrics_cards.dart';
 import '../../widgets/quick_actions_section.dart';
 import '../../widgets/recent_orders_list.dart';
-import '../../widgets/revenue_chart_card.dart';
-import '../../widgets/top_products_section.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -40,7 +40,6 @@ class _AdminDashboardState extends State<HomePage> {
       _isLoading = true;
     });
 
-    // Simulate Firebase data loading
     await Future.delayed(const Duration(milliseconds: 1500));
 
     if (mounted) {

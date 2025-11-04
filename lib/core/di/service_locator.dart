@@ -9,6 +9,12 @@ import 'package:empire/feature/category/data/repository/categoryimage.dart';
 import 'package:empire/feature/category/domain/repositories/categoryimage_repository.dart';
 import 'package:empire/feature/category/domain/usecase/categories/category_image_camera.dart';
 import 'package:empire/feature/category/domain/usecase/categories/catgeroyimgae_gallery.dart';
+import 'package:empire/feature/homepage/data/datasource/metric_remotedatasource.dart';
+import 'package:empire/feature/homepage/data/repository/metric_repp_impli.dart';
+import 'package:empire/feature/homepage/domain/repository/metric_repository.dart';
+import 'package:empire/feature/homepage/domain/usecase/get_metric_summary_usecase.dart';
+import 'package:empire/feature/homepage/domain/usecase/get_metrics_usecase.dart';
+import 'package:empire/feature/homepage/presentation/bloc/metric_bloc.dart';
 import 'package:empire/feature/order/data/datasource/orderdatasource.dart';
 import 'package:empire/feature/order/data/repository/order_repository_impli.dart';
 import 'package:empire/feature/order/domain/repository/order_repository.dart';
@@ -51,6 +57,12 @@ import 'package:empire/feature/product/data/repository/product_repositoy.dart';
 import 'package:empire/feature/product/domain/repository/prodcuct_call_repository.dart';
 import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
 import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
+import 'package:empire/feature/revenue/data/datasource/revenue_impli.dart';
+import 'package:empire/feature/revenue/data/repository/datasource.dart';
+import 'package:empire/feature/revenue/domain/repository/revenue_repo.dart';
+import 'package:empire/feature/revenue/domain/usecase/get_revenue.dart';
+import 'package:empire/feature/revenue/domain/usecase/get_revenue_usecase.dart';
+import 'package:empire/feature/revenue/presentation/bloc/revenue_bloc.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
@@ -169,4 +181,48 @@ Future<void> init() async {
       updateOrderStatusUseCase: sl<UpdateOrderStatusUseCase>(),
     ),
   );
+  /////////////revenue/////
+ sl.registerLazySingleton<RevenueRemoteDataSource>(
+    () => RevenueRemoteDataSourceImpl(
+      firestore: sl(),
+      logger: sl(),
+    ),
+  );
+
+  // Repository
+  sl.registerLazySingleton<RevenueRepository>(
+    () => RevenueRepositoryImpl(
+      remoteDataSource: sl(),
+    ),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetRevenueData(sl()));
+  sl.registerLazySingleton(() => GetRevenueSummary(sl()));
+
+  // Bloc
+  sl.registerFactory(() => RevenueBloc(
+    repository: sl(),
+  ));
+  ///mertric
+  sl.registerLazySingleton<MetricsRemoteDataSource>(
+  () => MetricsRemoteDataSourceImpl(
+    firestore: sl(),
+    logger: sl(),
+  ),
+);
+
+sl.registerLazySingleton<MetricsRepository>(
+  () => MetricsRepositoryImpl(
+    remoteDataSource: sl(),
+  ),
+);
+
+sl.registerLazySingleton(() => GetMetricsData(sl()));
+sl.registerLazySingleton(() => GetMetricsSummary(sl()));
+
+sl.registerFactory(() => MetricsBloc(
+  repository: sl(),
+));
+
 }

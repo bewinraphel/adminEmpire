@@ -11,7 +11,7 @@ import 'package:empire/core/utilis/fonts.dart';
 import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
- 
+
 import 'package:empire/feature/product/domain/enities/listproducts.dart';
 import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
 import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_brand.dart';
@@ -156,7 +156,8 @@ class ProductScreen extends StatelessWidget {
                 reverse: true,
                 child: Column(
                   children: [
-                    sreach(),
+                    SizedBox30(),
+                    // sreach(),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
