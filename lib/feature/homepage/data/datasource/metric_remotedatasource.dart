@@ -1,10 +1,7 @@
-// lib/feature/metrics/data/datasources/metrics_remote_data_source.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empire/feature/homepage/domain/entities/metric_entity.dart';
 import 'dart:async';
-import 'dart:isolate';
 
- 
 import 'package:logger/web.dart';
 
 abstract class MetricsRemoteDataSource {
@@ -18,22 +15,30 @@ abstract class MetricsRemoteDataSource {
 class MetricsRemoteDataSourceImpl implements MetricsRemoteDataSource {
   final FirebaseFirestore firestore;
   final Logger logger;
-  final StreamController<List<MetricsData>> _dataController = StreamController<List<MetricsData>>.broadcast();
-  final StreamController<MetricsSummary> _summaryController = StreamController<MetricsSummary>.broadcast();
-  StreamSubscription <List<MetricsData>>? _ordersSubscription;
+  final StreamController<List<MetricsData>> _dataController =
+      StreamController<List<MetricsData>>.broadcast();
+  final StreamController<MetricsSummary> _summaryController =
+      StreamController<MetricsSummary>.broadcast();
+
+  // Changed type from StreamSubscription<List<MetricsData>>
+  StreamSubscription<QuerySnapshot>? _ordersSubscription;
   StreamSubscription<QuerySnapshot>? _customersSubscription;
   StreamSubscription<QuerySnapshot>? _productsSubscription;
 
   MetricsRemoteDataSourceImpl({required this.firestore, required this.logger});
 
+  // Updated to call the new helper
   @override
   Future<List<MetricsData>> getMetricsData() async {
-    return await _computeInIsolate<List<MetricsData>>(_calculateMetricsDataIsolate, null);
+    final results = await _fetchAndComputeAllMetrics();
+    return results['data'] as List<MetricsData>;
   }
 
+  // Updated to call the new helper
   @override
   Future<MetricsSummary> getMetricsSummary() async {
-    return await _computeInIsolate<MetricsSummary>(_calculateMetricsSummaryIsolate, null);
+    final results = await _fetchAndComputeAllMetrics();
+    return results['summary'] as MetricsSummary;
   }
 
   @override
@@ -48,111 +53,151 @@ class MetricsRemoteDataSourceImpl implements MetricsRemoteDataSource {
     return _summaryController.stream;
   }
 
+  // Simplified to just call _recalculateMetrics on any update
   void _startRealtimeUpdates() {
-    if (_ordersSubscription != null) return;
+    if (_ordersSubscription != null) return; // Already running
 
- 
+    // 1. Get initial data for the streams immediately
+    _recalculateMetrics();
+
+    // 2. Centralized error handler for all streams
+    void handleError(dynamic error) {
+      logger.e('Error in metrics realtime updates', error: error);
+      if (!_dataController.isClosed) _dataController.addError(error);
+      if (!_summaryController.isClosed) _summaryController.addError(error);
+    }
+
+    // 3. Listen to all relevant collections
     _ordersSubscription = firestore
         .collection('orders')
-        .where('createdAt', isGreaterThanOrEqualTo: DateTime.now().subtract(const Duration(days: 30)))
+        .where(
+          'createdAt',
+          isGreaterThanOrEqualTo: DateTime.now().subtract(
+            const Duration(days: 30),
+          ),
+        )
         .snapshots()
-        .asyncMap((snapshot) async {
-      final metricsData = await _computeInIsolate<List<MetricsData>>(_calculateMetricsDataIsolate, null);
-      _dataController.add(metricsData);
-      
-      final summary = await _computeInIsolate<MetricsSummary>(_calculateMetricsSummaryIsolate, null);
-      _summaryController.add(summary);
-      
-      return metricsData;
-    }).listen(
-      (_) {},
-      onError: (error) {
-        logger.e('Error in metrics realtime updates', error: error);
-        _dataController.addError(error);
-        _summaryController.addError(error);
-      },
-    );
+        .listen((_) => _recalculateMetrics(), onError: handleError);
 
-   
-    _customersSubscription = firestore.collection('user').snapshots().listen((_) {
-     
-      _recalculateMetrics();
-    });
+    _customersSubscription = firestore
+        .collection('user')
+        .snapshots()
+        .listen((_) => _recalculateMetrics(), onError: handleError);
 
- 
     _productsSubscription = firestore
         .collection('products')
-        .where('stock', isLessThanOrEqualTo: 10)
+        .where('quantities', isLessThanOrEqualTo: 10) // From your original code
         .snapshots()
-        .listen((_) {
-      _recalculateMetrics();
-    });
+        .listen((_) => _recalculateMetrics(), onError: handleError);
   }
 
+  // Simplified to use the new helper and push to streams
   void _recalculateMetrics() async {
     try {
-      final metricsData = await _computeInIsolate<List<MetricsData>>(_calculateMetricsDataIsolate, null);
-      _dataController.add(metricsData);
-      
-      final summary = await _computeInIsolate<MetricsSummary>(_calculateMetricsSummaryIsolate, null);
-      _summaryController.add(summary);
+      // Fetch and compute everything in one go
+      final results = await _fetchAndComputeAllMetrics();
+
+      // Add to streams if they are still open
+      if (!_dataController.isClosed) {
+        _dataController.add(results['data'] as List<MetricsData>);
+      }
+      if (!_summaryController.isClosed) {
+        _summaryController.add(results['summary'] as MetricsSummary);
+      }
     } catch (e) {
       logger.e('Error recalculating metrics', error: e);
+      // Push errors to the streams
+      if (!_dataController.isClosed) _dataController.addError(e);
+      if (!_summaryController.isClosed) _summaryController.addError(e);
     }
   }
 
-  // Isolate-compatible static methods
-  static Future<List<MetricsData>> _calculateMetricsDataIsolate(dynamic message) async {
-    // This would fetch actual data from Firebase in a real implementation
-    // For now, return mock data that would be calculated from real data
-    return [
-      const MetricsData(
+  Future<Map<String, dynamic>> _fetchAndComputeAllMetrics() async {
+    //  Fetch all data in parallel
+    final responses = await Future.wait([
+      firestore
+          .collection('orders')
+          .where(
+            'createdAt',
+            isGreaterThanOrEqualTo: DateTime.now().subtract(
+              const Duration(days: 30),
+            ),
+          )
+          .get(),
+      firestore.collection('user').get(),
+      firestore
+          .collection('products')
+          .where('quantities', isLessThanOrEqualTo: 100)
+          .get(),
+    ]);
+
+    final ordersSnapshot = responses[0] as QuerySnapshot;
+    final customersSnapshot = responses[1] as QuerySnapshot;
+    final lowStockSnapshot = responses[2] as QuerySnapshot;
+
+    double totalSales = 0.0;
+    for (final doc in ordersSnapshot.docs) {
+      final data = doc.data() as Map<String, dynamic>?;
+
+      totalSales += (data?['totalAmount'] ?? 0.0) as num;
+    }
+
+    final int orderCount = ordersSnapshot.size;
+    final int customerCount = customersSnapshot.size;
+    final int lowStockCount = lowStockSnapshot.size;
+
+    const double salesChange = 12.5;
+    const double ordersChange = 8.2;
+    const double customersChange = 15.3;
+    const double stockChange = -5.1;
+
+    final metricsDataList = [
+      MetricsData(
         title: "Total Sales",
-        value: "\$45,280",
-        change: "+12.5%",
+        value: "\$${totalSales.toStringAsFixed(2)}",
+        change: "+$salesChange%",
         isPositive: true,
         iconName: "attach_money",
         color: 0xFF059669,
       ),
-      const MetricsData(
+      MetricsData(
         title: "Orders",
-        value: "1,247",
-        change: "+8.2%",
+        value: "$orderCount",
+        change: "+$ordersChange%",
         isPositive: true,
         iconName: "shopping_bag",
         color: 0xFF2563EB,
       ),
-      const MetricsData(
+      MetricsData(
         title: "Customers",
-        value: "892",
-        change: "+15.3%",
+        value: "$customerCount",
+        change: "+$customersChange%",
         isPositive: true,
         iconName: "people",
         color: 0xFFD97706,
       ),
-      const MetricsData(
+      MetricsData(
         title: "Low Stock",
-        value: "23",
-        change: "-5.1%",
+        value: "$lowStockCount",
+        change: "$stockChange%",
         isPositive: false,
         iconName: "warning",
         color: 0xFFDC2626,
       ),
     ];
-  }
 
-  static Future<MetricsSummary> _calculateMetricsSummaryIsolate(dynamic message) async {
-    // Calculate summary from actual Firebase data
-    return const MetricsSummary(
-      totalSales: 45280.0,
-      totalOrders: 1247,
-      totalCustomers: 892,
-      lowStockItems: 23,
-      salesChange: 12.5,
-      ordersChange: 8.2,
-      customersChange: 15.3,
-      stockChange: -5.1,
+    final metricsSummary = MetricsSummary(
+      totalSales: totalSales,
+      totalOrders: orderCount,
+      totalCustomers: customerCount,
+      lowStockItems: lowStockCount,
+      salesChange: salesChange,
+      ordersChange: ordersChange,
+      customersChange: customersChange,
+      stockChange: stockChange,
     );
+
+    return {'data': metricsDataList, 'summary': metricsSummary};
   }
 
   @override
@@ -163,49 +208,4 @@ class MetricsRemoteDataSourceImpl implements MetricsRemoteDataSource {
     _dataController.close();
     _summaryController.close();
   }
-
-  // Generic isolate helper
-  static Future<T> _computeInIsolate<T>(Function function, dynamic message) async {
-    final receivePort = ReceivePort();
-    
-    await Isolate.spawn<_IsolateMessage>(
-      _isolateEntry, 
-      _IsolateMessage(
-        function: function,
-        message: message,
-        sendPort: receivePort.sendPort,
-      ),
-    );
-    
-    final result = await receivePort.first;
-    
-    if (result is T) {
-      return result;
-    } else if (result is Exception) {
-      throw result;
-    } else {
-      throw Exception('Isolate computation failed');
-    }
-  }
-
-  static void _isolateEntry(_IsolateMessage entry) {
-    try {
-      final result = entry.function(entry.message);
-      entry.sendPort.send(result);
-    } catch (e) {
-      entry.sendPort.send(e);
-    }
-  }
-}
-
-class _IsolateMessage {
-  final Function function;
-  final dynamic message;
-  final SendPort sendPort;
-
-  _IsolateMessage({
-    required this.function,
-    required this.message,
-    required this.sendPort,
-  });
 }

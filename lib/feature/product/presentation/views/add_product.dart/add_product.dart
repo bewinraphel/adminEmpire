@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/color.dart';
@@ -8,7 +7,6 @@ import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/auth/data/datasource/image_profile.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
-
 import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
 import 'package:empire/feature/product/data/repository/add_product_respository.dart';
 import 'package:empire/feature/product/domain/enities/listproducts.dart';
@@ -23,7 +21,6 @@ import 'package:empire/feature/product/presentation/views/add_product.dart/widge
 import 'package:empire/feature/homepage/presentation/view/home_page.dart';
 import 'package:empire/feature/product/presentation/views/product_screen.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;

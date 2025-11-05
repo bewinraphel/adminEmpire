@@ -204,19 +204,19 @@ class _MetricsCardsContent extends StatelessWidget {
             SizedBox(height: 0.5.h),
             Row(
               children: [
+                Text(
+                  metric.change,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: metric.isPositive ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(width: 1.w),
                 Icon(
                   metric.isPositive ? Icons.trending_up : Icons.trending_down,
                   color: metric.isPositive ? Colors.green : Colors.red,
                   size: 16,
-                ),
-                SizedBox(width: 1.w),
-                Text(
-                  metric.change,
-                  style: TextStyle(
-                    fontSize: 10.sp,
-                    color: metric.isPositive ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.w500,
-                  ),
                 ),
               ],
             ),

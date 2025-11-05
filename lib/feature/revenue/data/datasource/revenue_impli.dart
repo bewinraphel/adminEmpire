@@ -143,7 +143,7 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
     _summaryControllers.clear();
   }
 
-  // Isolate-compatible static methods
+ 
   static List<RevenueData> _processRevenueDataIsolate(dynamic message) {
     final Map<String, dynamic> params = message as Map<String, dynamic>;
     final List<dynamic> docs = params['docs'];
@@ -195,7 +195,7 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
     }).toList();
 
     if (data.isEmpty) {
-      return RevenueSummary(
+      return const RevenueSummary(
         totalRevenue: 0.0,
         averageOrderValue: 0.0,
         conversionRate: 0.0,
@@ -242,7 +242,7 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
     return previousAvg > 0 ? ((recentAvg - previousAvg) / previousAvg) * 100 : 0.0;
   }
 
-  // Helper methods
+ 
   static DateTime _parseTimestamp(dynamic timestamp) {
     if (timestamp is Timestamp) {
       return timestamp.toDate();

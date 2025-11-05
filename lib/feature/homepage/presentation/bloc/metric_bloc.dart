@@ -149,7 +149,7 @@ class MetricsBloc extends Bloc<MetricsEvent, MetricsState> {
         add(MetricsDataUpdated(data));
       },
       onError: (error) {
-        add(MetricsDataUpdated([]));
+        add(const MetricsDataUpdated([]));
       },
     );
 
@@ -158,7 +158,7 @@ class MetricsBloc extends Bloc<MetricsEvent, MetricsState> {
         add(MetricsSummaryUpdated(summary));
       },
       onError: (error) {
-        // Summary error is less critical
+ 
       },
     );
 
