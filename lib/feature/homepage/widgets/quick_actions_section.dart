@@ -21,7 +21,7 @@ class QuickActionsSection extends StatelessWidget {
       "route": "/order-history",
     },
     {
-      "title": "View Analytics",
+      "title": "View Analytics",  
       "icon": "analytics",
       "color": 0xFFD97706,
       "route": "/admin-product-management",

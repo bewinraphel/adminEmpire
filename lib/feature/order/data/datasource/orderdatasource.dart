@@ -84,20 +84,4 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       return Left(Failures.server('Failed to update order status: $e'));
     }
   }
-
-  // @override
-  // Future<OrderModel> getOrderById(String orderId) async {
-  //   try {
-  //     final doc = await firestore.collection('orders').doc(orderId).get();
-
-  //     if (!doc.exists) {
-  //       throw Exception('Order not found');
-  //     }
-
-  //     return OrderModel.fromJson({...doc.data()!, 'orderId': doc.id});
-  //   } catch (e, s) {
-  //     logger.e('Error fetching order by ID', error: e, stackTrace: s);
-  //     rethrow;
-  //   }
-  // }
 }

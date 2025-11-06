@@ -1,7 +1,7 @@
  
 import 'dart:async';
 
-import 'package:empire/feature/revenue/data/datasource/revenue_impli.dart';
+import 'package:empire/feature/revenue/data/datasource/revenue_datasource.dart';
 import 'package:empire/feature/revenue/domain/entity/revenue_entity.dart';
 import 'package:empire/feature/revenue/domain/repository/revenue_repo.dart';
 

@@ -22,12 +22,12 @@ class _AdminDashboardState extends State<HomePage> {
       GlobalKey<RefreshIndicatorState>();
   bool _isLoading = false;
   String selectedDateRange = 'Last 7 days';
-  final List<String> dateRanges = [
-    'Today',
-    'Last 7 days',
-    'Last 30 days',
-    'Last 3 months',
-  ];
+  // final List<String> dateRanges = [
+  //   'Today',
+  //   'Last 7 days',
+  //   'Last 30 days',
+  //   'Last 3 months',
+  // ];
 
   @override
   void initState() {

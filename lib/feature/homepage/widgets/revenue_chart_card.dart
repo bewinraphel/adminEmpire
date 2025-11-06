@@ -1,5 +1,3 @@
- 
-
 import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/feature/revenue/domain/entity/revenue_entity.dart';
 import 'package:empire/feature/revenue/presentation/bloc/revenue_bloc.dart';
@@ -41,13 +39,13 @@ class _RevenueChartCardContent extends StatelessWidget {
                   const Center(child: CircularProgressIndicator()),
                 ] else if (state.error != null) ...[
                   SizedBox(height: 2.h),
-                  _buildErrorState(state.error!,context),
+                  _buildErrorState(state.error!, context),
                 ] else if (state.revenueData.isEmpty) ...[
                   SizedBox(height: 2.h),
                   _buildEmptyState(context),
                 ] else ...[
                   SizedBox(height: 2.h),
-                  _buildChart(state,context),
+                  _buildChart(state, context),
                   SizedBox(height: 2.h),
                   if (state.summary != null) _buildStats(state.summary!),
                 ],
@@ -72,9 +70,7 @@ class _RevenueChartCardContent extends StatelessWidget {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
           decoration: BoxDecoration(
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline,
-            ),
+            border: Border.all(color: Theme.of(context).colorScheme.outline),
             borderRadius: BorderRadius.circular(8),
           ),
           child: DropdownButtonHideUnderline(
@@ -92,7 +88,9 @@ class _RevenueChartCardContent extends StatelessWidget {
               }).toList(),
               onChanged: (RevenuePeriod? newValue) {
                 if (newValue != null) {
-                  context.read<RevenueBloc>().add(RevenuePeriodChanged(newValue));
+                  context.read<RevenueBloc>().add(
+                    RevenuePeriodChanged(newValue),
+                  );
                 }
               },
             ),
@@ -106,10 +104,7 @@ class _RevenueChartCardContent extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text(
-          'Live Updates',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text('Live Updates', style: Theme.of(context).textTheme.bodySmall),
         SizedBox(width: 2.w),
         Switch(
           value: state.isRealTime,
@@ -163,7 +158,7 @@ class _RevenueChartCardContent extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorState(String error,BuildContext context) {
+  Widget _buildErrorState(String error, BuildContext context) {
     return Column(
       children: [
         Container(
@@ -172,11 +167,7 @@ class _RevenueChartCardContent extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: Colors.red,
-                ),
+                const Icon(Icons.error_outline, size: 48, color: Colors.red),
                 SizedBox(height: 2.h),
                 Text(
                   'Unable to Load Data',
@@ -195,7 +186,9 @@ class _RevenueChartCardContent extends StatelessWidget {
                 SizedBox(height: 2.h),
                 ElevatedButton(
                   onPressed: () {
-                    context.read<RevenueBloc>().add(const RevenueDataRequested());
+                    context.read<RevenueBloc>().add(
+                      const RevenueDataRequested(),
+                    );
                   },
                   child: const Text('Retry'),
                 ),
@@ -220,17 +213,19 @@ class _RevenueChartCardContent extends StatelessWidget {
     );
   }
 
-  Widget _buildChart(RevenueState state,BuildContext context) {
+  Widget _buildChart(RevenueState state, BuildContext context) {
     final revenueData = state.revenueData;
-    
-    return Container(
+
+    return SizedBox(
       height: 25.h,
       child: LineChart(
         LineChartData(
           gridData: FlGridData(
             show: true,
             drawVerticalLine: false,
-            horizontalInterval: _calculateInterval(state.summary?.totalRevenue ?? 0),
+            horizontalInterval: _calculateInterval(
+              state.summary?.totalRevenue ?? 0,
+            ),
             getDrawingHorizontalLine: (value) {
               return FlLine(
                 color: Colors.grey.withOpacity(0.3),
@@ -252,13 +247,15 @@ class _RevenueChartCardContent extends StatelessWidget {
                 reservedSize: 30,
                 interval: 1,
                 getTitlesWidget: (double value, TitleMeta meta) {
-                  if (value.toInt() >= 0 && value.toInt() < revenueData.length) {
+                  if (value.toInt() >= 0 &&
+                      value.toInt() < revenueData.length) {
                     return SideTitleWidget(
-                      
-                       
-                  meta:meta ,
+                      meta: meta,
                       child: Text(
-                        _formatDateForDisplay(revenueData[value.toInt()].date, state.period),
+                        _formatDateForDisplay(
+                          revenueData[value.toInt()].date,
+                          state.period,
+                        ),
                         style: TextStyle(fontSize: 10.sp),
                       ),
                     );
@@ -274,8 +271,8 @@ class _RevenueChartCardContent extends StatelessWidget {
                 reservedSize: 50,
                 getTitlesWidget: (double value, TitleMeta meta) {
                   return SideTitleWidget(
-                   meta: meta,
-                
+                    meta: meta,
+
                     child: Text(
                       _formatCurrency(value),
                       style: TextStyle(fontSize: 10.sp),
@@ -287,9 +284,7 @@ class _RevenueChartCardContent extends StatelessWidget {
           ),
           borderData: FlBorderData(
             show: true,
-            border: Border.all(
-              color: Colors.grey.withOpacity(0.3),
-            ),
+            border: Border.all(color: Colors.grey.withOpacity(0.3)),
           ),
           minX: 0,
           maxX: (revenueData.length - 1).toDouble(),
@@ -298,10 +293,7 @@ class _RevenueChartCardContent extends StatelessWidget {
           lineBarsData: [
             LineChartBarData(
               spots: revenueData.asMap().entries.map((entry) {
-                return FlSpot(
-                  entry.key.toDouble(),
-                  entry.value.revenue,
-                );
+                return FlSpot(entry.key.toDouble(), entry.value.revenue);
               }).toList(),
               isCurved: true,
               gradient: LinearGradient(
@@ -340,22 +332,26 @@ class _RevenueChartCardContent extends StatelessWidget {
             enabled: true,
             touchTooltipData: LineTouchTooltipData(
               getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-                return touchedBarSpots.map((barSpot) {
-                  final flSpot = barSpot;
-                  final dataIndex = flSpot.x.toInt();
-                  if (dataIndex >= 0 && dataIndex < revenueData.length) {
-                    final data = revenueData[dataIndex];
-                    return LineTooltipItem(
-                      '${_formatDateForDisplay(data.date, state.period)}\n\$${data.revenue.toStringAsFixed(0)}\n${data.orders} orders',
-                      TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    );
-                  }
-                  return null;
-                }).where((item) => item != null).toList().cast<LineTooltipItem>();
+                return touchedBarSpots
+                    .map((barSpot) {
+                      final flSpot = barSpot;
+                      final dataIndex = flSpot.x.toInt();
+                      if (dataIndex >= 0 && dataIndex < revenueData.length) {
+                        final data = revenueData[dataIndex];
+                        return LineTooltipItem(
+                          '${_formatDateForDisplay(data.date, state.period)}\n\$${data.revenue.toStringAsFixed(0)}\n${data.orders} orders',
+                          TextStyle(
+                            fontSize: 12.sp,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        );
+                      }
+                      return null;
+                    })
+                    .where((item) => item != null)
+                    .toList()
+                    .cast<LineTooltipItem>();
               },
             ),
           ),
@@ -369,22 +365,22 @@ class _RevenueChartCardContent extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
         _buildStatItem(
-          'Total Revenue', 
-          _formatCurrency(summary.totalRevenue), 
-          '${summary.revenueChange.toStringAsFixed(1)}%', 
-          summary.revenueChange >= 0
+          'Total Revenue',
+          _formatCurrency(summary.totalRevenue),
+          '${summary.revenueChange.toStringAsFixed(1)}%',
+          summary.revenueChange >= 0,
         ),
         _buildStatItem(
-          'Avg. Order', 
-          _formatCurrency(summary.averageOrderValue), 
-          '${summary.aovChange.toStringAsFixed(1)}%', 
-          summary.aovChange >= 0
+          'Avg. Order',
+          _formatCurrency(summary.averageOrderValue),
+          '${summary.aovChange.toStringAsFixed(1)}%',
+          summary.aovChange >= 0,
         ),
         _buildStatItem(
-          'Conversion', 
-          '${summary.conversionRate.toStringAsFixed(1)}%', 
-          '${summary.conversionChange.toStringAsFixed(1)}%', 
-          summary.conversionChange >= 0
+          'Conversion',
+          '${summary.conversionRate.toStringAsFixed(1)}%',
+          '${summary.conversionChange.toStringAsFixed(1)}%',
+          summary.conversionChange >= 0,
         ),
       ],
     );
@@ -400,7 +396,7 @@ class _RevenueChartCardContent extends StatelessWidget {
     return Column(
       children: [
         Text(
-          label, 
+          label,
           style: TextStyle(
             fontSize: 10.sp,
             color: isPlaceholder ? Colors.grey.withOpacity(0.5) : null,
@@ -440,11 +436,7 @@ class _RevenueChartCardContent extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.remove,
-                color: Colors.grey.withOpacity(0.5),
-                size: 16,
-              ),
+              Icon(Icons.remove, color: Colors.grey.withOpacity(0.5), size: 16),
               SizedBox(width: 1.w),
               Text(
                 change,
@@ -500,7 +492,9 @@ class _RevenueChartCardContent extends StatelessWidget {
 
   double _calculateMaxY(List<RevenueData> data) {
     if (data.isEmpty) return 10000;
-    final maxRevenue = data.map((e) => e.revenue).reduce((a, b) => a > b ? a : b);
+    final maxRevenue = data
+        .map((e) => e.revenue)
+        .reduce((a, b) => a > b ? a : b);
     final maxY = (maxRevenue * 1.2).ceilToDouble();
     return maxY > 0 ? maxY : 10000;
   }

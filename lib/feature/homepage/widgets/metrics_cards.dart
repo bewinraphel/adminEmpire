@@ -29,9 +29,9 @@ class _MetricsCardsContent extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 4.w),
           child: Column(
             children: [
+              _buildMetricsGrid(state, context),
               _buildRealtimeToggle(context, state),
               SizedBox(height: 2.h),
-              _buildMetricsGrid(state, context),
             ],
           ),
         );
@@ -69,8 +69,8 @@ class _MetricsCardsContent extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 3.w,
-        mainAxisSpacing: 2.h,
+        crossAxisSpacing: 0.w,
+        mainAxisSpacing: 0.h,
         childAspectRatio: 1.3,
       ),
       itemCount: state.metricsData.length,
@@ -201,7 +201,7 @@ class _MetricsCardsContent extends StatelessWidget {
                 color: Colors.black87,
               ),
             ),
-            SizedBox(height: 0.5.h),
+
             Row(
               children: [
                 Text(
@@ -239,8 +239,8 @@ class _MetricsCardsContent extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  width: 40.w,
-                  height: 12.h,
+                  width: 18.w,
+                  height: 4.h,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(4),
@@ -257,8 +257,8 @@ class _MetricsCardsContent extends StatelessWidget {
               ],
             ),
             Container(
-              width: 60.w,
-              height: 18.h,
+              width: 20.w,
+              height: 3.h,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(4),
@@ -266,7 +266,7 @@ class _MetricsCardsContent extends StatelessWidget {
             ),
             Container(
               width: 30.w,
-              height: 12.h,
+              height: 2.h,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
                 borderRadius: BorderRadius.circular(4),
