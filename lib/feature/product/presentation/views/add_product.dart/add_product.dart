@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/color.dart';
@@ -17,12 +16,14 @@ import 'package:empire/feature/product/presentation/bloc/add_product.dart';
 import 'package:empire/feature/product/presentation/bloc/add_product_form.dart';
 import 'package:empire/feature/product/presentation/bloc/brand.dart';
 import 'package:empire/feature/product/presentation/bloc/product_image.dart';
+ 
 import 'package:empire/feature/product/presentation/views/add_product.dart/widgets.dart';
 import 'package:flutter/foundation.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+
+
 
 class AddProductsPageContent extends StatelessWidget {
   final String mainCategoryId;
@@ -103,7 +104,7 @@ class AddProductsPageContent extends StatelessWidget {
                 } else if (state is ProductFailure) {
                   ScaffoldMessenger.of(
                     context,
-                  ).showSnackBar(SnackBar(content: Text('error')));
+                  ).showSnackBar(const SnackBar(content: Text('error')));
                 }
               },
               child: LayoutBuilder(
@@ -147,7 +148,7 @@ class AddProductsPageContent extends StatelessWidget {
                                       constraints,
                                     ),
                                     const SizedBox(height: 24),
-                                    // _buildVariantsSection(context, constraints,State.),
+                                    _buildVariantsSection(context, constraints, ),
                                     const SizedBox(height: 24),
                                     _buildBrandSection(context),
                                     const SizedBox(height: 40),
@@ -458,8 +459,8 @@ class AddProductsPageContent extends StatelessWidget {
   Widget _buildVariantsSection(
     BuildContext context,
     BoxConstraints constraints,
-    int index,
-    Variant variant,
+ 
+
   ) {
     final imageBloc = context.read<ProductImageBloc>();
     return BlocSelector<AddProductFormBloc, AddProductFormState, List<Variant>>(
@@ -468,38 +469,38 @@ class AddProductsPageContent extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
-              onTap: () {
-                imageBloc.add(SetTargetVariantIndexEvent(index));
+            // GestureDetector(
+            //   onTap: () {
+            //     imageBloc.add(const SetTargetVariantIndexEvent(0));
 
-                _showImageSourceSheet(context);
-              },
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: variant.image != null && variant.image!.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        // Use the image path for preview
-                        child: kIsWeb
-                            ? Image.network(variant.image!, fit: BoxFit.cover)
-                            : Image.file(
-                                File(variant.image!),
-                                fit: BoxFit.cover,
-                              ),
-                      )
-                    : const Icon(
-                        Icons.photo_size_select_actual,
-                        size: 24,
-                        color: Colors.grey,
-                      ),
-              ),
-            ),
+            //     _showImageSourceSheet(context);
+            //   },
+            //   child: Container(
+            //     width: 50,
+            //     height: 50,
+            //     decoration: BoxDecoration(
+            //       color: Colors.grey[200],
+            //       borderRadius: BorderRadius.circular(8),
+            //       border: Border.all(color: Colors.grey.shade300),
+            //     ),
+            //     child: variant.image != null && variant.image!.isNotEmpty
+            //         ? ClipRRect(
+            //             borderRadius: BorderRadius.circular(8),
+ 
+            //             child: kIsWeb
+            //                 ? Image.network(variant.image!, fit: BoxFit.cover)
+            //                 : Image.file(
+            //                     File(variant.image!),
+            //                     fit: BoxFit.cover,
+            //                   ),
+            //           )
+            //         : const Icon(
+            //             Icons.photo_size_select_actual,
+            //             size: 24,
+            //             color: Colors.grey,
+            //           ),
+            //   ),
+            // ),
             const SizedBox(width: 12),
             const Text(
               'Variants',

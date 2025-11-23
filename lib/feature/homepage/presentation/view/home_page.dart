@@ -23,7 +23,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-   
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1200;
     final isTablet = screenWidth > 768 && screenWidth <= 1200;
@@ -37,7 +36,6 @@ class _HomePageState extends State<HomePage> {
           color: AppTheme.lightTheme.colorScheme.primary,
           child: CustomScrollView(
             slivers: [
-              const HomeAppBar(),
               SliverListSection(isDesktop: isDesktop, isTablet: isTablet),
             ],
           ),

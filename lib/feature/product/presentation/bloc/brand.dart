@@ -68,7 +68,7 @@ class BrandError extends BrandState {
   List<Object> get props => [error];
 }
 
-class BrandBloc extends Bloc<BrandEvent, BrandState> {
+class     BrandBloc extends Bloc<BrandEvent, BrandState> {
   final AddBrandUseCase addBrandUseCase;
   final GetBrandsUseCase getBrandsUseCase;
 

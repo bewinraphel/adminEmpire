@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/color.dart';
@@ -8,18 +7,16 @@ import 'package:empire/core/utilis/fonts.dart';
 import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
-
 import 'package:empire/feature/product/domain/repository/product_repository.dart';
-
 import 'package:empire/feature/product/domain/usecase/adding_brand_usecase.dart';
 import 'package:empire/feature/product/domain/usecase/get_brand_usecase.dart';
 import 'package:empire/feature/product/presentation/bloc/add_brand_image.dart';
 import 'package:empire/feature/product/presentation/bloc/brand.dart';
 import 'package:empire/feature/product/presentation/views/add_product.dart/add_product.dart';
-
 import 'package:empire/feature/product/domain/usecase/getproduct_usecase.dart';
 import 'package:empire/feature/product/presentation/bloc/product_bloc.dart';
 import 'package:empire/feature/product/presentation/views/add_product.dart/widgets.dart';
+import 'package:empire/feature/product/presentation/views/add_product_page.dart';
 import 'package:empire/feature/product/presentation/views/product_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -118,7 +115,7 @@ class ProductScreen extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) {
-                                return AddProductsPageContent(
+                                return AddProductPage(
                                   mainCategoryId: mainCategoryId!,
                                   subcategoryId: subcategory!,
                                   mainCategoryName: mainCategoryName!,
