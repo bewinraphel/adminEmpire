@@ -27,7 +27,7 @@ void main() async {
   runApp(
     Sizer(
       builder: (context, orientation, deviceType) {
-        return const LandingPage();
+        return const MyApp  ();
       },
     ),
   );

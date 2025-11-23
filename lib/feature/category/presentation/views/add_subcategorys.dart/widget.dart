@@ -145,6 +145,90 @@ class SubCategoryShimmer extends StatelessWidget {
   }
 }
 
+class CategoryItemweb extends StatelessWidget {
+  final CategoryEntities doc;
+  final bool Function(CategoryState) isSelectedSelector;
+  final VoidCallback onTap;
+  final bool isDesktop;
+
+  const CategoryItemweb({
+    super.key,
+    required this.doc,
+    required this.isSelectedSelector,
+    required this.onTap,
+    required this.isDesktop,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<CategoryBloc, CategoryState, bool>(
+      selector: isSelectedSelector,
+      builder: (context, isSelected) {
+        return Container(
+          decoration: BoxDecoration(
+            color: ColoRs.fieldcolor,
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: GestureDetector(
+              onTap: onTap,
+              child: Column(
+                children: [
+                  Container(
+                    height: isDesktop ? 90 : 90,
+                    width: isDesktop ? 100 : 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: OptimizedNetworkImage(
+                      imageUrl: doc.imageUrl,
+                      errorWidget: const Icon(Icons.error),
+                      borderRadius: 7,
+                      fit: BoxFit.fill,
+                      placeholder: Shimmer.fromColors(
+                        baseColor: Colors.grey[300]!,
+                        highlightColor: Colors.grey[100]!,
+                        child: const SizedBox(height: 80, width: 85),
+                      ),
+                      widthQueryParam: 'resize_width',
+                    ),
+                    // ClipRRect(
+                    //   borderRadius: BorderRadiusGeometry.circular(8),
+                    //   child: CachedNetworkImage(
+                    //     imageUrl: doc.imageUrl,
+
+                    //     fit: BoxFit.fill,
+                    //     placeholder: (context, url) {
+                    //       return const CircularProgressIndicator();
+                    //     },
+                    //     errorWidget: (context, url, error) =>
+                    //         const Icon(Icons.error),
+                    //   ),
+                    // ),
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.0020),
+                  Text(
+                    doc.category,
+                    style: TextStyle(
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.bold,
+                      fontFamily: 'Raleway',
+                      fontSize: 15,
+                      color: isSelected ? ColoRs.black87 : ColoRs.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class CategoryItem extends StatelessWidget {
   final CategoryEntities doc;
   final bool Function(CategoryState) isSelectedSelector;
@@ -186,8 +270,8 @@ class CategoryItem extends StatelessWidget {
               child: Column(
                 children: [
                   Container(
-                    height: 170,
-                    width: 200,
+                    height: isSelected ? 100 : 170,
+                    width: isSelected ? 100 : 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -239,38 +323,47 @@ class CategoryItem extends StatelessWidget {
   }
 }
 
-Padding addSubcategory(BuildContext context, CategoryEntities category) {
-  return Padding(
-    padding: const EdgeInsets.all(8.0),
-    child: ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: ColoRs.elevatedButtonColor,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-      ),
-      onPressed: () {
-        Navigator.push(
-          context,
+LayoutBuilder addSubcategory(BuildContext context, CategoryEntities category) {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final bool isDeskdop = constraints.maxWidth > 1200;
+      return isDeskdop
+          ? const SizedBox()
+          : Padding(
+              padding: const EdgeInsets.all(8),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ColoRs.elevatedButtonColor,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
 
-          MaterialPageRoute(
-            builder: (context) {
-              return AddCategoryWidget(id: category.uid);
-            },
-          ),
-        );
-        context.read<SubCategoryBloc>().add(GetSubCategoryEvent(category.uid));
-      },
-      child: const Text(
-        'Add SubCategory',
-        style: TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.bold,
-          color: ColoRs.whiteColor,
-          fontFamily: Fonts.raleway,
-        ),
-      ),
-    ),
+                    MaterialPageRoute(
+                      builder: (context) {
+                        return AddCategoryWidget(id: category.uid);
+                      },
+                    ),
+                  );
+                  context.read<SubCategoryBloc>().add(
+                    GetSubCategoryEvent(category.uid),
+                  );
+                },
+                child: const Text(
+                  'Add SubCategory',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: ColoRs.whiteColor,
+                    fontFamily: Fonts.raleway,
+                  ),
+                ),
+              ),
+            );
+    },
   );
 }
 
@@ -322,20 +415,66 @@ Padding searchProduct() {
   );
 }
 
-Column categorySection(CategoryEntities category, String mainCatgoryName) {
+Column categorySection(
+  CategoryEntities category,
+  String mainCatgoryName,
+  bool isDesktop,
+  BuildContext context,
+) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-        child: Text(
-          ' Categories',
-          style: GoogleFonts.inter(
-            color: const Color(0xFF111418),
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            letterSpacing: -0.015 * 18,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              ' Categories',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF111418),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.015 * 18,
+              ),
+            ),
+            isDesktop == false
+                ? const SizedBox()
+                : Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ColoRs.elevatedButtonColor,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+
+                          MaterialPageRoute(
+                            builder: (context) {
+                              return AddCategoryWidget(id: category.uid);
+                            },
+                          ),
+                        );
+                        context.read<SubCategoryBloc>().add(
+                          GetSubCategoryEvent(category.uid),
+                        );
+                      },
+                      child: const Text(
+                        'Add SubCategory',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: ColoRs.whiteColor,
+                          fontFamily: Fonts.raleway,
+                        ),
+                      ),
+                    ),
+                  ),
+          ],
         ),
       ),
       BlocBuilder<SubCategoryBloc, SubCategoryState>(
@@ -355,36 +494,60 @@ Column categorySection(CategoryEntities category, String mainCatgoryName) {
                 physics: const NeverScrollableScrollPhysics(),
                 padding: const EdgeInsets.all(8),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
+                  crossAxisCount: isDesktop ? 4 : 2,
                   mainAxisSpacing: 14,
                   crossAxisSpacing: 14,
-                  childAspectRatio:
-                      MediaQuery.of(context).size.aspectRatio * 1.75,
+                  childAspectRatio: isDesktop
+                      ? MediaQuery.of(context).size.aspectRatio * 0.90
+                      : MediaQuery.of(context).size.aspectRatio * 1.60,
                 ),
                 itemCount: state.categories.length,
                 itemBuilder: (context, index) {
                   final doc = state.categories[index];
-                  return CategoryItem(
-                    doc: doc,
-                    isSelectedSelector: (state) =>
-                        state is CategoryLoadedState &&
-                        state.selectedCategoryId == doc.uid,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) {
-                            return ProductScreen(
-                              mainCategoryId: category.uid,
-                              subcategory: doc.uid,
-                              mainCategoryName: mainCatgoryName,
-                              subcategoryName: doc.category,
+                  return isDesktop
+                      ? CategoryItemweb(
+                          isDesktop: isDesktop,
+                          doc: doc,
+                          isSelectedSelector: (state) =>
+                              state is CategoryLoadedState &&
+                              state.selectedCategoryId == doc.uid,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return ProductScreen(
+                                    mainCategoryId: category.uid,
+                                    subcategory: doc.uid,
+                                    mainCategoryName: mainCatgoryName,
+                                    subcategoryName: doc.category,
+                                  );
+                                },
+                              ),
                             );
                           },
-                        ),
-                      );
-                    },
-                  );
+                        )
+                      : CategoryItem(
+                          doc: doc,
+                          isSelectedSelector: (state) =>
+                              state is CategoryLoadedState &&
+                              state.selectedCategoryId == doc.uid,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return ProductScreen(
+                                    mainCategoryId: category.uid,
+                                    subcategory: doc.uid,
+                                    mainCategoryName: mainCatgoryName,
+                                    subcategoryName: doc.category,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        );
                 },
               ),
             );

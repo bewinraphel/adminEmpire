@@ -1,22 +1,24 @@
+import 'dart:typed_data';
+
 import 'package:equatable/equatable.dart';
 
 class ProductEntity extends Equatable {
   final String? productDocId;
   final String name;
   final String description;
-  final double price;
-  final double? discountPrice;
-  final String sku;
+
+  String sku;
   final List<String> tags;
   final bool inStock;
   final double weight;
   final double length;
   final double width;
   final double height;
-  final double taxRate;
+
   final String category;
-  final int quantities;
-  final List<String> images;
+
+  final List<dynamic> images;
+  final List<Uint8List>? imagesweb;
   final String? brand;
   final List<String> filterTags;
   final List<Variant> variantDetails;
@@ -24,7 +26,8 @@ class ProductEntity extends Equatable {
   final String subcategoryId;
   final String mainCategoryName;
   final String subcategoryName;
-  const ProductEntity({
+  ProductEntity({
+    this.imagesweb,
     required this.mainCategoryId,
     required this.subcategoryId,
     required this.mainCategoryName,
@@ -32,18 +35,17 @@ class ProductEntity extends Equatable {
     this.productDocId,
     required this.name,
     required this.description,
-    required this.price,
-    this.discountPrice,
-    required this.sku,
+
+    this.sku = 'ski323',
     required this.tags,
     required this.inStock,
     required this.weight,
     required this.length,
     required this.width,
     required this.height,
-    required this.taxRate,
+
     required this.category,
-    required this.quantities,
+
     required this.images,
 
     required this.filterTags,
@@ -59,8 +61,7 @@ class ProductEntity extends Equatable {
     'subcategoryName': subcategoryName,
     'name': name,
     'description': description,
-    'price': price,
-    'discountPrice': discountPrice,
+
     'sku': sku,
     'tags': tags,
     'inStock': inStock,
@@ -68,10 +69,11 @@ class ProductEntity extends Equatable {
     'length': length,
     'width': width,
     'height': height,
-    'taxRate': taxRate,
+
     'category': category,
-    'quantities': quantities,
+
     'images': images,
+
     'brand': brand,
     'filterTags': filterTags,
     'variantDetails': variantDetails.map((v) => v.toJson()).toList(),
@@ -86,8 +88,6 @@ class ProductEntity extends Equatable {
     String? productDocId,
     String? name,
     String? description,
-    double? price,
-    double? discountPrice,
     String? sku,
     List<String>? tags,
     bool? inStock,
@@ -95,11 +95,11 @@ class ProductEntity extends Equatable {
     double? length,
     double? width,
     double? height,
-    double? taxRate,
     String? category,
     List<String>? variants,
     int? quantities,
     List<String>? images,
+
     double? priceRangeMin,
     double? priceRangeMax,
     List<String>? filterTags,
@@ -114,8 +114,6 @@ class ProductEntity extends Equatable {
       productDocId: productDocId ?? this.productDocId,
       name: name ?? this.name,
       description: description ?? this.description,
-      price: price ?? this.price,
-      discountPrice: discountPrice ?? this.discountPrice,
       sku: sku ?? this.sku,
       tags: tags ?? this.tags,
       inStock: inStock ?? this.inStock,
@@ -123,10 +121,9 @@ class ProductEntity extends Equatable {
       length: length ?? this.length,
       width: width ?? this.width,
       height: height ?? this.height,
-      taxRate: taxRate ?? this.taxRate,
       category: category ?? this.category,
-      quantities: quantities ?? this.quantities,
       images: images ?? this.images,
+
       brand: brand ?? this.brand,
       filterTags: filterTags ?? this.filterTags,
       variantDetails: variantDetails,
@@ -141,8 +138,7 @@ class ProductEntity extends Equatable {
     subcategoryName,
     name,
     description,
-    price,
-    discountPrice,
+    imagesweb,
     sku,
     tags,
     inStock,
@@ -150,9 +146,7 @@ class ProductEntity extends Equatable {
     length,
     width,
     height,
-    taxRate,
     category,
-    quantities,
     images,
     brand,
     filterTags,
@@ -163,6 +157,7 @@ class ProductEntity extends Equatable {
 class Variant extends Equatable {
   final String name;
   final String? image;
+  final Uint8List? imageweb;
   final double salePrice;
   final double regularPrice;
   final int quantity;
@@ -170,6 +165,7 @@ class Variant extends Equatable {
   const Variant({
     required this.name,
     this.image,
+    this.imageweb,
     this.regularPrice = 0.0,
     this.salePrice = 0.0,
     this.quantity = 0,

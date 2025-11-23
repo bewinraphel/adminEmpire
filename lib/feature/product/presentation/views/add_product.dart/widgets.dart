@@ -97,7 +97,7 @@ class Titlesnew extends StatelessWidget {
 
 class GradientButtonNew extends StatefulWidget {
   final String text;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final double? height;
   final double? width;
 
@@ -143,7 +143,7 @@ class _GradientButtonState extends State<GradientButtonNew>
       onTapDown: (_) => _controller.forward(),
       onTapUp: (_) {
         _controller.reverse();
-        widget.onTap();
+        widget.onTap!();
       },
       onTapCancel: () => _controller.reverse(),
       child: ZoomIn(

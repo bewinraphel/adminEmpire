@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 import 'package:empire/core/utilis/failure.dart';
 
@@ -8,14 +10,16 @@ class AddingcategoryUseCase {
   AddingcategoryUseCase(this.categoryRepository);
   Future<Either<Failures, Unit>> call(
     String category,
-    String imageUrl,
+    String? imageUrl,
     String description,
+    Uint8List? imageBytes,
   ) async {
     try {
       return await categoryRepository.addingCategory(
         category,
         imageUrl,
         description,
+        imageBytes,
       );
     } catch (e) {
       return Left(Failures.server(e.toString()));

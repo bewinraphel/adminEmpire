@@ -22,7 +22,7 @@ import 'package:empire/feature/order/domain/usecase/order_usecase.dart';
 import 'package:empire/feature/order/domain/usecase/update_order_status_usecase.dart';
 import 'package:empire/feature/order/domain/usecase/wacthorder_usecase.dart';
 import 'package:empire/feature/order/presentation/Bloc/order_bloc.dart';
-import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
+
 import 'package:empire/feature/product/data/datasource/add_product_data_source_impli.dart';
 import 'package:empire/feature/auth/data/datasource/register.dart';
 import 'package:empire/feature/auth/data/repository/auth_repository..dart';
@@ -42,21 +42,20 @@ import 'package:empire/feature/category/domain/usecase/categories/adding_categor
 import 'package:empire/feature/category/domain/usecase/categories/adding_subcategory_usecase.dart';
 import 'package:empire/feature/category/domain/usecase/categories/get_category_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/login_usecase.dart';
-import 'package:empire/feature/auth/domain/usecase/login_auth_usecase.dart';
+ 
 import 'package:empire/feature/category/domain/usecase/categories/getting_subcategory_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/register_usecase.dart';
 
 import 'package:empire/feature/auth/domain/usecase/save_login_status_usecase.dart';
-import 'package:empire/feature/auth/domain/usecase/save_password_usecase.dart';
-import 'package:empire/feature/auth/domain/usecase/send_otp_usecase.dart';
-import 'package:empire/feature/auth/domain/usecase/verify_user_usecase.dart';
-import 'package:empire/feature/product/data/datasource/product_datasource.dart';
-import 'package:empire/feature/product/data/repository/product_repositoy.dart';
-import 'package:empire/feature/product/domain/repository/prodcuct_call_repository.dart';
-import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
-import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
+ 
+ 
+
+import 'package:empire/feature/product/domain/usecase/add_product_usecae.dart';
+import 'package:empire/feature/product/domain/usecase/adding_brand_usecase.dart';
+import 'package:empire/feature/product/domain/usecase/get_brand_usecase.dart';
+
 import 'package:empire/feature/revenue/data/datasource/revenue_datasource.dart';
 import 'package:empire/feature/revenue/data/repository/revenue_repository_impli.dart';
 import 'package:empire/feature/revenue/domain/repository/revenue_repo.dart';
@@ -66,7 +65,7 @@ import 'package:empire/feature/revenue/presentation/bloc/revenue_bloc.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+ 
 import 'package:image_picker/image_picker.dart';
 import 'package:logger/web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -76,10 +75,10 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
 
   sl.registerLazySingleton(() => FirebaseAuth.instance);
-  sl.registerLazySingleton(() => GoogleSignIn());
-  sl.registerLazySingleton(() => SigningWithGoogle(sl()));
+  
+ 
   sl.registerLazySingletonAsync(() => SharedPreferences.getInstance());
-  sl.registerLazySingleton(() => AuthRemoteDataSource(sl(), sl()));
+  sl.registerLazySingleton(() => AuthRemoteDataSource( ));
 
   sl.registerLazySingleton(() => AuthCheckingLoginStatus());
 
@@ -93,8 +92,12 @@ Future<void> init() async {
   sl.registerSingleton(() => ImagePicker());
   sl.registerLazySingleton(() => ImageSources());
   sl.registerSingleton<ProfileImage>(ProfileImageImpli(sl()));
-  sl.registerSingleton<PickImageFromCamera>(PickImageFromCamera(sl()));
-  sl.registerSingleton<PickImageFromGallery>(PickImageFromGallery(sl()));
+  sl.registerSingleton<PickImageFromCameraUsecase>(
+    PickImageFromCameraUsecase(sl()),
+  );
+  sl.registerSingleton<PickImageFromGalleryusecase>(
+    PickImageFromGalleryusecase(sl()),
+  );
   ////////register/////////////////////
 
   final firestore = FirebaseFirestore.instance;
@@ -104,12 +107,10 @@ Future<void> init() async {
     () => RegisterRepositoryimpli(sl()),
   );
   sl.registerLazySingleton(() => CheckingUser(sl()));
-  ////////////otp////////
-  sl.registerLazySingleton(() => VerifyOtp(sl()));
-  sl.registerLazySingleton(() => VerifyNumber(sl()));
+ 
+ 
 
-  ///password//
-  sl.registerLazySingleton(() => SavePassword(sl()));
+
   //login
   sl.registerLazySingleton(() => Login(sl()));
   ///// category
@@ -144,20 +145,15 @@ Future<void> init() async {
     () => GettingSubcategoryUsecase(sl<CategoryRepository>()),
   );
   //////product
-  sl.registerLazySingleton(() => AddProductUseCase(sl<ProductRepository>()));
+
   sl.registerLazySingleton<ProductDataSource>(() => ProductDataSourceImpli());
+
+
   sl.registerLazySingleton<ProductRepository>(
     () => ProductRepositoryImpl(sl<ProductDataSource>()),
   );
-
+  sl.registerLazySingleton<AddProductUseCase>(() => AddProductUseCase(sl<ProductRepository>()));
   ///
-  sl.registerLazySingleton<ProductsDataSource>(() => ProducsDataSourceimpli());
-  sl.registerLazySingleton<ProdcuctsRepository>(
-    () => ProductsRepositoyImpi(sl<ProductsDataSource>()),
-  );
-  sl.registerLazySingleton<ProductcallingUsecase>(
-    () => ProductcallingUsecase(sl<ProdcuctsRepository>()),
-  );
 
   ///order
   sl.registerLazySingleton<GetOrdersUseCase>(() => GetOrdersUseCase(sl()));
@@ -181,19 +177,22 @@ Future<void> init() async {
       updateOrderStatusUseCase: sl<UpdateOrderStatusUseCase>(),
     ),
   );
+  ////////////////brand usecase///////////
+  sl.registerLazySingleton<AddBrandUseCase>(
+    () => AddBrandUseCase(sl<ProductRepository>()),
+  );
+  sl.registerLazySingleton<GetBrandsUseCase>(
+    () => GetBrandsUseCase(sl<ProductRepository>()),
+  );
+
   /////////////revenue/////
- sl.registerLazySingleton<RevenueRemoteDataSource>(
-    () => RevenueRemoteDataSourceImpl(
-      firestore: sl(),
-      logger: sl(),
-    ),
+  sl.registerLazySingleton<RevenueRemoteDataSource>(
+    () => RevenueRemoteDataSourceImpl(firestore: sl(), logger: sl()),
   );
 
   // Repository
   sl.registerLazySingleton<RevenueRepository>(
-    () => RevenueRepositoryImpl(
-      remoteDataSource: sl(),
-    ),
+    () => RevenueRepositoryImpl(remoteDataSource: sl()),
   );
 
   // Use cases
@@ -201,28 +200,19 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetRevenueSummary(sl()));
 
   // Bloc
-  sl.registerFactory(() => RevenueBloc(
-    repository: sl(),
-  ));
+  sl.registerFactory(() => RevenueBloc(repository: sl()));
+
   ///mertric
   sl.registerLazySingleton<MetricsRemoteDataSource>(
-  () => MetricsRemoteDataSourceImpl(
-    firestore: sl(),
-    logger: sl(),
-  ),
-);
+    () => MetricsRemoteDataSourceImpl(firestore: sl(), logger: sl()),
+  );
 
-sl.registerLazySingleton<MetricsRepository>(
-  () => MetricsRepositoryImpl(
-    remoteDataSource: sl(),
-  ),
-);
+  sl.registerLazySingleton<MetricsRepository>(
+    () => MetricsRepositoryImpl(remoteDataSource: sl()),
+  );
 
-sl.registerLazySingleton(() => GetMetricsData(sl()));
-sl.registerLazySingleton(() => GetMetricsSummary(sl()));
+  sl.registerLazySingleton(() => GetMetricsData(sl()));
+  sl.registerLazySingleton(() => GetMetricsSummary(sl()));
 
-sl.registerFactory(() => MetricsBloc(
-  repository: sl(),
-));
-
+  sl.registerFactory(() => MetricsBloc(repository: sl()));
 }

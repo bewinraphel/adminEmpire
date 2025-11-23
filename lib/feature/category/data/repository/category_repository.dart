@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 import 'package:empire/core/utilis/failure.dart';
 import 'package:empire/feature/category/data/datasource/category_data_source.dart';
@@ -13,14 +15,16 @@ class CategoryRepositoryImpli implements CategoryRepository {
   Future<Either<Failures, Unit>> addingSubCategory(
     String id,
     String category,
-    String imageUrl,
+    String ?imageUrl,
     String description,
+      Uint8List? imageBytes 
   ) {
     return categoryDataSource.addingSubCategory(
       id,
       category,
       imageUrl,
       description,
+      imageBytes
     );
   }
 
@@ -32,13 +36,16 @@ class CategoryRepositoryImpli implements CategoryRepository {
   @override
   Future<Either<Failures, Unit>> addingCategory(
     String category,
-    String imageUrl,
+    String? imageUrl,
     String description,
+      Uint8List? imageBytes 
   ) async {
     return await categoryDataSource.addCategory(
       category,
       imageUrl,
       description,
+      imageBytes
+      
     );
   }
 

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 import 'package:empire/core/utilis/failure.dart';
 import 'package:empire/feature/category/domain/entities/category_entities.dart';
@@ -7,13 +9,15 @@ abstract class CategoryRepository {
   Future<Either<Failures, Unit>> addingSubCategory(
     String id,
     String category,
-    String imageUrl,
+    String ?imageUrl,
     String description,
+      Uint8List? imageBytes 
   );
   Future<Either<Failures, Unit>> addingCategory(
     String category,
-    String imageUrl,
+    String? imageUrl,
     String description,
+    Uint8List? imageBytes 
   );
 
   Future<Either<Failures, List<CategoryEntities>>> getSubCategory(String id);

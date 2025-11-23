@@ -1,6 +1,8 @@
+ 
 import 'package:dartz/dartz.dart';
 import 'package:empire/core/utilis/failure.dart';
-import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
+import 'package:empire/feature/product/data/datasource/add_product_data_source_impli.dart';
+
 import 'package:empire/feature/product/domain/enities/listproducts.dart';
 
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
@@ -16,8 +18,10 @@ class ProductRepositoryImpl implements ProductRepository {
     ProductEntity product,
     String uid,
     String mainCtiegoryid,
+    
+
   ) async {
-    return await dataSource.addProduct(product, uid, mainCtiegoryid);
+    return await dataSource.addProduct(product, uid, mainCtiegoryid,);
   }
 
   @override
@@ -49,11 +53,35 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
-  Future<Either<Failures, void>> addingBrand(
+  Future<Either<Failures, void>> addBrand(
     String mainCategory,
     String subCargeoy,
     Brand brand,
+ 
   ) {
-    return dataSource.addingBrand(mainCategory, subCargeoy, brand);
+    return dataSource.addBrand(mainCategory, subCargeoy, brand,);
+  }
+
+  @override
+  Future<Either<Failures, List<Brand>>> getBrands(
+    String mainCategory,
+    String subCategory,
+  ) {
+    return dataSource.getBrands(mainCategory, subCategory);
+  }
+
+  @override
+  Future<Either<Failures, List<ProductEntity>>> fetchingProduct(
+    String mainCategoryId,
+    String subcategoryId,
+    String? brand,
+    String? subCategoryName,
+  ) {
+    return dataSource.fetchingProduct(
+      mainCategoryId,
+      subcategoryId,
+      brand,
+      subCategoryName,
+    );
   }
 }

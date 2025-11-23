@@ -1,4 +1,4 @@
 abstract class ProfileImage {
-  Future<String?> pickImageFromGallery();
-  Future<String?> pickImageFromcamera();
+  Future<dynamic> PickImageFromGalleryusecase();
+  Future<dynamic> PickImageFromCameraUsecase();
 }

@@ -1,11 +1,8 @@
-
 import 'package:empire/feature/category/domain/usecase/categories/category_image_camera.dart';
 import 'package:empire/feature/category/domain/usecase/categories/catgeroyimgae_gallery.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-abstract class CategoryImagePickerEvent {
-
-}
+abstract class CategoryImagePickerEvent {}
 
 class CategoryImageFromCameraEvent extends CategoryImagePickerEvent {}
 
@@ -27,12 +24,12 @@ class ImageInitial extends ImagePickercategory {}
 class PickingImage extends ImagePickercategory {}
 
 class ImagePickedSuccess extends ImagePickercategory {
-  final String image;
+  final dynamic image;
   ImagePickedSuccess(this.image);
 }
 
 class Categorystate extends ImagePickercategory {
-  final String image;
+  final dynamic image;
   Categorystate(this.image);
 }
 
@@ -41,15 +38,18 @@ class ImagePickedError extends ImagePickercategory {
   ImagePickedError(this.errot);
 }
 
-class CategoryImageBloc extends Bloc<CategoryImagePickerEvent, ImagePickercategory> {
-  final CategoryImageCamera pickImageFromCamera;
-  final CategoryImagegallery pickImageFromGallery;
+class CategoryImageBloc
+    extends Bloc<CategoryImagePickerEvent, ImagePickercategory> {
+  final CategoryImageCamera PickImageFromCameraUsecase;
+  final CategoryImagegallery PickImageFromGalleryusecase;
 
-  CategoryImageBloc(this.pickImageFromCamera, this.pickImageFromGallery)
-    : super(ImageInitial()) {
+  CategoryImageBloc(
+    this.PickImageFromCameraUsecase,
+    this.PickImageFromGalleryusecase,
+  ) : super(ImageInitial()) {
     on<CategoryImageFromCameraEvent>((event, emit) async {
       emit(PickingImage());
-      final result = await pickImageFromCamera();
+      final result = await PickImageFromCameraUsecase();
       if (result != null) {
         emit(ImagePickedSuccess(result));
       } else {
@@ -58,7 +58,7 @@ class CategoryImageBloc extends Bloc<CategoryImagePickerEvent, ImagePickercatego
     });
     on<CategoryImageFromGalleryEvent>((event, emit) async {
       emit(PickingImage());
-      final result = await pickImageFromGallery();
+      final result = await PickImageFromGalleryusecase();
       if (result != null) {
         emit(ImagePickedSuccess(result));
       } else {

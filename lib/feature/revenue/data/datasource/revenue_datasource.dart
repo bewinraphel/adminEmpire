@@ -1,7 +1,5 @@
- 
-
-import 'dart:async';
-import 'dart:isolate';
+ import 'dart:async';
+// import 'dart:isolate'; // Removed
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:empire/feature/revenue/domain/entity/revenue_entity.dart';
@@ -35,13 +33,10 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
           .where('createdAt', isGreaterThanOrEqualTo: startDate)
           .get();
 
-      return await _computeInIsolate<List<RevenueData>>(
-        _processRevenueDataIsolate, 
-        {
-          'docs': snapshot.docs,
-          'period': period.index,
-          'now': now.millisecondsSinceEpoch,
-        }
+       return _processRevenueData(
+        snapshot.docs,
+        period,
+        now,
       );
     } catch (e, s) {
       logger.e('Error fetching revenue data', error: e, stackTrace: s);
@@ -52,12 +47,11 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
   @override
   Future<RevenueSummary> getRevenueSummary(RevenuePeriod period) async {
     final revenueData = await getRevenueData(period);
-    return await _computeInIsolate<RevenueSummary>(
-      _calculateRevenueSummaryIsolate, 
-      {
-        'data': revenueData.map((d) => _revenueDataToMap(d)).toList(),
-        'period': period.index,
-      }
+    
+    // Call the processing function directly
+    return _calculateRevenueSummary(
+      revenueData,
+      period,
     );
   }
 
@@ -86,27 +80,23 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
         .where('createdAt', isGreaterThanOrEqualTo: startDate)
         .snapshots()
         .asyncMap((snapshot) async {
-      final data = await _computeInIsolate<List<RevenueData>>(
-        _processRevenueDataIsolate, 
-        {
-          'docs': snapshot.docs,
-          'period': period.index,
-          'now': now.millisecondsSinceEpoch,
-        }
+      // Call the processing function directly
+      final data = _processRevenueData(
+        snapshot.docs,
+        period,
+        now,
       );
-      
+
       _dataControllers[period]?.add(data);
-      
-      final summary = await _computeInIsolate<RevenueSummary>(
-        _calculateRevenueSummaryIsolate, 
-        {
-          'data': data.map((d) => _revenueDataToMap(d)).toList(),
-          'period': period.index,
-        }
+
+      // Call the processing function directly
+      final summary = _calculateRevenueSummary(
+        data,
+        period,
       );
-      
+
       _summaryControllers[period]?.add(summary);
-      
+
       return data;
     }).listen(
       (_) {},
@@ -120,13 +110,7 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
     _subscriptions[period] = subscription;
   }
 
-  Map<String, dynamic> _revenueDataToMap(RevenueData data) {
-    return {
-      'date': data.date.millisecondsSinceEpoch,
-      'revenue': data.revenue,
-      'orders': data.orders,
-    };
-  }
+  // Removed _revenueDataToMap as it was only used for isolate serialization
 
   void dispose() {
     for (final subscription in _subscriptions.values) {
@@ -143,24 +127,23 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
     _summaryControllers.clear();
   }
 
- 
-  static List<RevenueData> _processRevenueDataIsolate(dynamic message) {
-    final Map<String, dynamic> params = message as Map<String, dynamic>;
-    final List<dynamic> docs = params['docs'];
-    final RevenuePeriod period = RevenuePeriod.values[params['period'] as int];
-    final DateTime now = DateTime.fromMillisecondsSinceEpoch(params['now'] as int);
-
+  // Refactored from _processRevenueDataIsolate to take direct arguments
+  static List<RevenueData> _processRevenueData(
+    List<QueryDocumentSnapshot> docs,
+    RevenuePeriod period,
+    DateTime now,
+  ) {
     if (docs.isEmpty) return [];
 
     final Map<String, RevenueData> groupedData = {};
 
     for (final doc in docs) {
-      final orderData = (doc as QueryDocumentSnapshot).data() as Map<String, dynamic>;
+      final orderData = doc.data() as Map<String, dynamic>;
       final createdAt = _parseTimestamp(orderData['createdAt']);
       final totalAmount = (orderData['totalAmount'] as num).toDouble();
-      
+
       final dateKey = _getDateKey(createdAt, period);
-      
+
       if (!groupedData.containsKey(dateKey)) {
         groupedData[dateKey] = RevenueData(
           date: _getPeriodDate(createdAt, period),
@@ -168,7 +151,7 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
           orders: 0,
         );
       }
-      
+
       final currentData = groupedData[dateKey]!;
       groupedData[dateKey] = RevenueData(
         date: currentData.date,
@@ -180,20 +163,11 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
     return _fillMissingPeriods(groupedData, period, now);
   }
 
-  static RevenueSummary _calculateRevenueSummaryIsolate(dynamic message) {
-    final Map<String, dynamic> params = message as Map<String, dynamic>;
-    final List<dynamic> dataList = params['data'];
-    final RevenuePeriod period = RevenuePeriod.values[params['period'] as int];
-
-    final List<RevenueData> data = dataList.map((item) {
-      final map = item as Map<String, dynamic>;
-      return RevenueData(
-        date: DateTime.fromMillisecondsSinceEpoch(map['date'] as int),
-        revenue: (map['revenue'] as num).toDouble(),
-        orders: map['orders'] as int,
-      );
-    }).toList();
-
+  // Refactored from _calculateRevenueSummaryIsolate to take direct arguments
+  static RevenueSummary _calculateRevenueSummary(
+    List<RevenueData> data,
+    RevenuePeriod period,
+  ) {
     if (data.isEmpty) {
       return const RevenueSummary(
         totalRevenue: 0.0,
@@ -229,20 +203,19 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
 
   static double _calculateTrend(List<double> values) {
     if (values.length < 2) return 0.0;
-    
+
     final recentCount = values.length > 3 ? 3 : values.length ~/ 2;
     final recent = values.sublist(values.length - recentCount);
     final previous = values.sublist(0, values.length - recentCount);
-    
+
     if (previous.isEmpty) return 0.0;
-    
+
     final recentAvg = recent.reduce((a, b) => a + b) / recent.length;
     final previousAvg = previous.reduce((a, b) => a + b) / previous.length;
-    
+
     return previousAvg > 0 ? ((recentAvg - previousAvg) / previousAvg) * 100 : 0.0;
   }
 
- 
   static DateTime _parseTimestamp(dynamic timestamp) {
     if (timestamp is Timestamp) {
       return timestamp.toDate();
@@ -343,7 +316,7 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
     };
 
     final baseRate = baseRates[period] ?? 3.0;
-    
+
     if (orders > 50) return baseRate + 1.0;
     if (orders > 20) return baseRate + 0.5;
     if (orders > 0) return baseRate;
@@ -361,48 +334,8 @@ class RevenueRemoteDataSourceImpl implements RevenueRemoteDataSource {
     }
   }
 
-  // Generic isolate helper
-  static Future<T> _computeInIsolate<T>(Function function, dynamic message) async {
-    final receivePort = ReceivePort();
-    
-    await Isolate.spawn<_IsolateMessage>(
-      _isolateEntry, 
-      _IsolateMessage(
-        function: function,
-        message: message,
-        sendPort: receivePort.sendPort,
-      ),
-    );
-    
-    final result = await receivePort.first;
-    
-    if (result is T) {
-      return result;
-    } else if (result is Exception) {
-      throw result;
-    } else {
-      throw Exception('Isolate computation failed');
-    }
-  }
-
-  static void _isolateEntry(_IsolateMessage entry) {
-    try {
-      final result = entry.function(entry.message);
-      entry.sendPort.send(result);
-    } catch (e) {
-      entry.sendPort.send(e);
-    }
-  }
+  // Removed _computeInIsolate
+  // Removed _isolateEntry
 }
 
-class _IsolateMessage {
-  final Function function;
-  final dynamic message;
-  final SendPort sendPort;
-
-  _IsolateMessage({
-    required this.function,
-    required this.message,
-    required this.sendPort,
-  });
-}
+// Removed _IsolateMessage

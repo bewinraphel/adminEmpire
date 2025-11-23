@@ -5,6 +5,6 @@ class CategoryImageCamera {
 
   CategoryImageCamera(this.profileImage);
   Future call() async {
-    return await profileImage.categorypickImageFromcamera();
+    return await profileImage.categoryPickImageFromCameraUsecase();
   }
 }

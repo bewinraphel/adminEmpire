@@ -5,12 +5,12 @@ class ProfileImageImpli implements ProfileImage {
   final ImageSources imageSource;
   ProfileImageImpli(this.imageSource);
   @override
-  Future<String?> pickImageFromGallery() {
+  Future<dynamic> PickImageFromGalleryusecase() {
     return imageSource.pickFromGallery();
   }
 
   @override
-  Future<String?> pickImageFromcamera() {
+  Future<dynamic> PickImageFromCameraUsecase() {
     return imageSource.pickFromCamera();
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dartz/dartz.dart';
 import 'package:empire/core/utilis/failure.dart';
 
@@ -9,8 +11,9 @@ class AddingSubcategoryUsecase {
   Future<Either<Failures, Unit>> call(
     String id,
     String category,
-    String imageUrl,
+    String? imageUrl,
     String description,
+    Uint8List? imageBytes,
   ) async {
     try {
       return await categoryRepository.addingSubCategory(
@@ -18,6 +21,7 @@ class AddingSubcategoryUsecase {
         category,
         imageUrl,
         description,
+        imageBytes,
       );
     } catch (e) {
       return left(Failures.server(e.toString()));

@@ -1,1489 +1,523 @@
 import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:empire/core/di/service_locator.dart';
 import 'package:empire/core/utilis/color.dart';
-import 'package:empire/core/utilis/commonvalidator.dart';
-import 'package:empire/core/utilis/widgets.dart';
-import 'package:empire/feature/auth/data/datasource/image_profile.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
-import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
-import 'package:empire/feature/product/data/repository/add_product_respository.dart';
+import 'package:empire/feature/category/presentation/views/categories/widgets.dart';
+import 'package:empire/feature/homepage/presentation/view/home_page.dart';
 import 'package:empire/feature/product/domain/enities/listproducts.dart';
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
-import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
-import 'package:empire/feature/auth/presentation/bloc/profile_image_bloc.dart';
-import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
-import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_brand.dart';
-import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_product.dart';
-import 'package:empire/feature/product/presentation/bloc/add_product_bloc/brand.dart';
+import 'package:empire/feature/product/domain/usecase/add_product_usecae.dart';
+import 'package:empire/feature/product/domain/usecase/adding_brand_usecase.dart';
+import 'package:empire/feature/product/domain/usecase/get_brand_usecase.dart';
+import 'package:empire/feature/product/presentation/bloc/add_brand_image.dart';
+import 'package:empire/feature/product/presentation/bloc/add_product.dart';
+import 'package:empire/feature/product/presentation/bloc/add_product_form.dart';
+import 'package:empire/feature/product/presentation/bloc/brand.dart';
+import 'package:empire/feature/product/presentation/bloc/product_image.dart';
 import 'package:empire/feature/product/presentation/views/add_product.dart/widgets.dart';
-import 'package:empire/feature/homepage/presentation/view/home_page.dart';
-import 'package:empire/feature/product/presentation/views/product_screen.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:animate_do/animate_do.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-ValueNotifier<String?> image2 = ValueNotifier(null);
-ValueNotifier<String?> image3 = ValueNotifier(null);
-ValueNotifier<String?> previewImage = ValueNotifier(null);
+class AddProductsPageContent extends StatelessWidget {
+  final String mainCategoryId;
+  final String subcategoryId;
+  final String mainCategoryName;
+  final String subcategoryName;
 
-class AddProdutsPage extends StatefulWidget {
-  String? mainCategoryId;
-  String? subcategoryId;
-  String? mainCategoryName;
-  String? subcategoryName;
-  AddProdutsPage({
+  const AddProductsPageContent({
     super.key,
-    required this.subcategoryId,
     required this.mainCategoryId,
+    required this.subcategoryId,
     required this.mainCategoryName,
     required this.subcategoryName,
   });
 
   @override
-  State<AddProdutsPage> createState() => _AddProdutsPageState();
-}
-
-class _AddProdutsPageState extends State<AddProdutsPage> {
-  final globalKey = GlobalKey<FormState>();
-  final categoryKey = GlobalKey<FormState>();
-  final variantKey = GlobalKey<FormState>();
-
-  final productName = TextEditingController();
-  final description = TextEditingController();
-  final price = TextEditingController();
-  final quantity = TextEditingController();
-  final discountPrice = TextEditingController();
-  final sku = TextEditingController();
-  final tags = TextEditingController();
-  final weight = TextEditingController();
-  final length = TextEditingController();
-  final width = TextEditingController();
-  final height = TextEditingController();
-  final taxRate = TextEditingController();
-  final priceRangeMin = TextEditingController();
-  final priceRangeMax = TextEditingController();
-  final categoryController = TextEditingController();
-  final variantName = TextEditingController();
-  final List<String> filterTags = [];
-  final brandname = TextEditingController();
-  final addbrandname = TextEditingController();
-  final brandlabel = TextEditingController();
-  ValueNotifier<String> bradname = ValueNotifier('');
-  final ValueNotifier<bool> isInStock = ValueNotifier(true);
-  final ValueNotifier<String> selectedCategory = ValueNotifier('');
-  final ValueNotifier<double> ratingValue = ValueNotifier(0.0);
-  final images = List.generate(3, (dynamic index) => 'null', growable: true);
-  ImageSources gallery = ImageSources();
-  String? image4;
-  final brandKey = GlobalKey<FormState>();
-  List<String> categoryList = ['dress', 'Drinks', 'electronics', 'accessories'];
-  ValueNotifier<List<Variant>> variants = ValueNotifier([]);
-  ValueNotifier<String>? brandImage = ValueNotifier('');
-  Map<String, int> variantQuantities = {};
-  final List<TextEditingController> weightControllers = [];
-  final List<TextEditingController> regularpriceControllers = [];
-  final List<TextEditingController> quantityControllers = [];
-  final List<FocusNode> focusNodes = [];
-  File? imageFile;
-  void _updateVariants() {
-    List<Variant> newVariants = [];
-    if (selectedCategory.value == 'dress') {
-      newVariants = [
-        const Variant(name: 'S'),
-        const Variant(name: 'M'),
-        const Variant(name: 'L'),
-        const Variant(name: 'XL'),
-      ];
-    } else if (selectedCategory.value == 'Drinks') {
-      newVariants = [
-        const Variant(name: '250l'),
-        const Variant(name: '500l'),
-        const Variant(name: '1l'),
-      ];
-    } else if (selectedCategory.value == 'electronics') {
-      newVariants = [
-        const Variant(name: 'black'),
-        const Variant(name: 'silver'),
-        const Variant(name: 'white'),
-      ];
-    } else if (selectedCategory.value == 'accessories') {
-      newVariants = [
-        const Variant(name: 'small'),
-        const Variant(name: 'large'),
-      ];
-    }
-
-    weightControllers.clear();
-    regularpriceControllers.clear();
-    quantityControllers.clear();
-    focusNodes.clear();
-
-    for (var variant in newVariants) {
-      weightControllers.add(
-        TextEditingController(text: variant.regularPrice.toString()),
-      );
-      regularpriceControllers.add(
-        TextEditingController(text: variant.salePrice.toString()),
-      );
-      quantityControllers.add(
-        TextEditingController(text: variant.quantity.toString()),
-      );
-      focusNodes.add(FocusNode());
-    }
-
-    variants.value = newVariants;
-    variantQuantities = {for (var v in variants.value) v.name: 0};
-  }
-
-  @override
-  void dispose() {
-    // image2.dispose();
-    // image3.dispose();
-    // previewImage.dispose();
-    // isInStock.dispose();
-    // selectedCategory.dispose();
-    // ratingValue.dispose();
-    // variants.dispose();
-    // brandImage?.dispose();
-
-    // productName.dispose();
-    // description.dispose();
-
-    for (var controller in weightControllers) {
-      controller.dispose();
-    }
-    for (var controller in regularpriceControllers) {
-      controller.dispose();
-    }
-    for (var controller in quantityControllers) {
-      controller.dispose();
-    }
-    for (var node in focusNodes) {
-      node.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => ProductBloc(
-            AddProductUseCase(ProductRepositoryImpl(sl<ProductDataSource>())),
+    final isDesktop = MediaQuery.of(context).size.width > 1200;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(title: const Titlesnew(nametitle: 'Add Product')),
+      body: MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => AddProductFormBloc()),
+          BlocProvider(create: (_) => ProductBloc(sl<AddProductUseCase>())),
+          BlocProvider(
+            create: (_) => ProductImageBloc(
+              pickFromCamera: sl<PickImageFromCameraUsecase>(),
+              pickFromGallery: sl<PickImageFromGalleryusecase>(),
+            ),
           ),
-        ),
-        BlocProvider<ImageAuth>(
-          create: (_) =>
-              ImageAuth(sl<PickImageFromCamera>(), sl<PickImageFromGallery>()),
-        ),
-        BlocProvider(
-          create: (context) =>
-              BrandBloc(sl<ProductcallingUsecase>(), sl<AddProductUseCase>())
-                ..add(
+          BlocProvider(
+            create: (_) =>
+                BrandBloc(sl<AddBrandUseCase>(), sl<GetBrandsUseCase>())..add(
                   BrandFetching(
-                    mainCategoryId: widget.mainCategoryId!,
-                    subCategoryId: widget.subcategoryId!,
+                    mainCategoryId: mainCategoryId,
+                    subCategoryId: subcategoryId,
                   ),
                 ),
+          ),
+          BlocProvider(
+            create: (_) => AddBrandImage(
+              pickImageFromCameraUsecaseUseCase:
+                  sl<PickImageFromCameraUsecase>(),
+              pickImageFromGalleryusecaseUseCase:
+                  sl<PickImageFromGalleryusecase>(),
+            ),
+          ),
+        ],
+        child: Builder(
+          builder: (context) {
+            return BlocListener<ProductImageBloc, ProductImageState>(
+              listener: (context, state) {
+                if (state is ProductImagePicked &&
+                    state.targetVariantIndex != null) {
+                  context.read<AddProductFormBloc>().add(
+                    UpdateVariantImageEvent(
+                      state.targetVariantIndex!,
+                      state.images.first,
+                    ),
+                  );
+
+                  context.read<ProductImageBloc>().add(
+                    ClearTargetVariantIndexEvent(),
+                  );
+                }
+                if (state is ProductSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Product added successfully!'),
+                    ),
+                  );
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const HomePage()),
+                    (_) => false,
+                  );
+                } else if (state is ProductFailure) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('error')));
+                }
+              },
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: isDesktop ? 6 : 1,
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.all(constraints.maxWidth * 0.04),
+                          child: AnimationConfiguration.staggeredList(
+                            position: 0,
+                            duration: const Duration(milliseconds: 375),
+                            child: SlideAnimation(
+                              horizontalOffset: 50,
+                              child: FadeInAnimation(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (!isDesktop) ...[
+                                      _buildProductImagesSection(
+                                        context,
+                                        constraints,
+                                      ),
+                                      const SizedBox(height: 24),
+                                    ],
+                                    _buildProductNameSection(context),
+                                    const SizedBox(height: 24),
+                                    _buildDescriptionSection(context),
+                                    const SizedBox(height: 24),
+
+                                    _buildTagsSection(context),
+                                    const SizedBox(height: 24),
+                                    _buildAvailabilitySection(context),
+
+                                    _buildCategorySection(context),
+                                    const SizedBox(height: 24),
+                                    _buildConditionalDimensions(
+                                      context,
+                                      constraints,
+                                    ),
+                                    const SizedBox(height: 24),
+                                    // _buildVariantsSection(context, constraints,State.),
+                                    const SizedBox(height: 24),
+                                    _buildBrandSection(context),
+                                    const SizedBox(height: 40),
+                                    _buildSubmitButton(context, constraints),
+                                    const SizedBox(height: 40),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      if (isDesktop)
+                        Expanded(
+                          flex: 4,
+                          child: Container(
+                            margin: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey[300]!),
+                            ),
+                            child: _buildProductImagesSection(
+                              context,
+                              constraints,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
         ),
-        BlocProvider(
-          create: (_) => BrandImageAuth(
-            sl<PickImageFromCamera>(),
-            sl<PickImageFromGallery>(),
+      ),
+    );
+  }
+
+  Widget _buildProductImagesSection(
+    BuildContext context,
+    BoxConstraints constraints,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Product Images',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        BlocListener<ProductImageBloc, ProductImageState>(
+          listener: (context, state) {
+            if (state is ProductImagePicked) {
+              context.read<AddProductFormBloc>().add(
+                AddProductImagesEvent([state.images]),
+              );
+            }
+          },
+          child:
+              BlocSelector<
+                AddProductFormBloc,
+                AddProductFormState,
+                List<dynamic>
+              >(
+                selector: (state) =>
+                    state is AddProductFormUpdated ? state.productImages : [],
+                builder: (context, images) {
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 1,
+                        ),
+                    itemCount: images.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == images.length) {
+                        return _buildAddImageButton(context);
+                      }
+                      return _buildImageTile(context, images[index], index);
+                    },
+                  );
+                },
+              ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageTile(BuildContext context, dynamic path, int index) {
+    return Stack(
+      children: [
+        buildImagePreview(path),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: GestureDetector(
+            onTap: () => context.read<AddProductFormBloc>().add(
+              RemoveProductImageEvent(index),
+            ),
+            child: const CircleAvatar(
+              radius: 14,
+              backgroundColor: Colors.red,
+              child: Icon(Icons.close, size: 16, color: Colors.white),
+            ),
           ),
         ),
       ],
-      child: Builder(
-        builder: (context) {
-          return Scaffold(
-            resizeToAvoidBottomInset: false,
-            backgroundColor: Colors.white,
-            appBar: AppBar(title: const Titlesnew(nametitle: 'Products ')),
-            body: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.all(constraints.maxWidth * 0.04),
-                    child: Form(
-                      key: globalKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: AnimationConfiguration.toStaggeredList(
-                          duration: const Duration(milliseconds: 300),
-                          childAnimationBuilder: (widget) => SlideAnimation(
-                            horizontalOffset: 50.0,
-                            child: FadeInAnimation(child: widget),
-                          ),
-                          children: [
-                            const SizedBox(height: 20.0),
-                            const Text(
-                              'Product Images',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18.0,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox10(),
-                            AnimationConfiguration.staggeredList(
-                              position: 0,
-                              duration: const Duration(milliseconds: 300),
-                              child: SlideAnimation(
-                                verticalOffset: 50.0,
-                                child: FadeInAnimation(
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      BlocListener<ImageAuth, ImagePickerState>(
-                                        listener: (context, state) {
-                                          if (state is ImagePickedSuccess) {
-                                            previewImage.value = state.image;
-                                            if (image2.value == null) {
-                                              image2.value = previewImage.value;
-                                            } else if (image3.value == null) {
-                                              image3.value = previewImage.value;
-                                            }
-                                          }
-                                        },
-                                        child: Container(
-                                          width: constraints.maxWidth * 0.70,
-                                          height: constraints.maxHeight * 0.21,
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey[200],
-                                            borderRadius: BorderRadius.circular(
-                                              16.0,
-                                            ),
-                                            boxShadow: const [
-                                              BoxShadow(
-                                                color: Colors.black12,
-                                                offset: Offset(5, 5),
-                                                blurRadius: 10,
-                                              ),
-                                              BoxShadow(
-                                                color: Colors.white70,
-                                                offset: Offset(-5, -5),
-                                                blurRadius: 10,
-                                              ),
-                                            ],
-                                          ),
-                                          child:
-                                              BlocBuilder<
-                                                ImageAuth,
-                                                ImagePickerState
-                                              >(
-                                                builder: (context, state) {
-                                                  if (state
-                                                      is ImagePickedSuccess) {
-                                                    return ClipRRect(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            10,
-                                                          ),
-                                                      child: Image.file(
-                                                        File(state.image),
-                                                        fit: BoxFit.fill,
-                                                      ),
-                                                    );
-                                                  }
-                                                  return const Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.start,
-                                                    children: [
-                                                      SizedBox(height: 10),
-                                                      Icon(
-                                                        Icons.upload,
-                                                        size: 30,
-                                                      ),
-                                                      SizedBox(height: 10),
-                                                      Text(
-                                                        'Image Upload',
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 18.0,
-                                                          color: Colors.black87,
-                                                        ),
-                                                      ),
-                                                      SizedBox(height: 10),
-                                                      Padding(
-                                                        padding: EdgeInsets.all(
-                                                          8.0,
-                                                        ),
-                                                        child: Text(
-                                                          'Click here to upload an image for the new category.',
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                'Raleway',
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
-                                                          textAlign:
-                                                              TextAlign.center,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      SizedBox(
-                                        width: constraints.maxWidth * 0.19,
-                                        child: Column(
-                                          children: [
-                                            ValueListenableBuilder(
-                                              valueListenable: image2,
-                                              builder: (context, value, child) {
-                                                return GestureDetector(
-                                                  onTap: () {
-                                                    if (image2.value != null) {
-                                                      context
-                                                          .read<ImageAuth>()
-                                                          .add(
-                                                            SelectedProductImage(
-                                                              image2.value!,
-                                                            ),
-                                                          );
-                                                    }
-                                                  },
-                                                  child: Stack(
-                                                    alignment:
-                                                        AlignmentDirectional
-                                                            .topEnd,
-                                                    clipBehavior: Clip.none,
-                                                    children: [
-                                                      Container(
-                                                        width:
-                                                            constraints
-                                                                .maxWidth *
-                                                            0.15,
-                                                        height:
-                                                            constraints
-                                                                .maxHeight *
-                                                            0.07,
-                                                        decoration: BoxDecoration(
-                                                          color:
-                                                              Colors.grey[200],
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                16.0,
-                                                              ),
-                                                          boxShadow: const [
-                                                            BoxShadow(
-                                                              color: Colors
-                                                                  .black12,
-                                                              offset: Offset(
-                                                                5,
-                                                                5,
-                                                              ),
-                                                              blurRadius: 10,
-                                                            ),
-                                                            BoxShadow(
-                                                              color: Colors
-                                                                  .white70,
-                                                              offset: Offset(
-                                                                -5,
-                                                                -5,
-                                                              ),
-                                                              blurRadius: 10,
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        child: kIsWeb
-                                                            ? Image.network(
-                                                                image2.value!,
-                                                              )
-                                                            : ClipRRect(
-                                                                borderRadius: const BorderRadiusGeometry.only(
-                                                                  topLeft:
-                                                                      Radius.circular(
-                                                                        10,
-                                                                      ),
-                                                                  topRight:
-                                                                      Radius.circular(
-                                                                        10,
-                                                                      ),
-                                                                  bottomLeft:
-                                                                      Radius.circular(
-                                                                        10,
-                                                                      ),
-                                                                  bottomRight:
-                                                                      Radius.circular(
-                                                                        10,
-                                                                      ),
-                                                                ),
-                                                                child:
-                                                                    image2.value ==
-                                                                        null
-                                                                    ? Image.asset(
-                                                                        'assets/default.jpg',
-                                                                      )
-                                                                    : Image.file(
-                                                                        File(
-                                                                          image2
-                                                                              .value!,
-                                                                        ),
-                                                                        fit: BoxFit
-                                                                            .fill,
-                                                                        width:
-                                                                            constraints.maxWidth *
-                                                                            0.13,
-                                                                        height:
-                                                                            constraints.maxHeight *
-                                                                            0.07,
-                                                                      ),
-                                                              ),
-                                                      ),
-                                                      image2.value == null
-                                                          ? const SizedBox()
-                                                          : Positioned(
-                                                              top: -1,
-                                                              right: -2,
-                                                              child: GestureDetector(
-                                                                behavior:
-                                                                    HitTestBehavior
-                                                                        .translucent,
-                                                                onTap: () {
-                                                                  if (previewImage
-                                                                          .value !=
-                                                                      null) {
-                                                                    previewImage
-                                                                            .value =
-                                                                        null;
-                                                                    context
-                                                                        .read<
-                                                                          ImageAuth
-                                                                        >()
-                                                                        .add(
-                                                                          ClearPickedImageEvent(),
-                                                                        );
-                                                                  }
-                                                                  image2.value =
-                                                                      null;
-                                                                },
-                                                                child: const Icon(
-                                                                  Icons
-                                                                      .remove_circle_rounded,
-                                                                  color:
-                                                                      Color.fromARGB(
-                                                                        255,
-                                                                        233,
-                                                                        55,
-                                                                        43,
-                                                                      ),
-                                                                  size: 20,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                    ],
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                            const SizedBox10(),
-                                            GestureDetector(
-                                              onTap: () {
-                                                if (image3.value != null) {
-                                                  context.read<ImageAuth>().add(
-                                                    SelectedProductImage(
-                                                      image3.value!,
-                                                    ),
-                                                  );
-                                                }
-                                              },
-                                              child: ValueListenableBuilder(
-                                                valueListenable: image3,
-                                                builder: (context, value, child) {
-                                                  return Stack(
-                                                    alignment:
-                                                        AlignmentDirectional
-                                                            .topEnd,
-                                                    clipBehavior: Clip.none,
-                                                    children: [
-                                                      Container(
-                                                        width:
-                                                            constraints
-                                                                .maxWidth *
-                                                            0.15,
-                                                        height:
-                                                            constraints
-                                                                .maxHeight *
-                                                            0.07,
-                                                        decoration: BoxDecoration(
-                                                          color:
-                                                              Colors.grey[200],
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                16.0,
-                                                              ),
-                                                          boxShadow: const [
-                                                            BoxShadow(
-                                                              color: Colors
-                                                                  .black12,
-                                                              offset: Offset(
-                                                                5,
-                                                                5,
-                                                              ),
-                                                              blurRadius: 10,
-                                                            ),
-                                                            BoxShadow(
-                                                              color: Colors
-                                                                  .white70,
-                                                              offset: Offset(
-                                                                -5,
-                                                                -5,
-                                                              ),
-                                                              blurRadius: 10,
-                                                            ),
-                                                          ],
-                                                        ),
-                                                        child: kIsWeb
-                                                            ? Image.network(
-                                                                image3.value!,
-                                                              )
-                                                            : ClipRRect(
-                                                                borderRadius:
-                                                                    BorderRadiusGeometry.circular(
-                                                                      10,
-                                                                    ),
-                                                                child:
-                                                                    image3.value ==
-                                                                        null
-                                                                    ? Image.asset(
-                                                                        'assets/default.jpg',
-                                                                      )
-                                                                    : Image.file(
-                                                                        File(
-                                                                          image3
-                                                                              .value!,
-                                                                        ),
-                                                                        fit: BoxFit
-                                                                            .fill,
-                                                                        width:
-                                                                            constraints.maxWidth *
-                                                                            0.13,
-                                                                        height:
-                                                                            constraints.maxHeight *
-                                                                            0.07,
-                                                                      ),
-                                                              ),
-                                                      ),
-                                                      image3.value == null
-                                                          ? const SizedBox()
-                                                          : Positioned(
-                                                              top: -1,
-                                                              right: -2,
-                                                              child: GestureDetector(
-                                                                behavior:
-                                                                    HitTestBehavior
-                                                                        .translucent,
-                                                                onTap: () {
-                                                                  if (previewImage
-                                                                          .value !=
-                                                                      null) {
-                                                                    previewImage
-                                                                            .value =
-                                                                        null;
-                                                                    context
-                                                                        .read<
-                                                                          ImageAuth
-                                                                        >()
-                                                                        .add(
-                                                                          ClearPickedImageEvent(),
-                                                                        );
-                                                                  }
-                                                                  image3.value =
-                                                                      null;
-                                                                },
-                                                                child: const Icon(
-                                                                  Icons
-                                                                      .remove_circle_rounded,
-                                                                  color:
-                                                                      Color.fromARGB(
-                                                                        255,
-                                                                        233,
-                                                                        55,
-                                                                        43,
-                                                                      ),
-                                                                  size: 20,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                    ],
-                                                  );
-                                                },
-                                              ),
-                                            ),
-                                            const SizedBox10(),
-                                            GestureDetector(
-                                              onTap: () {
-                                                if (image2.value is String &&
-                                                    image3.value is String) {
-                                                } else {
-                                                  galleryorcamera(context);
-                                                }
-                                              },
-                                              child: imageaddingbutton(
-                                                constraints,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Product Name'),
-                            const SizedBox(height: 10.0),
-                            InputFieldNews(
-                              controller: productName,
-                              hintText: 'Enter product name',
-                              validator: (value) => Validators.validateString(
-                                value ?? "",
-                                "Product Name",
-                              ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Description'),
-                            const SizedBox(height: 20.0),
-                            InputFieldNews(
-                              controller: description,
-                              hintText: 'Enter description',
-                              validator: (value) => Validators.validateString(
-                                value ?? "",
-                                "Description",
-                              ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'quantity'),
+    );
+  }
 
-                            const SizedBox(height: 10.0),
-                            InputFieldNews(
-                              controller: quantity,
-                              hintText: 'Enter Qunatity (e.g.,10)',
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              validator: (value) => Validators.validatePrice(
-                                value ?? "",
-                                "quantity",
-                              ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'price'),
-
-                            const SizedBox(height: 10.0),
-                            InputFieldNews(
-                              controller: price,
-                              hintText: 'Enter price (e.g.34.90)',
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              validator: (value) => Validators.validatePrice(
-                                value ?? "",
-                                "price",
-                              ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Tags'),
-                            const SizedBox(height: 10.0),
-                            InputFieldNews(
-                              controller: tags,
-                              hintText: 'Enter tags (e.g., casual, summer)',
-                              validator: (value) => Validators.validateString(
-                                value ?? "",
-                                "Tags",
-                              ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Availability'),
-                            const SizedBox(height: 10.0),
-                            instock(isInStock: isInStock),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Tax Rate (%)'),
-                            const SizedBox(height: 10.0),
-                            InputFieldNews(
-                              controller: taxRate,
-                              hintText: 'Enter tax rate (e.g., 10)',
-                              keyboardType: TextInputType.number,
-                              validator: (value) =>
-                                  Validators.validateTaxRate(value ?? ""),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Filter Tags'),
-                            const SizedBox(height: 10.0),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(12.0),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    offset: Offset(5, 5),
-                                    blurRadius: 10,
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white70,
-                                    offset: Offset(-5, -5),
-                                    blurRadius: 10,
-                                  ),
-                                ],
-                              ),
-                              child: Wrap(
-                                spacing: 8.0,
-                                children: [
-                                  ...['casual', 'summer', 'winter', 'sale'].map(
-                                    (tag) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          if (filterTags.contains(tag)) {
-                                            filterTags.remove(tag);
-                                          } else {
-                                            filterTags.add(tag);
-                                          }
-                                          setState(() {});
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: filterTags.contains(tag)
-                                                ? Colors.green[100]
-                                                : Colors.grey[300],
-                                            borderRadius: BorderRadius.circular(
-                                              8.0,
-                                            ),
-                                            boxShadow: const [
-                                              BoxShadow(
-                                                color: Colors.black12,
-                                                offset: Offset(2, 2),
-                                                blurRadius: 4,
-                                              ),
-                                              BoxShadow(
-                                                color: Colors.white70,
-                                                offset: Offset(-2, -2),
-                                                blurRadius: 4,
-                                              ),
-                                            ],
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 8.0,
-                                              vertical: 4.0,
-                                            ),
-                                            child: Text(
-                                              tag,
-                                              style: const TextStyle(
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Category'),
-                            const SizedBox(height: 10.0),
-                            categoryLists(),
-                            const SizedBox(height: 20.0),
-                            BlocBuilder<ProductBloc, ProductState>(
-                              builder: (context, state) {
-                                if (state is SeletedState &&
-                                    state.productweight == 'electronics') {
-                                  return Wieghts(
-                                    constraint: constraints,
-                                    weight: weight,
-                                    length: length,
-                                    width: width,
-                                    height: height,
-                                  );
-                                }
-                                return const SizedBox();
-                              },
-                            ),
-                            const Titlesnew(nametitle: 'Variants'),
-                            const SizedBox(height: 10.0),
-                            variantsList(constraints),
-                            const SizedBox(height: 20.0),
-                            const Titlesnew(nametitle: 'Brand'),
-                            const SizedBox(height: 10.0),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.79,
-                                  decoration: boxshadow(),
-                                  child: ListTile(
-                                    onTap: () {
-                                      context.read<BrandBloc>().add(
-                                        BrandFetching(
-                                          mainCategoryId:
-                                              widget.mainCategoryId!,
-                                          subCategoryId: widget.subcategoryId!,
-                                        ),
-                                      );
-                                      final brands = context.read<BrandBloc>();
-                                      showModalBottomSheet(
-                                        isScrollControlled: true,
-                                        backgroundColor: Colors.white,
-                                        useSafeArea: true,
-                                        context: context,
-                                        builder: (context) {
-                                          return MultiBlocProvider(
-                                            providers: [
-                                              BlocProvider.value(value: brands),
-                                            ],
-                                            child: SizedBox(
-                                              height:
-                                                  MediaQuery.of(
-                                                    context,
-                                                  ).size.height /
-                                                  2,
-                                              child: Column(
-                                                children: [
-                                                  BlocBuilder<
-                                                    BrandBloc,
-                                                    BrandState
-                                                  >(
-                                                    builder: (context, state) {
-                                                      if (state
-                                                          is BrandLoading) {
-                                                        return const CircularProgressIndicator();
-                                                      } else if (state
-                                                          is LoadedBrand) {
-                                                        if (state
-                                                            .brands
-                                                            .isEmpty) {
-                                                          return const Center(
-                                                            child: Text(
-                                                              'No Brand ',
-                                                            ),
-                                                          );
-                                                        } else {
-                                                          return Padding(
-                                                            padding:
-                                                                const EdgeInsets.all(
-                                                                  8.0,
-                                                                ),
-                                                            child: Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                const SizedBox30(),
-                                                                const Titlesnew(
-                                                                  nametitle:
-                                                                      'Select Brand',
-                                                                ),
-                                                                GridView.builder(
-                                                                  gridDelegate:
-                                                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                                                        crossAxisCount:
-                                                                            4,
-                                                                      ),
-                                                                  shrinkWrap:
-                                                                      true,
-
-                                                                  physics:
-                                                                      const AlwaysScrollableScrollPhysics(),
-                                                                  itemCount: state
-                                                                      .brands
-                                                                      .length,
-                                                                  scrollDirection:
-                                                                      Axis.vertical,
-                                                                  itemBuilder:
-                                                                      (
-                                                                        context,
-                                                                        index,
-                                                                      ) {
-                                                                        return GestureDetector(
-                                                                          onTap: () {
-                                                                            brandname.text =
-                                                                                state.brands[index].label;
-                                                                            bradname.value =
-                                                                                state.brands[index].label;
-                                                                            brandImage!.value =
-                                                                                state.brands[index].imageUrl;
-                                                                            Navigator.pop(
-                                                                              context,
-                                                                            );
-                                                                          },
-                                                                          child: BrandIcon(
-                                                                            imageUrl:
-                                                                                state.brands[index].imageUrl,
-                                                                            label:
-                                                                                state.brands[index].label,
-                                                                            isActive:
-                                                                                true,
-                                                                          ),
-                                                                        );
-                                                                      },
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          );
-                                                        }
-                                                      }
-
-                                                      return const CircleAvatar();
-                                                    },
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    leading: ValueListenableBuilder(
-                                      valueListenable: bradname,
-                                      builder: (context, value, child) {
-                                        return Text(
-                                          brandname.text.isEmpty
-                                              ? 'No brand Name'
-                                              : brandname.text,
-                                        );
-                                      },
-                                    ),
-                                    trailing: SizedBox(
-                                      height: 50,
-                                      width: 50,
-
-                                      child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadiusGeometry.circular(30),
-                                        child: ValueListenableBuilder<String>(
-                                          valueListenable: brandImage!,
-                                          builder: (context, value, child) {
-                                            return CachedNetworkImage(
-                                              imageUrl: brandImage!.value,
-                                              fit: BoxFit.fill,
-                                              placeholder: (context, url) {
-                                                return const CircularProgressIndicator();
-                                              },
-
-                                              errorWidget:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) => const Icon(Icons.error),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  decoration: boxshadow(),
-                                  child: IconButton(
-                                    onPressed: () async {
-                                      final brands = context.read<BrandBloc>();
-                                      final brandImage = context
-                                          .read<BrandImageAuth>();
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled: true,
-                                        backgroundColor: Colors.white,
-                                        useSafeArea: true,
-                                        builder: (bottomSheetContext) {
-                                          return MultiBlocProvider(
-                                            providers: [
-                                              BlocProvider.value(value: brands),
-                                              BlocProvider.value(
-                                                value: brandImage,
-                                              ),
-                                            ],
-                                            child: SlideInUp(
-                                              duration: const Duration(
-                                                milliseconds: 150,
-                                              ),
-                                              child: SingleChildScrollView(
-                                                child: Container(
-                                                  decoration: const BoxDecoration(
-                                                    borderRadius:
-                                                        BorderRadius.vertical(
-                                                          top: Radius.circular(
-                                                            24.0,
-                                                          ),
-                                                        ),
-                                                  ),
-                                                  child: Padding(
-                                                    padding: EdgeInsets.only(
-                                                      bottom: MediaQuery.of(
-                                                        context,
-                                                      ).viewInsets.bottom,
-                                                      left: 16.0,
-                                                      right: 16.0,
-                                                      top: 16.0,
-                                                    ),
-                                                    child: Column(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        Builder(
-                                                          builder: (context) {
-                                                            return BlocBuilder<
-                                                              BrandImageAuth,
-                                                              BrandImagePickerState
-                                                            >(
-                                                              builder: (context, state) {
-                                                                if (state
-                                                                    is BrandImagePickedSuccess) {
-                                                                  imageFile = File(
-                                                                    state.image,
-                                                                  );
-                                                                }
-
-                                                                return Column(
-                                                                  crossAxisAlignment:
-                                                                      CrossAxisAlignment
-                                                                          .start,
-                                                                  children: [
-                                                                    const SizedBox(
-                                                                      height:
-                                                                          16,
-                                                                    ),
-
-                                                                    Text(
-                                                                      'Upload Brand Image',
-                                                                      style: GoogleFonts.inter(
-                                                                        color: const Color(
-                                                                          0xFF111418,
-                                                                        ),
-                                                                        fontSize:
-                                                                            18,
-                                                                        fontWeight:
-                                                                            FontWeight.w800,
-                                                                        letterSpacing:
-                                                                            -0.015 *
-                                                                            18,
-                                                                      ),
-                                                                    ),
-                                                                    const SizedBox(
-                                                                      height: 8,
-                                                                    ),
-                                                                    Container(
-                                                                      decoration: BoxDecoration(
-                                                                        border: Border.all(
-                                                                          color: const Color(
-                                                                            0xFFD5DBE2,
-                                                                          ),
-                                                                          width:
-                                                                              2,
-                                                                          style:
-                                                                              BorderStyle.solid,
-                                                                        ),
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(
-                                                                              12,
-                                                                            ),
-                                                                      ),
-                                                                      padding: const EdgeInsets.symmetric(
-                                                                        vertical:
-                                                                            56,
-                                                                        horizontal:
-                                                                            24,
-                                                                      ),
-                                                                      child: Column(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          if (imageFile !=
-                                                                              null)
-                                                                            ClipRRect(
-                                                                              borderRadius: BorderRadius.circular(
-                                                                                8,
-                                                                              ),
-                                                                              child: Image.file(
-                                                                                imageFile!,
-                                                                                width: 380,
-                                                                                height: 200,
-                                                                                fit: BoxFit.cover,
-                                                                              ),
-                                                                            )
-                                                                          else
-                                                                            Column(
-                                                                              children: [
-                                                                                Text(
-                                                                                  'Upload Image',
-                                                                                  style: GoogleFonts.inter(
-                                                                                    color: const Color(
-                                                                                      0xFF111418,
-                                                                                    ),
-                                                                                    fontSize: 18,
-                                                                                    fontWeight: FontWeight.bold,
-                                                                                    letterSpacing:
-                                                                                        -0.015 *
-                                                                                        18,
-                                                                                  ),
-                                                                                  textAlign: TextAlign.center,
-                                                                                ),
-                                                                                const SizedBox(
-                                                                                  height: 8,
-                                                                                ),
-                                                                                Text(
-                                                                                  'Click here to upload an image for the new category.',
-                                                                                  style: GoogleFonts.inter(
-                                                                                    color: const Color(
-                                                                                      0xFF111418,
-                                                                                    ),
-                                                                                    fontSize: 14,
-                                                                                    fontWeight: FontWeight.normal,
-                                                                                  ),
-                                                                                  textAlign: TextAlign.center,
-                                                                                ),
-                                                                              ],
-                                                                            ),
-                                                                          const SizedBox(
-                                                                            height:
-                                                                                24,
-                                                                          ),
-                                                                          const SizedBox(
-                                                                            height:
-                                                                                24,
-                                                                          ),
-                                                                          ElevatedButton(
-                                                                            style: ElevatedButton.styleFrom(
-                                                                              backgroundColor: ColoRs.elevatedButtonColor,
-                                                                              foregroundColor: ColoRs.whiteColor,
-                                                                              textStyle: GoogleFonts.inter(
-                                                                                fontSize: 14,
-                                                                                fontWeight: FontWeight.bold,
-                                                                                letterSpacing:
-                                                                                    0.015 *
-                                                                                    14,
-                                                                              ),
-                                                                              padding: const EdgeInsets.symmetric(
-                                                                                horizontal: 16,
-                                                                                vertical: 10,
-                                                                              ),
-                                                                              shape: RoundedRectangleBorder(
-                                                                                borderRadius: BorderRadius.circular(
-                                                                                  10,
-                                                                                ),
-                                                                              ),
-                                                                              minimumSize: const Size(
-                                                                                84,
-                                                                                40,
-                                                                              ),
-                                                                            ),
-                                                                            onPressed: () {
-                                                                              context
-                                                                                  .read<
-                                                                                    BrandImageAuth
-                                                                                  >()
-                                                                                  .add(
-                                                                                    ChooseBrandImageFromGalleryEvent(),
-                                                                                  );
-                                                                            },
-                                                                            child: const Text(
-                                                                              'Upload Image',
-                                                                            ),
-                                                                          ),
-                                                                        ],
-                                                                      ),
-                                                                    ),
-                                                                  ],
-                                                                );
-                                                              },
-                                                            );
-                                                          },
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 24,
-                                                        ),
-                                                        const Align(
-                                                          alignment:
-                                                              Alignment.topLeft,
-                                                          child: Titlesnew(
-                                                            nametitle:
-                                                                'Add Brand',
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 24,
-                                                        ),
-                                                        Form(
-                                                          key: brandKey,
-                                                          child: InputFieldNew(
-                                                            controller:
-                                                                addbrandname,
-                                                            hintText:
-                                                                'Enter new Brand',
-                                                            validator: (value) =>
-                                                                Validators.validateString(
-                                                                  value ?? "",
-                                                                  'Brand',
-                                                                ),
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 20.0,
-                                                        ),
-                                                        GradientButtonNew(
-                                                          text: 'Add Brand',
-                                                          height:
-                                                              MediaQuery.of(
-                                                                context,
-                                                              ).size.height *
-                                                              0.05,
-                                                          width:
-                                                              MediaQuery.of(
-                                                                context,
-                                                              ).size.width -
-                                                              100,
-                                                          onTap: () async {
-                                                            if (brandKey
-                                                                .currentState!
-                                                                .validate()) {
-                                                              context.read<BrandBloc>().add(
-                                                                BrandAdding(
-                                                                  mainCategoryId:
-                                                                      widget
-                                                                          .mainCategoryId!,
-                                                                  subCategoryId:
-                                                                      widget
-                                                                          .subcategoryId!,
-                                                                  brand: Brand(
-                                                                    imageUrl:
-                                                                        imageFile!
-                                                                            .path,
-                                                                    label:
-                                                                        addbrandname
-                                                                            .text,
-                                                                  ),
-                                                                ),
-                                                              );
-                                                              context.read<BrandBloc>().add(
-                                                                BrandFetching(
-                                                                  mainCategoryId:
-                                                                      widget
-                                                                          .mainCategoryId!,
-                                                                  subCategoryId:
-                                                                      widget
-                                                                          .subcategoryId!,
-                                                                ),
-                                                              );
-                                                              context
-                                                                  .read<
-                                                                    BrandImageAuth
-                                                                  >()
-                                                                  .add(
-                                                                    ClearPickedBrandImageEvent(),
-                                                                  );
-                                                              brandname.clear();
-                                                              Navigator.pop(
-                                                                context,
-                                                              );
-                                                            }
-                                                          },
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 20.0,
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-
-                                    icon: const Icon(Icons.add),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox30(),
-                            Center(
-                              child: BlocConsumer<ProductBloc, ProductState>(
-                                listener: (context, state) {
-                                  if (state is ProductSuccess) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Product added successfully!',
-                                        ),
-                                      ),
-                                    );
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                          if (context.mounted) {
-                                            context.read<ImageAuth>().add(
-                                              ClearPickedImageEvent(),
-                                            );
-                                            Navigator.of(
-                                              context,
-                                            ).pushAndRemoveUntil(
-                                              MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const HomePage(),
-                                              ),
-                                              (route) => false,
-                                            );
-                                          }
-                                        });
-                                    previewImage.value = null;
-                                    image2.value = null;
-                                    image3.value = null;
-                                    context.read<ImageAuth>().add(
-                                      ClearPickedImageEvent(),
-                                    );
-                                  } else if (state is ProductFailure) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(state.message)),
-                                    );
-                                  }
-                                },
-                                builder: (context, state) {
-                                  return GradientButtonNew(
-                                    height: 60.0,
-                                    width: constraints.maxWidth * 0.8,
-                                    text: state is ProductLoading
-                                        ? 'Uploading...'
-                                        : 'Add Product',
-                                    onTap: () {
-                                      if (image2.value != null &&
-                                          image3.value != null) {
-                                        if (globalKey.currentState!
-                                            .validate()) {
-                                          final product = ProductEntity(
-                                            mainCategoryId:
-                                                widget.mainCategoryId!,
-                                            subcategoryId:
-                                                widget.subcategoryId!,
-                                            mainCategoryName:
-                                                widget.mainCategoryName!,
-                                            subcategoryName:
-                                                widget.subcategoryName!,
-                                            name: productName.text,
-                                            description: description.text,
-                                            price:
-                                                double.tryParse(price.text) ??
-                                                0.0,
-                                            discountPrice: 10.0,
-                                            sku: 'ABCD21234',
-                                            tags: tags.text
-                                                .split(',')
-                                                .map((t) => t.trim())
-                                                .toList(),
-                                            inStock: isInStock.value,
-                                            weight:
-                                                double.tryParse(weight.text) ??
-                                                0.0,
-                                            length:
-                                                double.tryParse(length.text) ??
-                                                0.0,
-                                            width:
-                                                double.tryParse(width.text) ??
-                                                0.0,
-                                            height:
-                                                double.tryParse(height.text) ??
-                                                0.0,
-                                            taxRate:
-                                                double.tryParse(taxRate.text) ??
-                                                0.0,
-
-                                            category: selectedCategory.value,
-                                            brand: brandname.text,
-                                            quantities: int.parse(
-                                              quantity.text,
-                                            ),
-                                            images: [
-                                              image2.value!,
-                                              image3.value!,
-                                            ],
-
-                                            filterTags: filterTags,
-
-                                            variantDetails: variants.value,
-                                          );
-                                          print(product);
-                                          context.read<ProductBloc>().add(
-                                            AddProductEvent(
-                                              product,
-                                              widget.subcategoryId!,
-                                              widget.mainCategoryId!,
-                                            ),
-                                          );
-                                        }
-                                      } else {}
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 20.0),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
+  Widget _buildAddImageButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          builder: (_) => SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.camera_alt),
+                  title: const Text('Take a picture'),
+                  onTap: () {
+                    context.read<ProductImageBloc>().add(PickFromCameraEvent());
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library),
+                  title: const Text('Pick from gallery'),
+                  onTap: () {
+                    context.read<ProductImageBloc>().add(
+                      PickFromGalleryEvent(),
+                    );
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
             ),
-          );
-        },
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey[400]!,
+            style: BorderStyle.solid,
+          ),
+        ),
+        child: const Icon(Icons.add_a_photo, size: 32, color: Colors.grey),
       ),
     );
   }
 
-  Container imageaddingbutton(BoxConstraints constraints) {
-    return Container(
-      width: constraints.maxWidth * 0.15,
-      height: constraints.maxHeight * 0.07,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(16.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            offset: Offset(5, 5),
-            blurRadius: 10,
-          ),
-          BoxShadow(
-            color: Colors.white70,
-            offset: Offset(-5, -5),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(1),
-      child: const Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Center(child: Icon(Icons.add, size: 30)),
-      ),
+  Widget _buildProductNameSection(BuildContext context) => _reactiveTextField(
+    context,
+    label: 'Product Name',
+    selector: (s) => s.productName,
+    onChanged: (v) => UpdateProductNameEvent(v),
+  );
+
+  Widget _buildDescriptionSection(BuildContext context) => _reactiveTextField(
+    context,
+    label: 'Description',
+    selector: (s) => s.description,
+    onChanged: (v) => UpdateDescriptionEvent(v),
+    maxLines: 4,
+  );
+
+  Widget _buildTagsSection(BuildContext context) => _reactiveTextField(
+    context,
+    label: 'Tags (comma separated)',
+    selector: (s) => s.tags.join(', '),
+    onChanged: (v) => UpdateTagsEvent(
+      v.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+    ),
+  );
+
+  Widget _reactiveTextField(
+    BuildContext context, {
+    required String label,
+    required String Function(AddProductFormUpdated) selector,
+    required AddProductFormEvent Function(String) onChanged,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        BlocSelector<AddProductFormBloc, AddProductFormState, String>(
+          selector: (state) =>
+              state is AddProductFormUpdated ? selector(state) : '',
+          builder: (context, value) {
+            return TextFormField(
+              initialValue: value,
+              keyboardType: keyboardType,
+              maxLines: maxLines,
+              decoration: InputDecoration(
+                hintText: 'Enter $label',
+                filled: true,
+                fillColor: Colors.grey[100],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+              onChanged: (v) =>
+                  context.read<AddProductFormBloc>().add(onChanged(v)),
+            );
+          },
+        ),
+      ],
     );
   }
 
-  Future<dynamic> galleryorcamera(BuildContext context) {
-    return showModalBottomSheet(
+  Widget _buildAvailabilitySection(BuildContext context) {
+    return BlocSelector<AddProductFormBloc, AddProductFormState, bool>(
+      selector: (s) => s is AddProductFormUpdated ? s.inStock : true,
+      builder: (context, inStock) {
+        return SwitchListTile(
+          title: const Text('In Stock'),
+          value: inStock,
+          onChanged: (v) =>
+              context.read<AddProductFormBloc>().add(UpdateInStockEvent(v)),
+        );
+      },
+    );
+  }
+
+  Widget _buildConditionalDimensions(
+    BuildContext context,
+    BoxConstraints constraints,
+  ) {
+    return BlocSelector<AddProductFormBloc, AddProductFormState, String>(
+      selector: (s) => s is AddProductFormUpdated ? s.category : '',
+      builder: (context, category) {
+        if (category != 'electronics') return const SizedBox();
+        return _buildDimensionsSection(context);
+      },
+    );
+  }
+
+  Widget _buildDimensionsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Dimensions & Weight',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: ['Weight (kg)', 'Length', 'Width', 'Height'].map((label) {
+            return Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: _reactiveTextField(
+                  context,
+                  label: label,
+                  selector: (s) {
+                    switch (label) {
+                      case 'Weight (kg)':
+                        return s.weight.toString();
+                      case 'Length':
+                        return s.length.toString();
+                      case 'Width':
+                        return s.width.toString();
+                      case 'Height':
+                        return s.height.toString();
+                      default:
+                        return '';
+                    }
+                  },
+                  onChanged: (v) {
+                    final val = double.tryParse(v) ?? 0;
+                    return UpdateDimensionsEvent(
+                      weight: label.contains('Weight') ? val : null,
+                      length: label.contains('Length') ? val : null,
+                      width: label.contains('Width') ? val : null,
+                      height: label.contains('Height') ? val : null,
+                    );
+                  },
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVariantsSection(
+    BuildContext context,
+    BoxConstraints constraints,
+    int index,
+    Variant variant,
+  ) {
+    final imageBloc = context.read<ProductImageBloc>();
+    return BlocSelector<AddProductFormBloc, AddProductFormState, List<Variant>>(
+      selector: (s) => s is AddProductFormUpdated ? s.variants : [],
+      builder: (context, variants) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            GestureDetector(
+              onTap: () {
+                imageBloc.add(SetTargetVariantIndexEvent(index));
+
+                _showImageSourceSheet(context);
+              },
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: variant.image != null && variant.image!.isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        // Use the image path for preview
+                        child: kIsWeb
+                            ? Image.network(variant.image!, fit: BoxFit.cover)
+                            : Image.file(
+                                File(variant.image!),
+                                fit: BoxFit.cover,
+                              ),
+                      )
+                    : const Icon(
+                        Icons.photo_size_select_actual,
+                        size: 24,
+                        color: Colors.grey,
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Variants',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ...variants.asMap().entries.map(
+              (entry) => _buildVariantRow(context, entry.key, entry.value),
+            ),
+            _buildAddVariantField(context),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showImageSourceSheet(BuildContext context) {
+    showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
         child: Wrap(
@@ -1492,7 +526,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
               leading: const Icon(Icons.camera_alt),
               title: const Text('Take a picture'),
               onTap: () {
-                context.read<ImageAuth>().add(VariantImageFromCameraEvent());
+                context.read<ProductImageBloc>().add(PickFromCameraEvent());
                 Navigator.pop(context);
               },
             ),
@@ -1500,7 +534,7 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
               leading: const Icon(Icons.photo_library),
               title: const Text('Pick from gallery'),
               onTap: () {
-                context.read<ImageAuth>().add(VarinatImageFromGalleryEvent());
+                context.read<ProductImageBloc>().add(PickFromGalleryEvent());
                 Navigator.pop(context);
               },
             ),
@@ -1510,853 +544,296 @@ class _AddProdutsPageState extends State<AddProdutsPage> {
     );
   }
 
-  Widget categoryLists() {
-    return ValueListenableBuilder(
-      valueListenable: selectedCategory,
-      builder: (context, value, child) {
-        return AnimationConfiguration.staggeredList(
-          position: 5,
-          duration: const Duration(milliseconds: 200),
-          child: SlideAnimation(
-            verticalOffset: 50.0,
-            child: FadeInAnimation(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(12.0),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            offset: Offset(5, 5),
-                            blurRadius: 10,
-                          ),
-                          BoxShadow(
-                            color: Colors.white70,
-                            offset: Offset(-5, -5),
-                            blurRadius: 10,
-                          ),
-                        ],
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        value: selectedCategory.value.isEmpty
-                            ? null
-                            : selectedCategory.value,
-                        hint: const Text('Select Category'),
-                        items: categoryList.map((category) {
-                          return DropdownMenuItem(
-                            value: category,
-                            child: Text(
-                              category,
-                              style: const TextStyle(color: Colors.black87),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            selectedCategory.value = value;
-                            context.read<ProductBloc>().add(
-                              Productweight(selectedCategory.value),
-                            );
-                            _updateVariants();
-                          }
-                        },
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                          ),
-                        ),
-                        validator: (value) =>
-                            value == null ? 'Please select a category' : null,
-                      ),
-                    ),
+  Widget _buildVariantRow(BuildContext context, int index, Variant variant) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Text(
+              variant.name,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const Spacer(),
+            SizedBox(
+              width: 100,
+              child: TextFormField(
+                initialValue: variant.regularPrice.toStringAsFixed(2),
+                decoration: const InputDecoration(labelText: 'Price'),
+                onChanged: (v) => context.read<AddProductFormBloc>().add(
+                  UpdateVariantPriceEvent(
+                    variantIndex: index,
+                    regularPrice: double.tryParse(v) ?? 0,
+                    salePrice: variant.salePrice,
                   ),
-                  SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                  BounceInDown(
-                    duration: const Duration(milliseconds: 200),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(10.0),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            offset: Offset(4, 4),
-                            blurRadius: 8,
-                          ),
-                          BoxShadow(
-                            color: Colors.white70,
-                            offset: Offset(-4, -4),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.add, color: Colors.green),
-                        onPressed: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.white,
-                            builder: (context) {
-                              return SlideInUp(
-                                duration: const Duration(milliseconds: 150),
-                                child: Container(
-                                  decoration: const BoxDecoration(
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(24.0),
-                                    ),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                      bottom: MediaQuery.of(
-                                        context,
-                                      ).viewInsets.bottom,
-                                      left: 16.0,
-                                      right: 16.0,
-                                      top: 16.0,
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Titlesnew(
-                                          nametitle: 'Add Category',
-                                        ),
-                                        const SizedBox(height: 10.0),
-                                        Form(
-                                          key: categoryKey,
-                                          child: InputFieldNews(
-                                            controller: categoryController,
-                                            hintText: 'Enter new category',
-                                            validator: (value) =>
-                                                Validators.validateString(
-                                                  value ?? "",
-                                                  'Category',
-                                                ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 20.0),
-                                        GradientButtonNew(
-                                          text: 'Add Category',
-                                          height:
-                                              MediaQuery.of(
-                                                context,
-                                              ).size.height *
-                                              0.05,
-                                          width:
-                                              MediaQuery.of(
-                                                context,
-                                              ).size.width -
-                                              100,
-                                          onTap: () {
-                                            if (categoryKey.currentState!
-                                                .validate()) {
-                                              categoryList.add(
-                                                categoryController.text,
-                                              );
-                                              categoryController.clear();
-
-                                              Navigator.pop(context);
-                                            }
-                                          },
-                                        ),
-                                        const SizedBox(height: 20.0),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 80,
+              child: TextFormField(
+                initialValue: variant.quantity.toString(),
+                decoration: const InputDecoration(labelText: 'Qty'),
+                onChanged: (v) => context.read<AddProductFormBloc>().add(
+                  UpdateVariantQuantityEvent(index, int.tryParse(v) ?? 0),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget variantsList(BoxConstraints constraints) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildAddVariantField(BuildContext context) {
+    final controller = TextEditingController();
+    return Row(
       children: [
-        ValueListenableBuilder(
-          valueListenable: selectedCategory,
-          builder: (context, value, child) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ValueListenableBuilder(
-                  valueListenable: variants,
-                  builder: (context, value, child) {
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: variants.value.length,
-                      itemBuilder: (context, index) {
-                        final variant = variants.value[index];
-                        final variantImage = ValueNotifier<String?>(
-                          variant.image,
-                        );
-
-                        return AnimationConfiguration.staggeredList(
-                          position: index,
-                          duration: const Duration(milliseconds: 150),
-                          child: SlideAnimation(
-                            verticalOffset: 50.0,
-                            child: FadeInAnimation(
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(
-                                  vertical: 8.0,
-                                ),
-
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12.0),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          width: constraints.maxWidth * 0.30,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                'Regular Price',
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 14.0,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8.0),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey[200],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        12.0,
-                                                      ),
-                                                ),
-                                                child: InputFieldNews(
-                                                  controller:
-                                                      regularpriceControllers[index],
-                                                  hintText:
-                                                      'Enter price (e.g., 29.99)',
-                                                  keyboardType:
-                                                      const TextInputType.numberWithOptions(
-                                                        decimal: true,
-                                                      ),
-                                                  validator: (value) =>
-                                                      Validators.validatePrice(
-                                                        value ?? "",
-                                                        "Price",
-                                                      ),
-                                                  onChanged: (value) {
-                                                    final updatedVariants =
-                                                        List<Variant>.from(
-                                                          variants.value,
-                                                        );
-                                                    updatedVariants[index] =
-                                                        Variant(
-                                                          name: variant.name,
-                                                          image: variant.image,
-                                                          regularPrice: variant
-                                                              .regularPrice,
-                                                          salePrice:
-                                                              double.tryParse(
-                                                                value,
-                                                              ) ??
-                                                              0.0,
-                                                          quantity:
-                                                              variant.quantity,
-                                                        );
-                                                    variants.value =
-                                                        updatedVariants;
-                                                  },
-                                                  futuristic: true,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8.0),
-                                              const Text(
-                                                'Quantity',
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 14.0,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8.0),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey[200],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        12.0,
-                                                      ),
-                                                ),
-                                                child: InputFieldNews(
-                                                  controller:
-                                                      quantityControllers[index],
-                                                  hintText:
-                                                      'Enter quantity (e.g., 10)',
-                                                  keyboardType:
-                                                      TextInputType.number,
-                                                  validator: (value) =>
-                                                      Validators.validateQuantity(
-                                                        value ?? "",
-                                                      ),
-                                                  onChanged: (value) {
-                                                    final updatedVariants =
-                                                        List<Variant>.from(
-                                                          variants.value,
-                                                        );
-                                                    updatedVariants[index] =
-                                                        Variant(
-                                                          name: variant.name,
-                                                          image: variant.image,
-                                                          regularPrice: variant
-                                                              .regularPrice,
-                                                          salePrice:
-                                                              variant.salePrice,
-                                                          quantity:
-                                                              int.tryParse(
-                                                                quantityControllers[index]
-                                                                    .text,
-                                                              ) ??
-                                                              0,
-                                                        );
-                                                    variants.value =
-                                                        updatedVariants;
-                                                    variantQuantities[variant
-                                                            .name] =
-                                                        int.tryParse(value) ??
-                                                        0;
-                                                  },
-                                                  futuristic: true,
-                                                ),
-                                              ),
-
-                                              const Text(
-                                                'Sale Price ',
-                                                style: TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 14.0,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 8.0),
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey[200],
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                        12.0,
-                                                      ),
-                                                ),
-                                                child: InputFieldNews(
-                                                  controller:
-                                                      weightControllers[index],
-                                                  hintText:
-                                                      'Enter weight (e.g., 1.5 kg)',
-                                                  keyboardType:
-                                                      const TextInputType.numberWithOptions(
-                                                        decimal: true,
-                                                      ),
-                                                  validator: (value) =>
-                                                      Validators.validateWeight(
-                                                        value ?? "",
-                                                      ),
-                                                  onChanged: (value) {
-                                                    final updatedVariants =
-                                                        List<Variant>.from(
-                                                          variants.value,
-                                                        );
-                                                    updatedVariants[index] =
-                                                        Variant(
-                                                          name: variant.name,
-                                                          image: variant.image,
-                                                          regularPrice:
-                                                              double.tryParse(
-                                                                value,
-                                                              ) ??
-                                                              0.0,
-                                                          salePrice:
-                                                              variant.salePrice,
-                                                          quantity:
-                                                              variant.quantity,
-                                                        );
-                                                    variants.value =
-                                                        updatedVariants;
-                                                  },
-                                                  futuristic: true,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          width: constraints.maxWidth * 0.05,
-                                        ),
-                                        Column(
-                                          children: [
-                                            Text(
-                                              "${productName.text}- ${variant.name}",
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 16.0,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            ValueListenableBuilder(
-                                              valueListenable: variantImage,
-                                              builder: (context, value, child) {
-                                                return GestureDetector(
-                                                  onTap: () async {
-                                                    final String? variantImage =
-                                                        await gallery
-                                                            .pickFromGallery();
-
-                                                    final updatedVariants =
-                                                        List<Variant>.from(
-                                                          variants.value,
-                                                        );
-                                                    updatedVariants[index] =
-                                                        Variant(
-                                                          name: variant.name,
-                                                          image: variantImage,
-                                                          regularPrice: variant
-                                                              .regularPrice,
-                                                          salePrice:
-                                                              variant.salePrice,
-                                                          quantity:
-                                                              variant.quantity,
-                                                        );
-                                                    variants.value =
-                                                        updatedVariants;
-                                                  },
-                                                  child: Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 20,
-                                                        ),
-                                                    child: Container(
-                                                      width:
-                                                          constraints.maxWidth *
-                                                          0.57,
-                                                      height:
-                                                          constraints
-                                                              .maxHeight *
-                                                          0.22,
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.grey[200],
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              12.0,
-                                                            ),
-                                                      ),
-                                                      child: value == null
-                                                          ? const Center(
-                                                              child: Column(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
-                                                                children: [
-                                                                  Icon(
-                                                                    Icons
-                                                                        .add_a_photo,
-                                                                    color: Colors
-                                                                        .black87,
-                                                                    size: 20,
-                                                                  ),
-                                                                  SizedBox(
-                                                                    height: 4.0,
-                                                                  ),
-                                                                  Text(
-                                                                    'Add Image',
-                                                                    style: TextStyle(
-                                                                      color: Colors
-                                                                          .black87,
-                                                                      fontSize:
-                                                                          12.0,
-                                                                    ),
-                                                                  ),
-                                                                ],
-                                                              ),
-                                                            )
-                                                          : kIsWeb
-                                                          ? Image.network(value)
-                                                          : ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    12.0,
-                                                                  ),
-                                                              child: Image.file(
-                                                                File(value),
-                                                                fit:
-                                                                    BoxFit.fill,
-                                                              ),
-                                                            ),
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
-            );
+        Expanded(
+          child: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              hintText: 'New variant (e.g., Red)',
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.add_circle, color: Colors.green),
+          onPressed: () {
+            if (controller.text.isNotEmpty) {
+              context.read<AddProductFormBloc>().add(
+                AddVariantEvent(controller.text),
+              );
+              controller.clear();
+            }
           },
         ),
-        const SizedBox(height: 10.0),
-        Row(
-          children: [
-            Expanded(
-              child: Form(
-                key: variantKey,
-                child: InputFieldNews(
-                  controller: variantName,
-                  hintText:
-                      'Add variant (e.g., ${selectedCategory.value == 'dress'
-                          ? 'S, M, L'
-                          : selectedCategory.value == 'Drinks'
-                          ? '200ml, 1l'
-                          : 'black, silver'})',
-                  validator: (value) =>
-                      Validators.validateString(value ?? "", 'Variant'),
-                  futuristic: true,
-                ),
-              ),
-            ),
-            SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-            BounceInDown(
-              duration: const Duration(milliseconds: 200),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10.0),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black12,
-                      offset: Offset(4, 4),
-                      blurRadius: 8,
-                    ),
-                    BoxShadow(
-                      color: Colors.white70,
-                      offset: Offset(-4, -4),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.add, color: Colors.green),
-                  onPressed: () {
-                    if (variantKey.currentState!.validate()) {
-                      final updatedVariants = List<Variant>.from(variants.value)
-                        ..add(Variant(name: variantName.text));
-                      variantQuantities[variantName.text] = 0;
-                      weightControllers.add(
-                        TextEditingController(text: 0.toString()),
-                      );
-                      regularpriceControllers.add(
-                        TextEditingController(text: 0.toString()),
-                      );
-                      quantityControllers.add(
-                        TextEditingController(text: 0.toString()),
-                      );
-                      variants.value = updatedVariants;
-
-                      variantName.clear();
-                    }
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
       ],
     );
   }
-}
 
-class Wieghts extends StatelessWidget {
-  const Wieghts({
-    super.key,
-    required this.weight,
-    required this.length,
-    required this.width,
-    required this.height,
-    required this.constraint,
-  });
-
-  final TextEditingController weight;
-  final TextEditingController length;
-  final TextEditingController width;
-  final TextEditingController height;
-  final BoxConstraints constraint;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Titlesnew(nametitle: 'Weight (kg)'),
-        const SizedBox(height: 10.0),
-        InputFieldNews(
-          controller: weight,
-          hintText: 'Enter weight (e.g., 1.5)',
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          validator: (value) => Validators.validateWeight(value ?? ""),
-          futuristic: true,
-        ),
-        const SizedBox(height: 20.0),
-        const Titlesnew(nametitle: 'Dimensions (cm)'),
-        const SizedBox(height: 10.0),
-        Row(
-          children: [
-            Expanded(
-              child: InputFieldNews(
-                controller: length,
-                hintText: 'Length',
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                validator: (value) =>
-                    Validators.validateDimension(value ?? "", "Length"),
-                futuristic: true,
-              ),
-            ),
-            SizedBox(width: constraint.maxWidth * 0.02),
-            Expanded(
-              child: InputFieldNews(
-                controller: width,
-                hintText: 'Width',
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                validator: (value) =>
-                    Validators.validateDimension(value ?? "", "Width"),
-                futuristic: true,
-              ),
-            ),
-            SizedBox(width: constraint.maxWidth * 0.02),
-            Expanded(
-              child: InputFieldNews(
-                controller: height,
-                hintText: 'Height',
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                validator: (value) =>
-                    Validators.validateDimension(value ?? "", "Height"),
-                futuristic: true,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20.0),
-      ],
+  Widget _buildCategorySection(BuildContext context) {
+    return BlocSelector<AddProductFormBloc, AddProductFormState, String>(
+      selector: (s) => (s as AddProductFormUpdated).category,
+      builder: (context, selected) {
+        return DropdownButtonFormField<String>(
+          value: selected.isEmpty ? null : selected,
+          hint: const Text('Select Category'),
+          items: [
+            'dress',
+            'Drinks',
+            'electronics',
+            'accessories',
+          ].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+          onChanged: (v) => v != null
+              ? context.read<AddProductFormBloc>().add(UpdateCategoryEvent(v))
+              : null,
+        );
+      },
     );
   }
-}
 
-class instock extends StatelessWidget {
-  const instock({super.key, required this.isInStock});
+  Widget _buildBrandSection(BuildContext context) {
+    return BlocSelector<BrandBloc, BrandState, Brand?>(
+      selector: (s) => s is LoadedBrand ? s.selectedBrand : null,
+      builder: (context, brand) {
+        return ListTile(
+          title: Text(brand?.label ?? 'Select Brand'),
+          trailing: const Icon(Icons.arrow_drop_down),
+          onTap: () => _showBrandSelectionBottomSheet(context),
+        );
+      },
+    );
+  }
 
-  final ValueNotifier<bool> isInStock;
+  void _showBrandSelectionBottomSheet(BuildContext context) {
+    final brandBloc = context.read<BrandBloc>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (modelcontext) {
+        return BlocProvider.value(
+          value: brandBloc,
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Select Brand',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: BlocBuilder<BrandBloc, BrandState>(
+                    builder: (context, state) {
+                      if (state is BrandLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: isInStock,
-      builder: (context, value, child) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(12.0),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                offset: Offset(5, 5),
-                blurRadius: 10,
-              ),
-              BoxShadow(
-                color: Colors.white70,
-                offset: Offset(-5, -5),
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('In Stock', style: TextStyle(color: Colors.black87)),
-              Switch(
-                value: value,
-                onChanged: (newValue) => isInStock.value = newValue,
-                activeColor: Colors.green,
-              ),
-            ],
+                      if (state is LoadedBrand) {
+                        if (state.brands.isEmpty) {
+                          return const Center(
+                            child: Text('No brands available'),
+                          );
+                        }
+
+                        return GridView.builder(
+                          padding: const EdgeInsets.all(16),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                childAspectRatio: 1,
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                              ),
+                          itemCount: state.brands.length,
+                          itemBuilder: (context, index) {
+                            final brand = state.brands[index];
+                            final isSelected =
+                                state.selectedBrand?.label == brand.label;
+
+                            return GestureDetector(
+                              onTap: () {
+                                context.read<BrandBloc>().add(
+                                  SelectBrandEvent(brand),
+                                );
+                                Navigator.pop(context);
+                              },
+                              child: Column(
+                                children: [
+                                  Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? Colors.green
+                                            : Colors.grey.shade300,
+                                        width: isSelected ? 3 : 1,
+                                      ),
+                                    ),
+                                    child: ClipOval(
+                                      child: CachedNetworkImage(
+                                        imageUrl: brand.imageUrl ?? '',
+                                        fit: BoxFit.cover,
+                                        placeholder: (_, __) => const Icon(
+                                          Icons.branding_watermark,
+                                          size: 30,
+                                        ),
+                                        errorWidget: (_, __, ___) =>
+                                            const Icon(Icons.error),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    brand.label,
+                                    style: const TextStyle(fontSize: 12),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      }
+
+                      return const Center(child: Text('Something went wrong'));
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
     );
   }
-}
 
-class SecondImage extends StatelessWidget {
-  String? image;
-  final BoxConstraints constraints;
-  SecondImage({super.key, required this.constraints, required this.image});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      alignment: AlignmentDirectional.topEnd,
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: constraints.maxWidth * 0.15,
-          height: constraints.maxHeight * 0.07,
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(16.0),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                offset: Offset(5, 5),
-                blurRadius: 10,
+  Widget _buildSubmitButton(BuildContext context, BoxConstraints constraints) {
+    return BlocBuilder<ProductBloc, ProductState>(
+      builder: (context, productState) {
+        final loading = productState is ProductLoading;
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: loading ? null : () => _submitProduct(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: ColoRs.background,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              BoxShadow(
-                color: Colors.white70,
-                offset: Offset(-5, -5),
-                blurRadius: 10,
-              ),
-            ],
+            ),
+            child: Text(
+              loading ? 'Adding Product...' : 'Add Product',
+              style: const TextStyle(fontSize: 18),
+            ),
           ),
-          child: kIsWeb
-              ? Image.network(image!)
-              : ClipRRect(
-                  borderRadius: BorderRadiusGeometry.circular(10),
-                  child: image == null
-                      ? Image.asset('assets/default.jpg')
-                      : Image.file(
-                          File(image!),
-                          fit: BoxFit.fill,
-                          width: constraints.maxWidth * 0.13,
-                          height: constraints.maxHeight * 0.07,
-                        ),
-                ),
-        ),
-        image == null
-            ? const SizedBox()
-            : Positioned(
-                top: -10,
-                right: -13,
-                child: GestureDetector(
-                  onTap: () {
-                    if (previewImage.value!.contains(image!)) {
-                      previewImage.value = null;
-                    }
-                    image = null;
-                  },
-                  child: const Icon(
-                    Icons.remove_circle_outline_rounded,
-                    color: Colors.redAccent,
-                    size: 19,
-                  ),
-                ),
-              ),
-      ],
+        );
+      },
     );
   }
-}
 
-class InputFieldNews extends StatelessWidget {
-  final TextEditingController controller;
-  final String hintText;
-  final TextInputType? keyboardType;
-  final String? Function(String?)? validator;
-  final void Function(String)? onChanged;
-  final bool futuristic;
+  void _submitProduct(BuildContext context) {
+    final formState =
+        context.read<AddProductFormBloc>().state as AddProductFormUpdated;
+    final brandState = context.read<BrandBloc>().state as LoadedBrand;
 
-  const InputFieldNews({
-    super.key,
-    required this.controller,
-    required this.hintText,
-    this.keyboardType,
-    this.validator,
-    this.onChanged,
-    this.futuristic = false,
-  });
+    if (formState.productImages.length < 2 ||
+        formState.productName.isEmpty ||
+        brandState.selectedBrand == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all required fields')),
+      );
+      return;
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      decoration: BoxDecoration(
-        color: futuristic ? Colors.grey[200] : Colors.grey[200],
-        borderRadius: BorderRadius.circular(12.0),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            offset: Offset(5, 5),
-            blurRadius: 10,
-          ),
-          BoxShadow(
-            color: Colors.white70,
-            offset: Offset(-5, -5),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        style: TextStyle(
-          color: futuristic ? Colors.black87 : Colors.black87,
-          fontSize: 14.0,
-        ),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: TextStyle(
-            color: futuristic ? Colors.grey[600] : Colors.grey[600],
-            fontSize: 14.0,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16.0,
-            vertical: 12.0,
-          ),
-        ),
-        validator: validator,
-        onChanged: onChanged,
-      ),
+    final product = ProductEntity(
+      mainCategoryId: mainCategoryId,
+      subcategoryId: subcategoryId,
+      name: formState.productName,
+      description: formState.description,
+      mainCategoryName: mainCategoryName,
+      tags: formState.tags,
+      length: formState.length,
+      width: formState.width,
+      height: formState.height,
+      category: formState.category,
+      filterTags: formState.filterTags,
+      weight: formState.weight,
+      inStock: formState.inStock,
+      subcategoryName: subcategoryName,
+      images: formState.productImages,
+      variantDetails: formState.variants,
+      brand: brandState.selectedBrand!.label,
+    );
+
+    context.read<ProductBloc>().add(
+      AddProductEvent(product, mainCategoryId, subcategoryId),
     );
   }
 }

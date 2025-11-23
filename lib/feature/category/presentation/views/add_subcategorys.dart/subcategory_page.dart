@@ -15,7 +15,12 @@ class AddSubcategory extends StatelessWidget {
   CategoryEntities category;
   CategoryEntities? subCategory;
   String? maincategoryName;
-      AddSubcategory({super.key, required this.category, this.subCategory,required this.maincategoryName});
+  AddSubcategory({
+    super.key,
+    required this.category,
+    this.subCategory,
+    required this.maincategoryName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +38,29 @@ class AddSubcategory extends StatelessWidget {
               onRefresh: () => refresh(context, category),
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final bool isDesktop = constraints.maxWidth > 1200;
+                    return Padding(
+                      padding: EdgeInsetsGeometry.only(
+                        left: isDesktop ? constraints.maxWidth * 0.20 : 0,
+                        right: isDesktop ? constraints.maxWidth * 0.20 : 0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
 
-                  children: [searchProduct(), categorySection(category,maincategoryName!)],
+                        children: [
+                          // searchProduct(),
+                          categorySection(
+                            category,
+                            maincategoryName!,
+                            isDesktop,
+                            context,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ),

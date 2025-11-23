@@ -23,32 +23,38 @@ import 'package:empire/feature/category/presentation/bloc/category_bloc/adding_c
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_category_bloc.dart';
 import 'package:empire/feature/category/presentation/bloc/category_bloc/get_subcategory.dart';
 import 'package:empire/feature/category/presentation/views/categories/category_page.dart';
+import 'package:empire/feature/category/presentation/views/splashScreen/starting_page.dart';
+import 'package:empire/feature/homepage/presentation/bloc/metric_bloc.dart';
 
 import 'package:empire/feature/homepage/presentation/view/home_page.dart';
 import 'package:empire/feature/order/presentation/view/order_page.dart';
-import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
+import 'package:empire/feature/product/data/datasource/add_product_data_source_impli.dart';
+
 import 'package:empire/feature/product/data/repository/add_product_respository.dart';
-import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
-import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_product.dart';
+import 'package:empire/feature/product/domain/usecase/add_product_usecae.dart';
+import 'package:empire/feature/product/presentation/bloc/add_product.dart';
+import 'package:empire/feature/revenue/presentation/bloc/revenue_bloc.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class LandingPage extends StatefulWidget {
-  const LandingPage({super.key});
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
 
   @override
-  State<LandingPage> createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<LandingPage> {
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider<ImageAuth>(
-          create: (_) =>
-              ImageAuth(sl<PickImageFromCamera>(), sl<PickImageFromGallery>()),
+          create: (_) => ImageAuth(
+            pickImageFromCameraUsecaseUseCase: sl<PickImageFromCameraUsecase>(),
+            pickImageFromGalleryusecaseUseCase: sl<PickImageFromGalleryusecase>(),
+          ),
         ),
 
         BlocProvider(
@@ -69,6 +75,14 @@ class _MyAppState extends State<LandingPage> {
         BlocProvider<SubCategoryBloc>(
           create: (_) => SubCategoryBloc(sl<GettingSubcategoryUsecase>()),
         ),
+        BlocProvider(
+          create: (context) =>
+              sl<MetricsBloc>()..add(const MetricsDataRequested()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              sl<RevenueBloc>()..add(const RevenueDataRequested()),
+        ),
       ],
       child: MaterialApp(
         theme: AppTheme.lightTheme,
@@ -86,7 +100,7 @@ class _MyAppState extends State<LandingPage> {
               if (state is SucessLoginStatusState) {
                 return const HomePage();
               } else if (state is NotLoginState) {
-                return Loginpage();
+                return const StartingScreen();
               } else {
                 return Image.asset(Constants.landingImage);
               }

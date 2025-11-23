@@ -1,17 +1,13 @@
-import 'package:empire/feature/auth/domain/enitites/user_entities.dart';
+
+
+import 'package:dartz/dartz.dart';
+import 'package:empire/core/utilis/failure.dart';
 import 'package:firebase_auth/firebase_auth.dart';
- 
 
 abstract class AuthRepository {
-  Future<UserEntities?> sigInWithGoogle();
-  Future<UserCredential> verifyOtp(int otp);
-  Future<void> login(String name,String password);
-  Future<void> verifyNumber(int number);
-  Future<void> savePassword(
-      String newPasswordController,
-      String email,
-      String password,
-     );
+ 
+  Future <Either<Failures, User>> login(String name,String password);
+ 
     
 }
  

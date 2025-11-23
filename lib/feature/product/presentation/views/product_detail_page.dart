@@ -1,7 +1,7 @@
 import 'package:empire/core/utilis/fonts.dart';
 import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
-import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_product.dart';
+import 'package:empire/feature/product/presentation/bloc/add_product.dart';
 
 import 'package:empire/feature/product/presentation/views/add_product.dart/widgets.dart';
 import 'package:empire/feature/product/presentation/views/editpage/edit_page.dart';
@@ -30,31 +30,42 @@ class ProductDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: product == null
-          ? const Center(child: Text('No product data available'))
-          : SafeArea(
-              child: SingleChildScrollView(
-                child: Container(
-                  decoration: const BoxDecoration(color: Colors.white),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildImageSection(context, product!.images),
-                      _buildDetailsSection(
-                        context,
-                        product!,
-                        mainCategoryId,
-                        subcategory,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool isDesktop = constraints.maxWidth > 1200;
+          return product == null
+              ? const Center(child: Text('No product data available'))
+              : SafeArea(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      padding: EdgeInsetsGeometry.only(
+                        left: isDesktop ? constraints.maxWidth * 0.20 : 0,
+                        right: isDesktop ? constraints.maxWidth * 0.20 : 0,
                       ),
-                    ],
+                      decoration: const BoxDecoration(color: Colors.white),
+
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildBarndSection(context, product!.images),
+                          _buildprodcutSection(
+                            context,
+                            product!,
+                            mainCategoryId,
+                            subcategory,
+                            isDesktop,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
+                );
+        },
+      ),
     );
   }
 
-  Widget _buildImageSection(BuildContext context, List<String> images) {
+  Widget _buildBarndSection(BuildContext context, List<dynamic> images) {
     return Stack(
       children: [
         images.isNotEmpty
@@ -106,11 +117,12 @@ class ProductDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailsSection(
+  Widget _buildprodcutSection(
     BuildContext context,
     ProductEntity product,
     String? mainCategoryId,
     String? subcategory,
+    bool isDesktop,
   ) {
     return Padding(
       padding: const EdgeInsets.all(24.0),
@@ -142,25 +154,25 @@ class ProductDetailsPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            _buildDetailRow('Quantity', product.quantities.toString()),
+           
             const SizedBox(height: 16),
 
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDetailRow(
-                    'Price',
-                    '\$${product.price.toStringAsFixed(2)}',
-                  ),
-                ),
-                Expanded(
-                  child: _buildDetailRow(
-                    'Tax Rate',
-                    '${product.taxRate.toStringAsFixed(1)}%',
-                  ),
-                ),
-              ],
-            ),
+            // Row(
+            //   children: [
+            //     Expanded(
+            //       child: _buildDetailRow(
+            //         'Price',
+            //         '\$${product.price.toStringAsFixed(2)}',
+            //       ),
+            //     ),
+            //     Expanded(
+            //       child: _buildDetailRow(
+            //         'Tax Rate',
+            //         '${product.taxRate.toStringAsFixed(1)}%',
+            //       ),
+            //     ),
+            //   ],
+            // ),
             const SizedBox(height: 16),
 
             _buildDetailRow('Filter Tag', product.filterTags.join(', ')),

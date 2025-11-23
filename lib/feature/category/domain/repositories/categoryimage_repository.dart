@@ -1,4 +1,4 @@
 abstract class Categoryimage {
-  Future<String?> categoryImageFromGallery();
-  Future<String?> categorypickImageFromcamera();
+  Future<dynamic> categoryImageFromGallery();
+  Future<dynamic> categoryPickImageFromCameraUsecase();
 }

@@ -1,14 +1,50 @@
 import 'dart:io';
-
+ 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:empire/core/utilis/failure.dart';
 import 'package:empire/core/utilis/widgets.dart';
 
-import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
 import 'package:empire/feature/product/domain/enities/listproducts.dart';
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
+
+abstract class ProductDataSource {
+  Future<Either<Exception, void>> addProduct(
+    ProductEntity product,
+    String uid,
+    String mainCtiegoryid,
+  );
+  Future<Either<Exception, void>> deleteProduct(
+    String mainCategoryId,
+    String subcategoryId,
+    String productId,
+  );
+  Future<Either<Failures, void>> updateProduct({
+    required String productId,
+    required ProductEntity product,
+    required String subcategoryId,
+    required String mainCategoryId,
+  });
+  Future<Either<Failures, void>> addBrand(
+    String mainCategory,
+    String subCargeoy,
+    Brand brand,
+  
+  );
+
+  Future<Either<Failures, List<Brand>>> getBrands(
+    String mainCategory,
+    String subCategory,
+  );
+  Future<Either<Failures, List<ProductEntity>>> fetchingProduct(
+    String mainCategoryId,
+    String subcategoryId,
+    String? brand,
+    String? subCategoryName,
+  );
+}
 
 class ProductDataSourceImpli extends ProductDataSource {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -17,43 +53,52 @@ class ProductDataSourceImpli extends ProductDataSource {
   Future<Either<Exception, void>> addProduct(
     ProductEntity product,
     String uid,
-    String mainCtiegoryid,
+    String mainCategoryId,
   ) async {
-    List<Map<String, dynamic>> uploadedVariantDetails = [];
     List<String> uploadedImageUrls = [];
+    List<Map<String, dynamic>> uploadedVariantDetails = [];
+
+    // ----------------------------------------
+    // UPLOAD MAIN IMAGES
+    // ----------------------------------------
     for (var i = 0; i < product.images.length; i++) {
       try {
-        final file = File(product.images[i]);
-        final image = await uploadImageToCloudinary(file);
-        if (image == null || image.isEmpty) {
-          return Left(Exception('failed  image'));
+        String? imgUrl;
+
+        if (kIsWeb) {
+          final Uint8List imgBytes = product.imagesweb![i];
+          imgUrl = await uploadImageToCloudinary(bytes: imgBytes);
+        } else {
+          // product.images[i] must be file path
+          final file = File(product.images[i]);
+          imgUrl = await uploadImageToCloudinary(file: file);
         }
-        logger.i('Category image uploaded: $image');
-        uploadedImageUrls.add(image);
+
+        if (imgUrl == null || imgUrl.isEmpty) {
+          return Left(Exception("Failed to upload image"));
+        }
+
+        uploadedImageUrls.add(imgUrl);
       } catch (e) {
-        logger.e('Category image upload failed: $e');
-        return left(Exception('Category image fialed'));
+        return Left(Exception("Image upload failed: $e"));
       }
     }
+
     for (var variant in product.variantDetails) {
       String? uploadedVariantImageUrl;
+
       if (variant.image != null) {
         try {
-          final file = File(variant.image!);
-          uploadedVariantImageUrl = await uploadImageToCloudinary(file);
-          if (uploadedVariantImageUrl == null ||
-              uploadedVariantImageUrl.isEmpty) {
-            logger.e('Failed to upload variant image for ${variant.name}');
-            return Left(
-              Exception('Failed to upload variant image for ${variant.name}'),
+          if (kIsWeb) {
+            uploadedVariantImageUrl = await uploadImageToCloudinary(
+              bytes: variant.imageweb,
             );
+          } else {
+            final file = File(variant.image!);
+            uploadedVariantImageUrl = await uploadImageToCloudinary(file: file);
           }
-          logger.i(
-            'Variant image uploaded for ${variant.name}: $uploadedVariantImageUrl',
-          );
         } catch (e) {
-          logger.e('Variant image upload failed for ${variant.name}: $e');
-          return Left(Exception('Failed to upload variant image: $e'));
+          return Left(Exception("Variant image upload failed: $e"));
         }
       }
 
@@ -65,7 +110,8 @@ class ProductDataSourceImpli extends ProductDataSource {
         'quantity': variant.quantity,
       });
     }
-  
+
+   
     try {
       await _firestore.collection('products').doc().set({
         'mainCategoryId': product.mainCategoryId,
@@ -75,8 +121,6 @@ class ProductDataSourceImpli extends ProductDataSource {
         'category': product.category,
         'name': product.name,
         'description': product.description,
-        'price': product.price,
-        'discountPrice': product.discountPrice,
         'sku': product.sku,
         'tags': product.tags,
         'inStock': product.inStock,
@@ -84,17 +128,17 @@ class ProductDataSourceImpli extends ProductDataSource {
         'length': product.length,
         'width': product.width,
         'height': product.height,
-        'taxRate': product.taxRate,
-        'quantities': product.quantities,
+      
         'images': uploadedImageUrls,
         'brand': product.brand,
         'filterTags': product.filterTags,
         'timestamp': FieldValue.serverTimestamp(),
         'variantDetails': uploadedVariantDetails,
       });
+
       return const Right(null);
     } catch (e) {
-      return Left(Exception('Failed to add product: $e'));
+      return Left(Exception("Failed to add product: $e"));
     }
   }
 
@@ -134,23 +178,44 @@ class ProductDataSourceImpli extends ProductDataSource {
   }
 
   @override
-  Future<Either<Failures, void>> addingBrand(
+  Future<Either<Failures, void>> addBrand(
     String mainCategory,
     String subCargeoy,
     Brand brand,
+   
   ) async {
     final String? image;
     try {
-      try {
-        final file = File(brand.imageUrl);
-        image = await uploadImageToCloudinary(file);
-        if (image == null || image.isEmpty) {
-          return const Left(Failures.server('No image'));
+      
+  
+      //  WEB ------------------------
+      if (kIsWeb) {
+        if (brand.imageweburl == null) {
+          return left(const Failures.validation('No  web image selected'));
         }
-        logger.i('Category image uploaded: $image');
-      } catch (e) {
-        logger.e('Category image upload failed: $e');
-        return left(const Failures.server('Category image fialed'));
+
+        try {
+          image = await uploadImageToCloudinary(bytes: brand.imageweburl);
+        } catch (e) {
+          return left(Failures.network('Failed to upload image: $e'));
+        }
+        //  MOBILE / DESKTOP ----------
+      } else {
+        if (brand.imageUrl == null) {
+          return left(const Failures.validation('No image selected'));
+        }
+
+        final file = File(brand.imageUrl!);
+
+        if (!await file.exists()) {
+          return left(const Failures.validation('Image file does not exist'));
+        }
+
+        try {
+          image = await uploadImageToCloudinary(file: file);
+        } catch (e) {
+          return left(Failures.network('Failed to upload image: $e'));
+        }
       }
       await _firestore
           .collection('category')
@@ -163,6 +228,96 @@ class ProductDataSourceImpli extends ProductDataSource {
       return right(null);
     } catch (e) {
       return Left(Failures.server('Failed to update product: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failures, List<ProductEntity>>> fetchingProduct(
+    String mainCategoryId,
+    String subcategoryId,
+    String? brand,
+    String? subCategoryName,
+  ) async {
+    try {
+      final snapShot = await FirebaseFirestore.instance
+          .collection('products')
+          .get();
+      List<ProductEntity> allproducts = snapShot.docs.map((data) {
+        return ProductEntity(
+          mainCategoryId: data['mainCategoryId'] ?? "",
+          subcategoryId: data['subcategoryId'] ?? "",
+          mainCategoryName: data['mainCategoryName'] ?? "",
+          subcategoryName: data['subcategoryName'] ?? "",
+          productDocId: data.id,
+          name: data['name'] ?? '',
+          description: data['description'] ?? '',
+
+          sku: data['sku'] ?? '',
+          tags: List<String>.from(data['tags'] ?? []),
+          inStock: data['inStock'] ?? false,
+          weight: (data['weight'] as num?)?.toDouble() ?? 0.0,
+          length: (data['length'] as num?)?.toDouble() ?? 0.0,
+          width: (data['width'] as num?)?.toDouble() ?? 0.0,
+          height: (data['height'] as num?)?.toDouble() ?? 0.0,
+
+          brand: data['brand'] ?? "No Brand",
+          category: data['category'] ?? '',
+         
+          images: List<String>.from(data['images'] ?? []),
+
+          filterTags: List<String>.from(data['filterTags'] ?? []),
+          variantDetails: data['variantDetails']
+              .map<Variant>(
+                (v) => Variant(
+                  name: v['name'] ?? "",
+                  image: v['image'] ?? "",
+                  regularPrice: (v['regularPrice'] as num?)?.toDouble() ?? 0.0,
+                  salePrice: (v['salePrice'] as num?)?.toDouble() ?? 0.0,
+                  quantity: v['quantity'] ?? 0,
+                ),
+              )
+              .toList(),
+        );
+      }).toList();
+
+      if (brand == null && subCategoryName != null) {
+        /////////////filteredBysubcategory
+        List<ProductEntity> filteredBysubcategory = allproducts;
+        filteredBysubcategory = filteredBysubcategory
+            .where((product) => product.subcategoryName == subCategoryName)
+            .toList();
+        return right(filteredBysubcategory);
+      } else {
+        List<ProductEntity> filteredByProduct = allproducts;
+        filteredByProduct = filteredByProduct
+            .where((product) => product.brand == brand)
+            .toList();
+        return right(filteredByProduct);
+      }
+    } catch (e) {
+      return left(Failures.server(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failures, List<Brand>>> getBrands(
+    String mainCategory,
+    String subCategory,
+  ) async {
+    try {
+      final snapShot = await FirebaseFirestore.instance
+          .collection('category')
+          .doc(mainCategory)
+          .collection('subcategory')
+          .doc(subCategory)
+          .collection('Brand')
+          .get();
+      List<Brand> result = snapShot.docs.map((data) {
+        return Brand(imageUrl: data['image'], label: data['Brand']);
+      }).toList();
+      return right(result);
+    } catch (e) {
+      return left(Failures.server(e.toString()));
     }
   }
 }

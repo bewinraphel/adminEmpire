@@ -1,8 +1,12 @@
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-abstract class ImagePickerEvent {}
+abstract class ImagePickerEvent extends Equatable {
+  @override
+  List<Object> get props => [];
+}
 
 class ChooseImageFromCameraEvent extends ImagePickerEvent {}
 
@@ -28,29 +32,31 @@ class ImageInitial extends ImagePickerState {}
 class PickingImage extends ImagePickerState {}
 
 class ImagePickedSuccess extends ImagePickerState {
-  final String image;
+  final dynamic image;
   ImagePickedSuccess(this.image);
 }
 
 class Categorystate extends ImagePickerState {
-  final String image;
+  final dynamic image;
   Categorystate(this.image);
 }
 
 class ImagePickedError extends ImagePickerState {
-  final String errot;
+  final dynamic errot;
   ImagePickedError(this.errot);
 }
 
 class ImageAuth extends Bloc<ImagePickerEvent, ImagePickerState> {
-  final PickImageFromCamera pickImageFromCamera;
-  final PickImageFromGallery pickImageFromGallery;
+  final PickImageFromCameraUsecase pickImageFromCameraUsecaseUseCase;
+  final PickImageFromGalleryusecase pickImageFromGalleryusecaseUseCase;
 
-  ImageAuth(this.pickImageFromCamera, this.pickImageFromGallery)
-    : super(ImageInitial()) {
+  ImageAuth({
+    required this.pickImageFromCameraUsecaseUseCase,
+    required this.pickImageFromGalleryusecaseUseCase,
+  }) : super(ImageInitial()) {
     on<ChooseImageFromCameraEvent>((event, emit) async {
       emit(PickingImage());
-      final result = await pickImageFromCamera();
+      final result = await pickImageFromCameraUsecaseUseCase();
       if (result != null) {
         emit(ImagePickedSuccess(result));
       } else {
@@ -60,7 +66,7 @@ class ImageAuth extends Bloc<ImagePickerEvent, ImagePickerState> {
 
     on<ChooseImageFromGalleryEvent>((event, emit) async {
       emit(PickingImage());
-      final result = await pickImageFromGallery();
+      final result = await pickImageFromGalleryusecaseUseCase();
       if (result != null) {
         emit(ImagePickedSuccess(result));
       } else {
@@ -70,7 +76,7 @@ class ImageAuth extends Bloc<ImagePickerEvent, ImagePickerState> {
     // variant
     on<VariantImageFromCameraEvent>((event, emit) async {
       emit(PickingImage());
-      final result = await pickImageFromCamera();
+      final result = await pickImageFromCameraUsecaseUseCase();
       if (result != null) {
         emit(ImagePickedSuccess(result));
       } else {
@@ -79,7 +85,7 @@ class ImageAuth extends Bloc<ImagePickerEvent, ImagePickerState> {
     });
     on<VarinatImageFromGalleryEvent>((event, emit) async {
       emit(PickingImage());
-      final result = await pickImageFromGallery();
+      final result = await pickImageFromGalleryusecaseUseCase();
       if (result != null) {
         emit(ImagePickedSuccess(result));
       } else {

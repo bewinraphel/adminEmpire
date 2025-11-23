@@ -1,10 +1,10 @@
 import 'package:empire/feature/auth/domain/repositories/image_profile.dart';
 
-class PickImageFromCamera {
+class PickImageFromCameraUsecase {
   final ProfileImage profileImage;
 
-  PickImageFromCamera(this.profileImage);
+  PickImageFromCameraUsecase(this.profileImage);
   Future call() async {
-    return await profileImage.pickImageFromcamera();
+    return await profileImage.PickImageFromCameraUsecase();
   }
 }

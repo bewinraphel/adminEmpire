@@ -9,16 +9,19 @@ import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/auth/data/datasource/image_profile.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_camera_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/pick_image_gallery_usecase.dart';
-import 'package:empire/feature/product/data/datasource/add_product_data_source.dart';
+import 'package:empire/feature/product/data/datasource/add_product_data_source_impli.dart';
+
 import 'package:empire/feature/product/data/repository/add_product_respository.dart';
 import 'package:empire/feature/product/domain/enities/listproducts.dart';
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
-import 'package:empire/feature/product/domain/usecase/product/add_product_usecae.dart';
+import 'package:empire/feature/product/domain/usecase/add_product_usecae.dart';
 import 'package:empire/feature/auth/presentation/bloc/profile_image_bloc.dart';
-import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
-import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_brand.dart';
-import 'package:empire/feature/product/presentation/bloc/add_product_bloc/add_product.dart';
-import 'package:empire/feature/product/presentation/bloc/add_product_bloc/brand.dart';
+import 'package:empire/feature/product/domain/usecase/adding_brand_usecase.dart';
+import 'package:empire/feature/product/domain/usecase/get_brand_usecase.dart';
+
+import 'package:empire/feature/product/presentation/bloc/add_brand_image.dart';
+import 'package:empire/feature/product/presentation/bloc/add_product.dart';
+import 'package:empire/feature/product/presentation/bloc/brand.dart';
 
 import 'package:empire/feature/product/presentation/views/add_product.dart/widgets.dart';
 import 'package:empire/feature/homepage/presentation/view/home_page.dart';
@@ -37,7 +40,7 @@ ValueNotifier<String?> previewImage = ValueNotifier(null);
 class EditProdutsPage extends StatefulWidget {
   String? mainCategoryId;
   String? subcategoryId;
-   String ? mainCategoryName;
+  String? mainCategoryName;
   String? subcategoryName;
   final ProductEntity? product;
   String? productId;
@@ -48,7 +51,8 @@ class EditProdutsPage extends StatefulWidget {
     this.mainCategoryId,
     this.product,
     this.productId,
-    required this.mainCategoryName,required this.subcategoryName
+    required this.mainCategoryName,
+    required this.subcategoryName,
   });
 
   @override
@@ -106,16 +110,16 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
 
     productName.text = widget.product!.name;
     description.text = widget.product!.description;
-    price.text = widget.product!.price.toString();
-    quantity.text = widget.product!.quantities.toString();
-    discountPrice.text = widget.product!.discountPrice.toString();
+
+ 
+
     sku.text = widget.product!.sku;
     tags.text = widget.product!.tags.join(', ');
     weight.text = widget.product!.weight.toString();
     length.text = widget.product!.length.toString();
     width.text = widget.product!.width.toString();
     height.text = widget.product!.height.toString();
-    taxRate.text = widget.product!.taxRate.toString();
+
     brandname.text = widget.product!.brand!;
     isInStock.value = widget.product!.inStock;
     selectedCategory.value = widget.product!.category;
@@ -167,7 +171,7 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
         const Variant(name: 'black'),
         const Variant(name: 'silver'),
         const Variant(name: 'white'),
-      ]; 
+      ];
       variants.value = List.from(newVariants);
     } else if (selectedCategory.value == 'accessories') {
       newVariants = [
@@ -226,18 +230,18 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
         ),
         BlocProvider(
           create: (context) =>
-              BrandBloc(sl<ProductcallingUsecase>(), sl<AddProductUseCase>())
-                ..add(
-                  BrandFetching(
-                    mainCategoryId: widget.mainCategoryId!,
-                    subCategoryId: widget.subcategoryId!,
-                  ),
+              BrandBloc(sl<AddBrandUseCase>(), sl<GetBrandsUseCase>())..add(
+                BrandFetching(
+                  mainCategoryId: widget.mainCategoryId!,
+                  subCategoryId: widget.subcategoryId!,
                 ),
+              ),
         ),
         BlocProvider(
-          create: (_) => BrandImageAuth(
-            sl<PickImageFromCamera>(),
-            sl<PickImageFromGallery>(),
+          create: (_) => AddBrandImage(
+            pickImageFromCameraUsecaseUseCase: sl<PickImageFromCameraUsecase>(),
+            pickImageFromGalleryusecaseUseCase:
+                sl<PickImageFromGalleryusecase>(),
           ),
         ),
       ],
@@ -847,21 +851,21 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                             const SizedBox(height: 10.0),
                             categoryLists(),
                             const SizedBox(height: 20.0),
-                            BlocBuilder<ProductBloc, ProductState>(
-                              builder: (context, state) {
-                                if (state is SeletedState &&
-                                    state.productweight == 'electronics') {
-                                  return Wieghts(
-                                    constraint: constraints,
-                                    weight: weight,
-                                    length: length,
-                                    width: width,
-                                    height: height,
-                                  );
-                                }
-                                return const SizedBox();
-                              },
-                            ),
+                            // BlocBuilder<ProductBloc, ProductState>(
+                            //   builder: (context, state) {
+                            //     if (state is SeletedState &&
+                            //         state.productweight == 'electronics') {
+                            //       return Wieghts(
+                            //         constraint: constraints,
+                            //         weight: weight,
+                            //         length: length,
+                            //         width: width,
+                            //         height: height,
+                            //       );
+                            //     }
+                            //     return const SizedBox();
+                            //   },
+                            // ),
                             const Titlesnew(nametitle: 'Variants'),
                             const SizedBox(height: 10.0),
                             const SizedBox(height: 10.0),
@@ -966,14 +970,14 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                                                             bradname.value =
                                                                                 state.brands[index].label;
                                                                             brandImage!.value =
-                                                                                state.brands[index].imageUrl;
+                                                                                state.brands[index].imageUrl!;
                                                                             Navigator.pop(
                                                                               context,
                                                                             );
                                                                           },
                                                                           child: BrandIcon(
                                                                             imageUrl:
-                                                                                state.brands[index].imageUrl,
+                                                                                state.brands[index].imageUrl!,
                                                                             label:
                                                                                 state.brands[index].label,
                                                                             isActive:
@@ -1044,7 +1048,7 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                     onPressed: () async {
                                       final brands = context.read<BrandBloc>();
                                       final brandImage = context
-                                          .read<BrandImageAuth>();
+                                          .read<AddBrandImage>();
                                       showModalBottomSheet(
                                         context: context,
                                         isScrollControlled: true,
@@ -1088,14 +1092,15 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                                         Builder(
                                                           builder: (context) {
                                                             return BlocBuilder<
-                                                              BrandImageAuth,
-                                                              BrandImagePickerState
+                                                              AddBrandImage,
+                                                              AddBrandImageState
                                                             >(
                                                               builder: (context, state) {
                                                                 if (state
-                                                                    is BrandImagePickedSuccess) {
+                                                                    is BarndImagePicked) {
                                                                   imageFile = File(
-                                                                    state.image,
+                                                                    state
+                                                                        .imagePath,
                                                                   );
                                                                 }
 
@@ -1235,10 +1240,10 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                                                             onPressed: () {
                                                                               context
                                                                                   .read<
-                                                                                    BrandImageAuth
+                                                                                    AddBrandImage
                                                                                   >()
                                                                                   .add(
-                                                                                    ChooseBrandImageFromGalleryEvent(),
+                                                                                    PickImageFromGalleryEvent(),
                                                                                   );
                                                                             },
                                                                             child: const Text(
@@ -1302,7 +1307,7 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                                                 .currentState!
                                                                 .validate()) {
                                                               context.read<BrandBloc>().add(
-                                                                BrandAdding(
+                                                                BrandAddingEvent(
                                                                   mainCategoryId:
                                                                       widget
                                                                           .mainCategoryId!,
@@ -1329,13 +1334,14 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                                                           .subcategoryId!,
                                                                 ),
                                                               );
-                                                              context
-                                                                  .read<
-                                                                    BrandImageAuth
-                                                                  >()
-                                                                  .add(
-                                                                    ClearPickedBrandImageEvent(),
-                                                                  );
+
+                                                              // context
+                                                              //     .read<
+                                                              //       AddBrandImage
+                                                              //     >()
+                                                              //     .add(
+                                                              //       ClearImageEvent(),
+                                                              //     );
                                                               brandname.clear();
                                                               Navigator.pop(
                                                                 context,
@@ -1411,16 +1417,17 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                         if (globalKey.currentState!
                                             .validate()) {
                                           final products = ProductEntity(
-                                            mainCategoryId: widget.mainCategoryId!,
-                                            subcategoryId: widget.subcategoryId!,
-                                            mainCategoryName: widget.mainCategoryName!,
-                                            subcategoryName: widget.subcategoryName!,
+                                            mainCategoryId:
+                                                widget.mainCategoryId!,
+                                            subcategoryId:
+                                                widget.subcategoryId!,
+                                            mainCategoryName:
+                                                widget.mainCategoryName!,
+                                            subcategoryName:
+                                                widget.subcategoryName!,
                                             name: productName.text,
                                             description: description.text,
-                                            price:
-                                                double.tryParse(price.text) ??
-                                                0.0,
-                                            discountPrice: 10.0,
+
                                             sku: 'ABCD21234',
                                             brand: brandname.text,
                                             tags: tags.text
@@ -1440,15 +1447,10 @@ class _AddProdutsPageState extends State<EditProdutsPage> {
                                             height:
                                                 double.tryParse(height.text) ??
                                                 0.0,
-                                            taxRate:
-                                                double.tryParse(taxRate.text) ??
-                                                0.0,
 
                                             category: selectedCategory.value,
 
-                                            quantities: int.parse(
-                                              quantity.text,
-                                            ),
+                                            
                                             images: [
                                               image2.value!,
                                               image3.value!,

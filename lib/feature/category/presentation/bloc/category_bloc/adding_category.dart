@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:empire/feature/category/domain/usecase/categories/adding_category_usecase.dart';
 
@@ -15,11 +17,13 @@ class AddingCategory extends CategoryEvent {
   final String category;
   final String image;
   final String description;
+  final   Uint8List? imageBytes ;
 
   const AddingCategory({
     required this.category,
     required this.image,
     required this.description,
+    this.imageBytes
   });
 
   @override
@@ -56,6 +60,7 @@ class AddingcategoryEventBloc extends Bloc<CategoryEvent, CategoryState> {
         event.category,
         event.image,
         event.description,
+        event.imageBytes
       );
 
       result.fold(

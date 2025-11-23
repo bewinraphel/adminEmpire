@@ -1,119 +1,81 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+import 'dart:io';
 
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:dartz/dartz.dart';
+import 'package:empire/core/utilis/failure.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthRemoteDataSource {
-  final FirebaseAuth _firebaseAuth;
-  final GoogleSignIn _googleSignIn;
+  AuthRemoteDataSource();
 
-  AuthRemoteDataSource(this._firebaseAuth, this._googleSignIn);
-  String? verificationId;
-  Future<User?> signInWithGoogle() async {
-    try {
-      if (kIsWeb) {
-        final googleProvider = GoogleAuthProvider();
-        final userCredintial =
-            await _firebaseAuth.signInWithPopup(googleProvider);
-        final user = userCredintial.user;
-        if (user == null) return null;
-        return userCredintial.user;
-      } else {
-        final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-
-        if (googleUser == null) return null;
-        final GoogleSignInAuthentication googleAuth =
-            await googleUser.authentication;
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
+  Failures _handleFirebaseAuthException(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-phone-number':
+        return const Failures.messange('Please enter a valid phone number');
+      case 'too-many-requests':
+        return const Failures.messange(
+          'Too many attempts. Please try again later.',
         );
-        final userCredential =
-            await _firebaseAuth.signInWithCredential(credential);
+      case 'quota-exceeded':
+        return const Failures.messange(
+          'SMS quota exceeded. Please try again later.',
+        );
+      case 'operation-not-allowed':
+        return const Failures.messange('Phone authentication is not enabled.');
+      case 'user-disabled':
+        return const Failures.messange('This account has been disabled.');
 
-        return userCredential.user;
-      }
-    } catch (e) {
-      throw Exception(e);
+      case 'user-not-found':
+        return const Failures.messange(
+          'No user found for that email. Please register first.',
+        );
+      case 'wrong-password':
+        return const Failures.messange('Incorrect password. Please try again.');
+      case 'invalid-email':
+        return const Failures.messange(
+          'Invalid email format. Please check and try again.',
+        );
+      case 'email-already-in-use':
+        return const Failures.messange(
+          'Email is already registered. Try logging in instead.',
+        );
+
+      case 'network-request-failed':
+      case 'timeout':
+        return const Failures.network(
+          'Network error. Please check your connection and retry.',
+        );
+
+      default:
+        return Failures.messange(e.message ?? e.code);
     }
   }
 
-  Future verifyPhone(int phone) async {
-    await _firebaseAuth.verifyPhoneNumber(
-      phoneNumber: '+91${phone.toString()}',
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: (PhoneAuthCredential credential) async {},
-      verificationFailed: (FirebaseAuthException e) {},
-      codeSent: (String verid, int? resendToken) {
-        verificationId = verid;
-      },
-      codeAutoRetrievalTimeout: (String verid) {},
-    );
-  }
-
-  Future<UserCredential> VerifyOTP(int Otp) async {
-    final otp = '${Otp}56';
-    if (verificationId != null && otp.isNotEmpty) {
-      try {
-        final credential = PhoneAuthProvider.credential(
-          verificationId: verificationId!,
-          smsCode: otp,
-        );
-        final userCredential =
-            await _firebaseAuth.signInWithCredential(credential);
-
-        return userCredential;
-      } catch (e) {
-        throw FirebaseAuthException(
-            code: 'auth/error-signing-in', message: 'Failed to sign in: $e');
-      }
-    } else {
-      throw FirebaseAuthException(
-          code: 'auth/missing-verification',
-          message: 'Verification ID or OTP is missing');
-    }
-  }
-
-  Future<void> savePassword(
-    String newPasswordController,
-    String email,
-    String password,
-  ) async {
+  Future<Either<Failures, User>> login(String email, String password) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-
-      if (user == null) {
-        throw Exception('No authenticated user found');
-      }
-
-      final password = newPasswordController.trim();
-
-      final credential = EmailAuthProvider.credential(
+      final user = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      
 
-      try {
-        // Try linking email/password provider
-        await user.linkWithCredential(credential);
-      } on FirebaseAuthException catch (e) {
-        if (e.code == 'provider-already-linked') {
-          // Provider already linked, update password instead
-          await user.updatePassword(password);
-        } else {
-          print('Password setup failed: ${e.message}');
-        }
-      }
+      return Right(user.user!);
+    } on FirebaseAuthException catch (e) {
+      throw _handleFirebaseAuthException(e);
+    } on SocketException catch (e) {
+      throw FirebaseAuthException(
+        code: 'auth/network-error',
+        message: 'No internet connection. Please check your network.',
+      );
+    } on TimeoutException catch (e) {
+      throw FirebaseAuthException(
+        code: 'auth/timeout',
+        message: 'Login timed out. Please try again.',
+      );
     } catch (e) {
-      print('Password setup failed: ${e}');
+      throw FirebaseAuthException(
+        code: 'auth/unexpected',
+        message: 'Something went wrong. Please try again later.',
+      );
     }
-  }
-
-  Future<void> login(String email, String password) async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
   }
 }

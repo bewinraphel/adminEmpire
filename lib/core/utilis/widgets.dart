@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:empire/core/utilis/fonts.dart';
 import 'package:flutter/material.dart';
@@ -180,17 +182,39 @@ class _FieldsState extends State<Fields> {
   }
 }
 
-Future<String?> uploadImageToCloudinary(File imageFile) async {
-  final cloudName = 'dfpsfhmwu';
-  final uploadPreset = 'category';
+Future<String?> uploadImageToCloudinary({
+  File? file,
+  Uint8List? bytes,
+}) async {
+  const cloudName = 'dfpsfhmwu';
+  const uploadPreset = 'category';
 
   final url = Uri.parse(
     "https://api.cloudinary.com/v1_1/$cloudName/image/upload",
   );
 
   final request = http.MultipartRequest('POST', url)
-    ..fields['upload_preset'] = uploadPreset
-    ..files.add(await http.MultipartFile.fromPath('file', imageFile.path));
+    ..fields['upload_preset'] = uploadPreset;
+
+  if (kIsWeb) {
+    // ---------- WEB UPLOAD (Uint8List) ----------
+    if (bytes == null) return null;
+
+    request.files.add(
+      http.MultipartFile.fromBytes(
+        'file',
+        bytes,
+        filename: "upload.png",
+      ),
+    );
+  } else {
+    // ---------- MOBILE/DESKTOP UPLOAD (File) ----------
+    if (file == null) return null;
+
+    request.files.add(
+      await http.MultipartFile.fromPath('file', file.path),
+    );
+  }
 
   final response = await request.send();
 
@@ -199,7 +223,7 @@ Future<String?> uploadImageToCloudinary(File imageFile) async {
     final data = jsonDecode(res.body);
     return data['secure_url'];
   } else {
-    print('Upload failed: ${response.statusCode}');
+    debugPrint('Upload failed: ${response.statusCode}');
     return null;
   }
 }
@@ -245,23 +269,28 @@ class OptimizedNetworkImage extends StatelessWidget {
         if (imageUrl != null && imageUrl!.isNotEmpty) {
           try {
             final uri = Uri.parse(imageUrl!);
-            final newUri = uri.replace(queryParameters: {
-              ...uri.queryParameters,
-              widthQueryParam: physicalWidth.toString(),
-            });
+            final newUri = uri.replace(
+              queryParameters: {
+                ...uri.queryParameters,
+                widthQueryParam: physicalWidth.toString(),
+              },
+            );
             finalImageUrl = newUri.toString();
           } catch (e) {
-            print('OptimizedNetworkImage: Error parsing URL ($imageUrl): $e');
+            debugPrint('OptimizedNetworkImage: Error parsing URL ($imageUrl): $e');
           }
         }
 
         Widget imageContent;
         if (finalImageUrl.isEmpty) {
-          imageContent = errorWidget ??
+          imageContent =
+              errorWidget ??
               Container(
                 color: Colors.grey[200],
-                child:
-                    const Icon(Icons.image_not_supported, color: Colors.grey),
+                child: const Icon(
+                  Icons.image_not_supported,
+                  color: Colors.grey,
+                ),
               );
         } else {
           imageContent = CachedNetworkImage(
@@ -270,10 +299,7 @@ class OptimizedNetworkImage extends StatelessWidget {
             imageUrl: finalImageUrl,
             fit: fit,
             placeholder: (context, url) =>
-                placeholder ??
-                Container(
-                  color: Colors.grey[200],
-                ),
+                placeholder ?? Container(color: Colors.grey[200]),
             errorWidget: (context, url, error) =>
                 errorWidget ??
                 Container(

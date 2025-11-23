@@ -1,4 +1,3 @@
- 
 import 'package:empire/feature/auth/domain/usecase/login_usecase.dart';
 import 'package:empire/feature/auth/domain/usecase/save_login_status_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,17 +24,24 @@ class ErrorLogin extends LoginState {
 }
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  final Login authRemoteDataSource;
-   final SaveLoginStatus saveLoginStatus;
-  LoginBloc(this.authRemoteDataSource,this.saveLoginStatus) : super(InitialLogin()) {
+  final Login loginUseCase;
+  final SaveLoginStatus saveLoginStatus;
+  LoginBloc(this.loginUseCase, this.saveLoginStatus) : super(InitialLogin()) {
     on<LogPresed>((event, emit) async {
       emit(InitialLogin());
       try {
-        
-        await authRemoteDataSource(event.email,event.password);
-        await saveLoginStatus(true);
-        emit(LoginSucess());
-      } catch (e) { 
+        final result = await loginUseCase(event.email, event.password);
+        result.fold(
+          (failure) {
+            emit(ErrorLogin(failure.message));
+          },
+          (_) {
+            saveLoginStatus(true);
+
+            emit(LoginSucess());
+          },
+        );
+      } catch (e) {
         emit(ErrorLogin(e.toString()));
       }
     });

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
@@ -6,6 +7,7 @@ import 'package:empire/core/utilis/failure.dart';
 import 'package:empire/core/utilis/widgets.dart';
 import 'package:empire/feature/category/data/datasource/category_data_source.dart';
 import 'package:empire/feature/category/domain/entities/category_entities.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:logger/logger.dart';
 
@@ -38,30 +40,45 @@ class CategoryDataSourceImpl implements CategoryDataSource {
   @override
   Future<Either<Failures, Unit>> addCategory(
     String category,
-    String imageUrl,
+    String? imageUrl,
     String description,
+    Uint8List? imageBytes,
   ) async {
     String? image;
+    logger.i('  $category');
 
     try {
-      logger.i('Starting category image upload ');
-      final file = File(imageUrl);
-
-      if (!await file.exists()) {
-        return left(const Failures.validation('Image file does not exist'));
-      }
-
-      try {
-        image = await uploadImageToCloudinary(file);
-        if (image == null || image.isEmpty) {
-          return left(const Failures.validation('Image URL is empty'));
+      //  WEB ------------------------
+      if (kIsWeb) {
+        if (imageBytes == null) {
+          return left(const Failures.validation('No image selected'));
         }
-        logger.i('Category image uploaded: $image');
-      } catch (e) {
-        logger.e('Category image upload failed: $e');
-        return left(Failures.network('Failed to upload image: $e'));
+
+        try {
+          image = await uploadImageToCloudinary(bytes: imageBytes);
+        } catch (e) {
+          return left(Failures.network('Failed to upload image: $e'));
+        }
+        //  MOBILE / DESKTOP ----------
+      } else {
+        if (imageUrl == null) {
+          return left(const Failures.validation('No image selected'));
+        }
+
+        final file = File(imageUrl);
+
+        if (!await file.exists()) {
+          return left(const Failures.validation('Image file does not exist'));
+        }
+
+        try {
+          image = await uploadImageToCloudinary(file: file);
+        } catch (e) {
+          return left(Failures.network('Failed to upload image: $e'));
+        }
       }
 
+      logger.d('Cloudinary  image : $image');
       await FirebaseFirestore.instance.collection('category').add({
         'name': category,
         'imageurl': image,
@@ -80,35 +97,48 @@ class CategoryDataSourceImpl implements CategoryDataSource {
   Future<Either<Failures, Unit>> addingSubCategory(
     String id,
     String category,
-    String imageUrl,
+    String? imageUrl,
     String description,
+    Uint8List? imageBytes,
   ) async {
     String? image;
 
     try {
-      logger.i('Starting Subcategory image upload ');
-      final file = File(imageUrl);
-
-      if (!await file.exists()) {
-        return left(const Failures.validation('Image file does not exist'));
-      }
-
-      try {
-        image = await uploadImageToCloudinary(file);
-
-        if (image == null || image.isEmpty) {
-          return left(const Failures.validation('Image URL is empty'));
+      //  WEB ------------------------
+      if (kIsWeb) {
+        if (imageBytes == null) {
+          return left(const Failures.validation('No  web image selected'));
         }
-        logger.i('Subcategory image uploaded: $image');
-      } catch (e) {
-        logger.e('Subcategory image upload failed: $e');
-        return left(Failures.network('Failed to upload image: $e'));
+
+        try {
+          image = await uploadImageToCloudinary(bytes: imageBytes);
+        } catch (e) {
+          return left(Failures.network('Failed to upload image: $e'));
+        }
+        //  MOBILE / DESKTOP ----------
+      } else {
+        if (imageUrl == null) {
+          return left(const Failures.validation('No image selected'));
+        }
+
+        final file = File(imageUrl);
+
+        if (!await file.exists()) {
+          return left(const Failures.validation('Image file does not exist'));
+        }
+
+        try {
+          image = await uploadImageToCloudinary(file: file);
+        } catch (e) {
+          return left(Failures.network('Failed to upload image: $e'));
+        }
       }
+
       final subcategoryRef = FirebaseFirestore.instance
           .collection('category')
           .doc(id)
           .collection('subcategory')
-          .doc(); // auto-generated ID
+          .doc();
 
       await subcategoryRef.set({
         'Subcategory': category,
@@ -121,7 +151,7 @@ class CategoryDataSourceImpl implements CategoryDataSource {
       return right(unit);
     } catch (e, stack) {
       logger.e('Failed to add Subcategory: $e', stackTrace: stack);
-      return left(Failures.server('Failed to add category: $e'));
+      return left(Failures.server('Failed to add Subcategory: $e'));
     }
   }
 

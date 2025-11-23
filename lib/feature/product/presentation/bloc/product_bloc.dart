@@ -1,6 +1,6 @@
 import 'package:empire/feature/product/domain/enities/product_entities.dart';
 
-import 'package:empire/feature/product/domain/usecase/productcaliing_usecase.dart';
+import 'package:empire/feature/product/domain/usecase/getproduct_usecase.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

@@ -1,11 +1,10 @@
-
 import 'package:empire/feature/auth/domain/repositories/image_profile.dart';
 
-class PickImageFromGallery {
+class PickImageFromGalleryusecase {
   final ProfileImage profileImage;
 
-  PickImageFromGallery(this.profileImage);
-  Future call() async {
-    return await profileImage.pickImageFromGallery();
+  PickImageFromGalleryusecase(this.profileImage);
+  Future<dynamic> call() async {
+    return await profileImage.PickImageFromGalleryusecase();
   }
 }

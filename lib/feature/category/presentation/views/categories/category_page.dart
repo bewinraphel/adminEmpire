@@ -37,29 +37,47 @@ class CategoryScreen extends StatelessWidget {
             return completer.future;
           },
           child: SafeArea(
-            child: BlocBuilder<CategoryBloc, CategoryState>(
-              builder: (context, state) {
-                if (state is CategoryLoadingState) {
-                  return const BuildShimmerLoading();
-                } else if (state is CategoryErrorState) {
-                  return buildErrorState(context, state.error);
-                } else if (state is CategoryLoadedState) {
-                  if (state.categories.isEmpty) {
-                    return const Center(
-                      child: Text("No categories available."),
-                    );
-                  } else {
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: state.categories.length,
-                      itemBuilder: (context, index) {
-                        final category = state.categories[index];
-                        return CategoryItems(category: category);
-                      },
-                    );
-                  }
-                }
-                return const CircularProgressIndicator();
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final bool isDeskdop = constraints.maxWidth > 1200;
+                return BlocBuilder<CategoryBloc, CategoryState>(
+                  builder: (context, state) {
+                    if (state is CategoryLoadingState) {
+                      return isDeskdop
+                          ? BuildShimmerLoadingweb(constraints: constraints)
+                          : const BuildShimmerLoading();
+                    } else if (state is CategoryErrorState) {
+                      return buildErrorState(context, state.error);
+                    } else if (state is CategoryLoadedState) {
+                      if (state.categories.isEmpty) {
+                        return const Center(
+                          child: Text("No categories available."),
+                        );
+                      } else {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: state.categories.length,
+                          itemBuilder: (context, index) {
+                            final category = state.categories[index];
+                            return isDeskdop
+                                ? RepaintBoundary(
+                                    child: CategoryItemsweb(
+                                      category: category,
+                                      isDestop: isDeskdop,
+                                      constraints: constraints,
+                                    ),
+                                  )
+                                : CategoryItems(
+                                    category: category,
+                                    isDestop: isDeskdop,
+                                  );
+                          },
+                        );
+                      }
+                    }
+                    return const CircularProgressIndicator();
+                  },
+                );
               },
             ),
           ),

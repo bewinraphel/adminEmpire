@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:empire/feature/category/domain/usecase/categories/adding_subcategory_usecase.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,9 +9,10 @@ abstract class SubcategoryEvent {}
 class AddingSubcategory extends SubcategoryEvent {
   String id;
   String category;
-  String imageUrl;
+  String ?imageUrl;
   String description;
-  AddingSubcategory(this.category, this.description, this.id, this.imageUrl);
+  dynamic webimage;
+  AddingSubcategory(this.category, this.description, this.id, this.imageUrl,this.webimage);
 }
 
 abstract class SubcategoryState {}
@@ -34,6 +37,7 @@ class SubcategoryBloc extends Bloc<SubcategoryEvent, SubcategoryState> {
           event.category,
           event.imageUrl,
           event.description,
+          event.webimage
         );
         result.fold(
           (failure) => emit(ErroAdding(failure.message)),

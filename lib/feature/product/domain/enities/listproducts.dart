@@ -1,13 +1,15 @@
 import 'package:equatable/equatable.dart';
 
 class Brand extends Equatable {
-  final String imageUrl;
+  final String? imageUrl;
+  final dynamic imageweburl;
   final String label;
   final bool isActive;
 
   const Brand({
     required this.imageUrl,
     required this.label,
+    this.imageweburl,
     this.isActive = false,
   });
 
@@ -18,5 +20,5 @@ class Brand extends Equatable {
   };
 
   @override
-  List<Object?> get props => [imageUrl, label, isActive];
+  List<Object?> get props => [imageUrl, label, isActive, imageweburl];
 }
