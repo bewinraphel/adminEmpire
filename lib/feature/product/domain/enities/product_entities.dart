@@ -98,7 +98,7 @@ class ProductEntity extends Equatable {
     String? category,
     List<String>? variants,
     int? quantities,
-    List<String>? images,
+    List<dynamic>? images,
 
     double? priceRangeMin,
     double? priceRangeMax,
@@ -156,7 +156,7 @@ class ProductEntity extends Equatable {
 
 class Variant extends Equatable {
   final String name;
-  final String? image;
+  final dynamic image;
   final Uint8List? imageweb;
   final double salePrice;
   final double regularPrice;
@@ -173,12 +173,20 @@ class Variant extends Equatable {
 
   Map<String, dynamic> toJson() => {
     'name': name,
-    'image': image,
+    'image': image ?? imageweb,
+
     'regularPrice': regularPrice,
     'salePrice': salePrice,
     'quantity': quantity,
   };
 
   @override
-  List<Object?> get props => [name, image, regularPrice, salePrice, quantity];
+  List<Object?> get props => [
+    name,
+    image,
+    imageweb,
+    regularPrice,
+    salePrice,
+    quantity,
+  ];
 }

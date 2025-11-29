@@ -1,5 +1,5 @@
 import 'dart:io';
- 
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
 import 'package:empire/core/utilis/failure.dart';
@@ -31,7 +31,6 @@ abstract class ProductDataSource {
     String mainCategory,
     String subCargeoy,
     Brand brand,
-  
   );
 
   Future<Either<Failures, List<Brand>>> getBrands(
@@ -66,7 +65,7 @@ class ProductDataSourceImpli extends ProductDataSource {
         String? imgUrl;
 
         if (kIsWeb) {
-          final Uint8List imgBytes = product.imagesweb![i];
+          final Uint8List imgBytes = product.images[i];
           imgUrl = await uploadImageToCloudinary(bytes: imgBytes);
         } else {
           // product.images[i] must be file path
@@ -111,7 +110,6 @@ class ProductDataSourceImpli extends ProductDataSource {
       });
     }
 
-   
     try {
       await _firestore.collection('products').doc().set({
         'mainCategoryId': product.mainCategoryId,
@@ -128,7 +126,7 @@ class ProductDataSourceImpli extends ProductDataSource {
         'length': product.length,
         'width': product.width,
         'height': product.height,
-      
+
         'images': uploadedImageUrls,
         'brand': product.brand,
         'filterTags': product.filterTags,
@@ -182,12 +180,9 @@ class ProductDataSourceImpli extends ProductDataSource {
     String mainCategory,
     String subCargeoy,
     Brand brand,
-   
   ) async {
     final String? image;
     try {
-      
-  
       //  WEB ------------------------
       if (kIsWeb) {
         if (brand.imageweburl == null) {
@@ -262,7 +257,7 @@ class ProductDataSourceImpli extends ProductDataSource {
 
           brand: data['brand'] ?? "No Brand",
           category: data['category'] ?? '',
-         
+
           images: List<String>.from(data['images'] ?? []),
 
           filterTags: List<String>.from(data['filterTags'] ?? []),

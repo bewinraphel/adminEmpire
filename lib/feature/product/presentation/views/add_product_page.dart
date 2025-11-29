@@ -28,11 +28,11 @@ class AddProductPage extends StatelessWidget {
                 mainCategoryName: mainCategoryName,
                 subcategoryName: subcategoryName,
               )
-            : const AddProductsPageContent(
-                mainCategoryId: '',
-                subcategoryId: '',
-                mainCategoryName: '',
-                subcategoryName: '',
+            :  AddProductPageweb(
+                mainCategoryId: mainCategoryId,
+                subcategoryId: subcategoryId,
+                mainCategoryName: mainCategoryName,
+                subcategoryName: subcategoryName,
               );
       },
     );

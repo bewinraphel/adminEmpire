@@ -11,8 +11,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class Loginpage extends StatelessWidget {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  final usernamecController = TextEditingController();
-  final passwordController = TextEditingController();
+  final usernamecController = TextEditingController(text: 'Admin@gmail.com');
+  final passwordController = TextEditingController(text: 'admin@123');
   bool isremberme = false;
 
   Loginpage({super.key});

@@ -223,7 +223,7 @@ class ProductScreen extends StatelessWidget {
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) {
-                                                      return AddProductsPageContent(
+                                                      return AddProductPage(
                                                         mainCategoryId:
                                                             mainCategoryId!,
                                                         subcategoryId:
